@@ -235,65 +235,6 @@ def get_project_details(project_name):
     cursor = rdb.table("projects").filter({"name": project_name}).run(g.rdb_conn)
     # TOOD
 
-@app.route('/get_project_details/<project_name>', methods=["POST", "GET"])
-def get_project_details_json(project_name=None):
-    """Return Response object containing project details.
-
-    Returns flask.Response() object with JSONified output of
-    `get_project_details`.
-
-    Parameters
-    ----------
-    project_name : str
-        Name of project.
-
-    Returns
-    -------
-    flask.Response object
-        Response object contains project details in JSON form.
-
-    """
-    if project_name is None:
-        try:
-            project_name = str(request.args.get("project_name")).strip()
-        except:
-            print("project_name parameter not present in call to "
-                  "get_project_details")
-            return jsonify({
-                "Server response": "URL parameter must be 'project_name'"})
-    project_details = get_project_details(project_name)
-    return jsonify(project_details)
-
-
-def project_name_to_key(projname):
-    """Return RethinkDB entry key associated with project name
-    `projname`.
-
-    Parameters
-    ----------
-    projname : str
-        Project name.
-
-    Returns
-    -------
-    str
-        RethinkDB ID associated with project name.
-
-    """
-    projname = projname.strip().split(" (created")[0]
-    cursor = rdb.table("projects").filter({"name": projname})\
-                                  .run(g.rdb_conn)
-    projkeys = []
-    for entry in cursor:
-        projkeys.append(entry['id'])
-    if len(projkeys) >= 1:
-        return projkeys[-1]
-    else:
-        raise Exception(
-            "No matching project name! - projname=" + str(projname))
-        return False
-
-
 
 @app.route('/newProject', methods=['POST'])
 def newProject():
@@ -345,36 +286,6 @@ def deleteProject():
 
         result = delete_project_by_key(proj_key)
         return Response(json.dumps(list_projects(auth_only=False, name_only=False)), mimetype='application/json', headers={'Cache-Control': 'no-cache', 'Access-Control-Allow-Origin': '*'})
-
-
-@app.route('/editOrDeleteProject', methods=['POST'])
-def editOrDeleteProject():
-    """Handle 'editOrDeleteProjectForm' form submission.
-
-    Returns
-    -------
-    JSON response object
-        JSONified dict containing result message.
-
-    """
-    if request.method == 'POST':
-        proj_name = (str(request.form["PROJECT_NAME_TO_EDIT"])
-                     .split(" (created ")[0].strip())
-        action = str(request.form["action"])
-
-        if action == "Edit":
-            proj_info = get_project_details(proj_name)
-            if proj_info != False:
-                return jsonify(proj_info)
-        elif action == "Delete":
-            result = delete_project(proj_name)
-            print(result)
-            return jsonify({"result": "Deleted %s project(s)." % result})
-            # return Response(status=str(result))
-        else:
-            print ("###### ERROR - editOrDeleteProject() - 'action' not "
-                   "in ['Edit', 'Delete'] ########")
-            return jsonify({"error": "Invalid request action."})
 
 
 if __name__ == '__main__':
