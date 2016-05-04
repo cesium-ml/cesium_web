@@ -2,4 +2,4 @@
 
 ## Running the app
 
-Run `python flask_server.py` and navigate to `localhost:5000` in a browser.
+Run `python flask_server.py` and navigate to `localhost:4000` in a browser.
