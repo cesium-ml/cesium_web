@@ -5,7 +5,7 @@ import sys
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='cesium web frontend')
+    parser = argparse.ArgumentParser(description='mock cesium w/ react web frontend')
     parser.add_argument('--port', type=int, default=4000,
                         help='Port number (default 4000)')
     parser.add_argument('--host', type=str, default='127.0.0.1',
