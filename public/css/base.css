@@ -1,0 +1,17 @@
+.projectsListItems-enter {
+  opacity: 0.01;
+}
+
+.projectsListItems-enter.projectsListItems-enter-active {
+  opacity: 1;
+  transition: opacity 200ms ease-in;
+}
+
+.projectsListItems-leave {
+  opacity: 1;
+}
+
+.projectsListItems-leave.projectsListItems-leave-active {
+  opacity: 0.01;
+  transition: opacity 200ms ease-in;
+}
