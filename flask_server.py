@@ -4,6 +4,7 @@ import sys
 import os
 import json
 import rethinkdb as rdb
+from rethinkdb.errors import RqlRuntimeError, RqlDriverError
 from flask import (
     Flask, request, abort, render_template,
     session, Response, jsonify, g, send_from_directory)
@@ -46,6 +47,54 @@ def teardown_request(exception):
         g.rdb_conn.close()
     except AttributeError:
         pass
+
+
+def db_init(force=False):
+    """Initialize RethinkDB tables.
+
+    Create a RethinkDB database whose name is the value of the global
+    `CESIUM_DB` defined above, and creates tables within the new DB
+    with the names 'projects', 'users', 'datasets', 'features', 'models',
+    'userauth' and 'predictions', respectively.
+
+    Parameters
+    ----------
+    force : boolean, optional
+        If True, any pre-existing database associated with this app and
+        all its tables will be deleted and replaced by empty tables.
+        Defaults to False.
+
+    """
+    try:
+        connection = rdb.connect(host=RDB_HOST, port=RDB_PORT)
+    except RqlDriverError as e:
+        print('db_init:', e.message)
+        if 'not connect' in e.message:
+            print('Launch the database by executing `rethinkdb`.')
+        return
+    if force:
+        try:
+            rdb.db_drop(CESIUM_DB).run(connection)
+        except:
+            pass
+    try:
+        rdb.db_create(CESIUM_DB).run(connection)
+    except RqlRuntimeError as e:
+        print('db_init:', e.message)
+        print('The table may already exist.  Specify the --force flag '
+              'to clear existing data.')
+        return
+    table_names = ['projects', 'users', 'datasets', 'features',
+                   'models', 'userauth', 'predictions']
+
+    db = rdb.db(CESIUM_DB)
+
+    for table_name in table_names:
+        print('Creating table', table_name)
+        db.table_create(table_name, durability='soft').run(connection)
+    connection.close()
+
+    print('Database setup completed.')
 
 
 def get_all_projkeys():
