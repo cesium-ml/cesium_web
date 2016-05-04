@@ -1,4 +1,4 @@
-# cesium_react_mock
+# Mock Cesium App w/ React
 
 ## Running the app
 
