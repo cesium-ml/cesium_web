@@ -106,11 +106,7 @@ def get_all_projkeys():
         A list of project keys (strings).
 
     """
-    cursor = rdb.table("projects").run(g.rdb_conn)
-    proj_keys = []
-    for entry in cursor:
-        proj_keys.append(entry["id"])
-    return proj_keys
+    return [entry["id"] for entry in rdb.table("projects").run(g.rdb_conn)]
 
 
 @app.route('/get_list_of_projects', methods=['POST', 'GET'])
@@ -135,13 +131,121 @@ def get_state():
     """
     """
     if request.method == 'GET':
-        projects_list = list_projects(auth_only=False, name_only=False)
-        datasets_list = list_datasets()
-        return Response(json.dumps({"projects_list": projects_list,
-                                    "datasets_list": datasets_list}),
+        state = {}
+        state["projectsList"] = list_projects(auth_only=False, name_only=False)
+        state["datasetsList"] = list_datasets(auth_only=False)
+        state["modelsList"] = list_models(auth_only=False)
+        state["predictionsList"] = list_predictions(auth_only=False)
+        return Response(json.dumps(state),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
+
+
+def list_predictions(
+        auth_only=False, by_project=False):
+    """Return list of strings describing entries in 'predictions' table.
+
+    Parameters
+    ----------
+    auth_only : bool, optional
+        If True, returns only those entries whose parent projects
+        current user is authenticated to access. Defaults to False.
+    by_project : str, optional
+        Name of project to restrict results to. Defaults to False.
+
+    Returns
+    -------
+    list of str
+        List of dicts describing entries in 'models' table.
+
+    """
+    if by_project:
+        this_projkey = project_name_to_key(by_project)
+        cursor = rdb.table("predictions").filter({"projkey": this_projkey})\
+                                         .run(g.rdb_conn)
+        return [entry for entry in cusor]
+    else:
+        authed_proj_keys = (
+            get_authed_projkeys() if auth_only else get_all_projkeys())
+        if len(authed_proj_keys) == 0:
+            return []
+        return [entry for this_projkey in authed_proj_keys
+                for entry in rdb.table("predictions")
+                .filter({"projkey": this_projkey}).run(g.rdb_conn)]
+
+
+def list_models(auth_only=True, by_project=False):
+    """Return list of strings describing entries in 'models' table.
+
+    Parameters
+    ----------
+    auth_only : bool, optional
+        If True, returns only those entries whose parent projects
+        current user is authenticated to access. Defaults to True.
+    by_project : str, optional
+        Must be project name or False. Filters by project. Defaults
+        to False.
+
+    Returns
+    -------
+    list of str
+        List of dicts describing entries in 'models' table.
+
+    """
+    authed_proj_keys = (
+        get_authed_projkeys() if auth_only else get_all_projkeys())
+
+    if by_project:
+        this_projkey = project_name_to_key(by_project)
+
+        cursor = rdb.table("models").filter({"projkey": this_projkey})\
+                                    .pluck("name", "featureset_name", "created",
+                                           "type", "id", "meta_feats",
+                                           "projkey")\
+                                    .run(g.rdb_conn)
+        return [entry for entry in cursor]
+    else:
+        if len(authed_proj_keys) == 0:
+            return []
+        return [entry for this_projkey in authed_proj_keys
+                for entry in
+                rdb.table("models").filter({"projkey": this_projkey})
+                .pluck("name", "featureset_name", "created", "type",
+                       "id", "meta_feats", "projkey").run(g.rdb_conn)]
+
+
+def list_datasets(auth_only=True, by_project=False):
+    """Return list of strings describing entries in 'datasets' table.
+
+    Parameters
+    ----------
+    auth_only : bool, optional
+        If True, returns only those entries whose parent projects
+        current user is authenticated to access. Defaults to True.
+    by_project : str, optional
+        Project name. Filters by project if not False. Defaults to
+        False.
+
+    Returns
+    -------
+    list of str
+        List of dicts describing entries in 'datasets' table.
+
+    """
+    authed_proj_keys = (
+        get_authed_projkeys() if auth_only else get_all_projkeys())
+    if by_project:
+        this_projkey = project_name_to_key(by_project)
+        cursor = rdb.table("datasets").filter({"projkey": this_projkey})\
+                                      .run(g.rdb_conn)
+        return [entry for entry in cursor]
+    else:
+        if len(authed_proj_keys) == 0:
+            return []
+        return [entry for this_projkey in authed_proj_keys
+                for entry in rdb.table("datasets")
+                .filter({"projkey": this_projkey}).run(g.rdb_conn)]
 
 
 def list_projects(auth_only=True, name_only=False):
@@ -163,14 +267,8 @@ def list_projects(auth_only=True, name_only=False):
         List of strings describing project entries.
 
     """
-    proj_keys = get_all_projkeys()
-    if len(proj_keys) == 0:
-        return []
-    entries = []
-    for entry in (
-            rdb.table('projects').get_all(*proj_keys).run(g.rdb_conn)):
-        entries.append(entry)
-    return entries
+    return [entry for entry in rdb.table('projects').run(g.rdb_conn)]
+
 
 
 def add_project(name, desc="", addl_authed_users=[], user_email="auto"):
@@ -205,50 +303,7 @@ def add_project(name, desc="", addl_authed_users=[], user_email="auto"):
         "description": desc,
         "created": str(rdb.now().in_timezone('-08:00').run(g.rdb_conn))
     }).run(g.rdb_conn)['generated_keys'][0]
-    print("Project", name, "created and added to db")
     return new_projkey
-
-
-def delete_project(project_name):
-    """Delete project entry and associated data.
-
-    Deletes RethinkDB project entry whose 'name' attribute is
-    `project_name`. Also deletes all entries in 'predictions',
-    'features', 'models' and 'userauth' tables that are solely
-    associated with this project, and removes all project data
-    (features, models, etc) from the disk.
-
-    Parameters
-    ----------
-    project_name : str
-        Name of project to be deleted.
-
-    Returns
-    -------
-    int
-        The number of projects successfully deleted.
-
-    """
-    proj_keys = []
-    cursor = rdb.table("projects").filter({"name": project_name})\
-                                  .pluck("id").run(g.rdb_conn)
-    for entry in cursor:
-        proj_keys.append(entry["id"])
-
-    if len(proj_keys) > 1:
-        print((
-            "#######  WARNING: DELETING MORE THAN ONE PROJECT WITH NAME %s. "
-            "DELETING PROJECTS WITH KEYS %s  ########") % (
-            project_name, ", ".join(proj_keys)))
-    elif len(proj_keys) == 0:
-        print((
-            "####### WARNING: flask_app.delete_project() - NO PROJECT "
-            "WITH NAME %s.") % project_name)
-        return 0
-    # Delete project entries
-    msg = rdb.table("projects").get_all(*proj_keys).delete().run(g.rdb_conn)
-    print("Deleted", msg['deleted'], "projects.")
-    return msg['deleted']
 
 
 def delete_project_by_key(project_key):
