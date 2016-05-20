@@ -23,7 +23,7 @@ from cesium import build_model
 # Flask initialization
 app = Flask(__name__, static_url_path='', static_folder='public')
 app.add_url_rule('/', 'root',
-                 lambda: app.send_static_file('mock_projects_page_react.html'))
+                 lambda: app.send_static_file('index.html'))
 
 # RethinkDB config:
 RDB_HOST = os.environ.get('RDB_HOST') or 'localhost'

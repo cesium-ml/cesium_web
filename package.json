@@ -1,0 +1,30 @@
+{
+    "name": "Cesium",
+    "scripts": {
+        "build": "webpack"
+    },
+    "dependencies": {
+        "react": "^15.0.1",
+        "react-addons": "latest",
+        "react-dom": "^15.0.1",
+        "react-modal": "latest",
+        "react-tabs": "latest",
+        "react-dropzone": "latest",
+        "react-addons-css-transition-group": "latest",
+        "jquery": "latest",
+        "jquery-form": "latest",
+        "bootstrap": "latest",
+        "bootstrap-css": "latest"
+    },
+    "devDependencies": {
+        "babel": "latest",
+        "babel-core": "latest",
+        "babel-loader": "latest",
+        "babel-preset-es2015": "latest",
+        "babel-preset-react": "latest",
+        "css-loader": "latest",
+        "style-loader": "latest",
+        "webpack": "latest",
+        "webpack-dev-server": "latest"
+    }
+}
