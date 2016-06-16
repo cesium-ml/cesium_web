@@ -10,6 +10,7 @@
         "react-modal": "latest",
         "react-tabs": "latest",
         "react-dropzone": "latest",
+        "react-file-input": "latest",
         "react-addons-css-transition-group": "latest",
         "jquery": "latest",
         "jquery-form": "latest",
