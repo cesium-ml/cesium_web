@@ -86,12 +86,12 @@ features_to_plot = [
     "maximum",
     "minimum",
     "percent_difference_flux_percentile",
-    "freq1_rel_phase2"]
+    "freq1_rel_phase2"
+]
 
 
 # Specify number of time series to featurize as part of a "test run"
 TEST_N = 5
-
 
 for path_name, path in cfg['paths'].items():
     if path_name == 'err_log_path':

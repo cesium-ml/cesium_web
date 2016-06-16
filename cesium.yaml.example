@@ -47,8 +47,11 @@ paths:
     temp: '/tmp/cesium'
 
 database:
+    database: cesium
     host: localhost
-    port: 28015
+    port: 5432
+    user: cesium
+    password: 
 
 docker:
     enabled: 0
