@@ -15,3 +15,7 @@
   opacity: 0.01;
   transition: opacity 200ms ease-in;
 }
+body {
+    margin: 0;
+    padding: 50px;
+}

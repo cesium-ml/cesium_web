@@ -1,6 +1,13 @@
 var React = require("react");
 var ReactDOM = require("react-dom");
 var ReactCSSTransitionGroup = require("react-addons-css-transition-group");
+var Modal = require("react-modal");
+var FileInput = require("react-file-input");
+var ReactTabs = require('react-tabs');
+var Tab = ReactTabs.Tab;
+var Tabs = ReactTabs.Tabs;
+var TabList = ReactTabs.TabList;
+var TabPanel = ReactTabs.TabPanel;
 var $ = require("jquery");
 global.jQuery = $;
 require("bootstrap-css");
@@ -20,6 +27,11 @@ var MainContent = React.createClass({
                     "Dataset Name": "",
                     "Header File": "",
                     "Tarball Containing Data": ""
+                },
+                selectedProjectToEdit: {
+                    "Addl Authorized Users": "",
+                    "Description/notes": "",
+                    "Project Name": ""
                 }
             },
             projectsList: [{"name": "", "created": "", "id": ""}],
@@ -66,9 +78,44 @@ var MainContent = React.createClass({
             }.bind(this)
         });
     },
-    handleEditProject: function(projectID, e) {
-        // TODO: Open form in Dialog
-        console.log("handleEditProject was called, but nothing here yet...");
+    handleClickEditProject: function(projectID, e) {
+        $.ajax({
+            url: "/getProjectDetails/" + projectID,
+            dataType: "json",
+            cache: false,
+            success: function(data) {
+                data["Project Name"] = data["name"];
+                data["Description/notes"] = data["description"];
+                data["Addl Authorized Users"] = data["addl_authed_users"].join();
+                delete data["addl_authed_users"];
+                data["project_id"] = projectID;
+                var form_state = this.state.forms;
+                form_state["selectedProjectToEdit"] = data;
+                this.setState({forms: form_state});
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error("/getProjectDetails", status, err.toString(),
+                              xhr.repsonseText);
+            }.bind(this)
+        });
+    },
+    updateProjectInfo: function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "/updateProject",
+            dataType: "json",
+            type: "POST",
+            data: this.state.forms.selectedProjectToEdit,
+            success: function(data) {
+                var form_state = this.state.forms;
+                form_state.selectedProjectToEdit = this.getInitialState().forms.selectedProjectToEdit;
+                this.setState({projectsList: data, forms: form_state});
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error("/updateProject", status, err.toString(),
+                              xhr.repsonseText);
+            }.bind(this)
+        });
     },
     handleDeleteProject: function(projectID, e) {
         $.ajax({
@@ -86,26 +133,31 @@ var MainContent = React.createClass({
         });
     },
     handleNewDatasetSubmit: function(e){
-        {/* e.preventDefault();
-            // var formData = new FormData($("#datasetForm"));
-            $.ajax({
+        e.preventDefault();
+        var formData = new FormData();
+        for (var key in this.state.forms.newDataset) {
+            formData.append(key, this.state.forms.newDataset[key]);
+        }
+        $.ajax({
             url: "/uploadData",
             dataType: "json",
             type: "POST",
             contentType: false,
-            // data: formData,
-            data: this.state.forms.newDataset,
+            processData: false,
+            data: formData,
+            // data: this.state.forms.newDataset,
             success: function(data) {
-            var form_state = this.state.forms;
-            form_state.newDataset = this.getInitialState().forms.newDataset;
-            this.setState({datasetsList: data.datasetsList, forms: form_state});
+                var form_state = this.state.forms;
+                form_state.newDataset = this.getInitialState().forms.newDataset;
+                this.setState({datasetsList: data.datasetsList, forms: form_state});
             }.bind(this),
             error: function(xhr, status, err) {
-            console.error("/uploadData", status, err.toString(),
-            xhr.repsonseText);
+                console.error("/uploadData", status, err.toString(),
+                              xhr.repsonseText);
             }.bind(this)
-            }); */}
+        });
 
+        {/*
         $("#datasetForm").ajaxSubmit({
             success: function(response) {
                 console.log(response);
@@ -115,43 +167,73 @@ var MainContent = React.createClass({
                 console.log(response);
             }
         });
+        */}
     },
-    handleInputChange: function(inputName, inputTypeTag, formName, e) {
+    handleInputChange: function(inputName, inputType, formName, e) {
         var form_state = this.state.forms;
-        form_state[formName][inputName] = e.target.value;
+        if (inputType == "file") {
+            var newValue = e.target.files[0];
+        } else {
+            var newValue = e.target.value;
+        }
+        form_state[formName][inputName] = newValue;
         this.setState({forms: form_state});
     },
     render: function() {
         return (
             <div className="mainContent">
-                <ProjectsTabContent
-                    getInitialState={this.getInitialState}
-                    loadState={this.loadState}
-                    handleNewProjectSubmit={this.handleNewProjectSubmit}
-                    handleEditProject={this.handleEditProject}
-                    handleDeleteProject={this.handleDeleteProject}
-                    handleInputChange={this.handleInputChange}
-                    formFields={this.state.forms.newProject}
-                    projectsList={this.state.projectsList}
-                />
-                <DatasetsTabContent
-                    getInitialState={this.getInitialState}
-                    loadState={this.loadState}
-                    handleNewDatasetSubmit={this.handleNewDatasetSubmit}
-                    handleInputChange={this.handleInputChange}
-                    formFields={this.state.forms.newDataset}
-                    projectsList={this.state.projectsList}
-                    datasetsList={this.state.datasetsList}
-                />
-                <FeaturesTabContent
-                    getInitialState={this.getInitialState}
-                    loadState={this.loadState}
-                    handleNewDatasetSubmit={this.handleNewDatasetSubmit}
-                    handleInputChange={this.handleInputChange}
-                    formFields={this.state.forms.newDataset}
-                    projectsList={this.state.projectsList}
-                    datasetsList={this.state.datasetsList}
-                />
+                <Tabs>
+                    <TabList>
+                        <Tab>Projects</Tab>
+                        <Tab>Data</Tab>
+                        <Tab>Features</Tab>
+                        <Tab>Models</Tab>
+                        <Tab>Predict</Tab>
+                    </TabList>
+                    <TabPanel>
+                        <ProjectsTabContent
+                            getInitialState={this.getInitialState}
+                            loadState={this.loadState}
+                            handleNewProjectSubmit={this.handleNewProjectSubmit}
+                            handleClickEditProject={this.handleClickEditProject}
+                            handleDeleteProject={this.handleDeleteProject}
+                            handleInputChange={this.handleInputChange}
+                            formFields={this.state.forms.newProject}
+                            projectsList={this.state.projectsList}
+                            projectDetails={this.state.forms.selectedProjectToEdit}
+                            updateProjectInfo={this.updateProjectInfo}
+                        />
+                    </TabPanel>
+                    <TabPanel>
+                        <DatasetsTabContent
+                            getInitialState={this.getInitialState}
+                            loadState={this.loadState}
+                            handleNewDatasetSubmit={this.handleNewDatasetSubmit}
+                            handleInputChange={this.handleInputChange}
+                            formFields={this.state.forms.newDataset}
+                            formName="newDataset"
+                            projectsList={this.state.projectsList}
+                            datasetsList={this.state.datasetsList}
+                        />
+                    </TabPanel>
+                    <TabPanel>
+                        <FeaturesTabContent
+                            getInitialState={this.getInitialState}
+                            loadState={this.loadState}
+                            handleNewDatasetSubmit={this.handleNewDatasetSubmit}
+                            handleInputChange={this.handleInputChange}
+                            formFields={this.state.forms.newDataset}
+                            projectsList={this.state.projectsList}
+                            datasetsList={this.state.datasetsList}
+                        />
+                    </TabPanel>
+                    <TabPanel>
+                        Models...
+                    </TabPanel>
+                    <TabPanel>
+                        Predictions...
+                    </TabPanel>
+                </Tabs>
             </div>
         );
     }
@@ -168,8 +250,11 @@ var ProjectsTabContent = React.createClass({
                 />
                 <ProjectList
                     projectsList={this.props.projectsList}
-                    editProject={this.props.handleEditProject}
+                    clickEditProject={this.props.handleClickEditProject}
                     deleteProject={this.props.handleDeleteProject}
+                    projectDetails={this.props.projectDetails}
+                    handleInputChange={this.props.handleInputChange}
+                    updateProjectInfo={this.props.updateProjectInfo}
                 />
             </div>
         );
@@ -220,8 +305,11 @@ var ProjectList = React.createClass({
                 <ProjectListRow
                     project={project}
                     key={project.id}
-                    editProject={this.props.editProject}
+                    clickEditProject={this.props.clickEditProject}
                     deleteProject={this.props.deleteProject}
+                    projectDetails={this.props.projectDetails}
+                    handleInputChange={this.props.handleInputChange}
+                    updateProjectInfo={this.props.updateProjectInfo}
                 />
             );
         }.bind(this));
@@ -261,14 +349,18 @@ var ProjectListRow = React.createClass({
                     {this.props.project.created}
                 </div>
                 <div style={{marginLeft: 710}}>
-                    <a href="#" onClick={this.props.editProject.bind(null, this.props.project.id)}>
+                    <EditProjectForm
+                        clickEditProject={this.props.clickEditProject}
+                        project={this.props.project}
+                        projectDetails={this.props.projectDetails}
+                        handleInputChange={this.props.handleInputChange}
+                        handleSubmit={this.props.updateProjectInfo}
+                    />
                         {/* Glyphicons don't work with npm bootstrap!
                         <span className="glyphicon glyphicon-edit"
                               title="Edit">
                         </span>
                         */}
-                        [Edit]
-                    </a>
                     <a href="#" onClick={this.props.deleteProject.bind(null, this.props.project.id)}>
                         {/* Glyphicons don't work with npm bootstrap!
                         <span style={{marginLeft: 10}}
@@ -284,9 +376,28 @@ var ProjectListRow = React.createClass({
     }
 });
 
+const modalStyles = {
+    content : {
+        top                   : '50%',
+        left                  : '50%',
+        right                 : 'auto',
+        bottom                : 'auto',
+        marginRight           : '-50%',
+        transform             : 'translate(-50%, -50%)'
+    }
+};
+
 var EditProjectForm = React.createClass({
     getInitialState: function() {
         return {modalIsOpen: false};
+    },
+    clickEdit: function() {
+        this.props.clickEditProject(this.props.project.id);
+        this.openModal();
+    },
+    submit: function(e) {
+        this.props.handleSubmit(e);
+        this.closeModal();
     },
     openModal: function() {
         this.setState({modalIsOpen: true});
@@ -298,15 +409,51 @@ var EditProjectForm = React.createClass({
         this.setState({modalIsOpen: false});
     },
     render: function() {
-        // TODO: Populate with project details
         return (
-            <Modal
-                isOpen={this.state.modalIsOpen}
-                onAfterOpen={this.afterOpenModal}
-                onRequestClose={this.closeModal}>
+            <span>
+                <a href="#"
+                   onClick={this.clickEdit}>
+                    [Edit]
+                </a>
 
-                <FormTitleRow formTitle="Edit Project" />
-            </Modal>
+                <Modal
+                    isOpen={this.state.modalIsOpen}
+                    onAfterOpen={this.afterOpenModal}
+                    onRequestClose={this.closeModal}
+                    style={modalStyles} >
+
+                    <FormTitleRow formTitle="Edit Project" />
+                    <FormInputRow inputName="Project Name"
+                                  inputTag="input"
+                                  inputType="text"
+                                  formName="selectedProjectToEdit"
+                                  value={this.props.projectDetails["Project Name"]}
+                                  handleInputChange={this.props.handleInputChange}
+                    />
+                    <FormInputRow inputName="Description/notes"
+                                  inputTag="input"
+                                  inputType="text"
+                                  formName="selectedProjectToEdit"
+                                  value={this.props.projectDetails["Description/notes"]}
+                                  handleInputChange={this.props.handleInputChange}
+                    />
+                    <FormInputRow inputName="Addl Authorized Users"
+                                  inputTag="input"
+                                  inputType="text"
+                                  formName="selectedProjectToEdit"
+                                  value={this.props.projectDetails["Addl Authorized Users"]}
+                                  handleInputChange={this.props.handleInputChange}
+                    />
+                    <div className="submitButtonDiv" style={{marginTop: 15}}>
+                        <input type="submit"
+                               onClick={this.submit}
+                               value="Submit"
+                               className="submitButton"
+                        />
+                    </div>
+
+                </Modal>
+            </span>
         );
     }
 });
@@ -326,7 +473,7 @@ var FormInputRow = React.createClass({
                                  value={this.props.value}
                                  onChange={this.props.handleInputChange.bind(
                                          null, this.props.inputName,
-                                         this.props.inputTypeTag,
+                                         this.props.inputType,
                                          this.props.formName)}
                     />
                 </div>
@@ -356,7 +503,7 @@ var FormSelectInput = React.createClass({
                         value={this.props.value}
                         onChange={this.props.handleInputChange.bind(
                                 null, this.props.inputName,
-                                this.props.inputTypeTag,
+                                this.props.inputType,
                                 this.props.formName)}>
                         {selectOptions}
                     </select>
@@ -417,21 +564,16 @@ var DatasetsForm = React.createClass({
                                   value={this.props.formFields["Dataset Name"]}
                                   handleInputChange={this.props.handleInputChange}
                     />
-                    <FormInputRow inputName="Header File"
-                                  inputTag="input"
-                                  inputType="file"
-                                  formName="newDataset"
-                                  value={this.props.formFields["Header File"]}
-                                  handleInputChange={this.props.handleInputChange}
+                    <FileInput name="Header File"
+                               placeholder="Select Header File"
+                               onChange={this.props.handleInputChange.bind(
+                                        null, "Header File", "file", "newDataset")}
                     />
-                    <FormInputRow inputName="Tarball Containing Data"
-                                  inputTag="input"
-                                  inputType="file"
-                                  formName="newDataset"
-                                  value={this.props.formFields["Tarball Containing Data"]}
-                                  handleInputChange={this.props.handleInputChange}
+                    <FileInput name="Tarball Containing Data"
+                               placeholder="Select Data Tarball"
+                               onChange={this.props.handleInputChange.bind(
+                                       null, "Tarball Containing Data", "file", "newDataset")}
                     />
-
                     <div className="submitButtonDiv" style={{marginTop: 15}}>
                         <input type="submit"
                                onClick={this.props.handleSubmit}

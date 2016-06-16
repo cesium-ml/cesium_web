@@ -2,12 +2,16 @@
 
 import sys
 import os
+from os.path import join as pjoin
+import tarfile
 import json
 import rethinkdb as rdb
 from rethinkdb.errors import RqlRuntimeError, RqlDriverError
 from flask import (
     Flask, request, abort, render_template,
     session, Response, jsonify, g, send_from_directory)
+import uuid
+from werkzeug.utils import secure_filename
 
 from config import cfg
 from cesium import obs_feature_tools as oft
@@ -168,7 +172,7 @@ def list_predictions(
         If True, returns only those entries whose parent projects
         current user is authenticated to access. Defaults to False.
     by_project : str, optional
-        Name of project to restrict results to. Defaults to False.
+        ID of project to restrict results to. Defaults to False.
 
     Returns
     -------
@@ -177,7 +181,7 @@ def list_predictions(
 
     """
     if by_project:
-        this_projkey = project_name_to_key(by_project)
+        this_projkey = by_project
         cursor = rdb.table("predictions").filter({"projkey": this_projkey})\
                                          .run(g.rdb_conn)
         return [entry for entry in cusor]
@@ -200,7 +204,7 @@ def list_models(auth_only=True, by_project=False):
         If True, returns only those entries whose parent projects
         current user is authenticated to access. Defaults to True.
     by_project : str, optional
-        Must be project name or False. Filters by project. Defaults
+        Must be project ID or False. Filters by project. Defaults
         to False.
 
     Returns
@@ -213,8 +217,7 @@ def list_models(auth_only=True, by_project=False):
         get_authed_projkeys() if auth_only else get_all_projkeys())
 
     if by_project:
-        this_projkey = project_name_to_key(by_project)
-
+        this_projkey = by_project
         cursor = rdb.table("models").filter({"projkey": this_projkey})\
                                     .pluck("name", "featureset_name", "created",
                                            "type", "id", "meta_feats",
@@ -240,7 +243,7 @@ def list_datasets(auth_only=True, by_project=False):
         If True, returns only those entries whose parent projects
         current user is authenticated to access. Defaults to True.
     by_project : str, optional
-        Project name. Filters by project if not False. Defaults to
+        Project ID. Filters by project if not False. Defaults to
         False.
 
     Returns
@@ -252,7 +255,7 @@ def list_datasets(auth_only=True, by_project=False):
     authed_proj_keys = (
         get_authed_projkeys() if auth_only else get_all_projkeys())
     if by_project:
-        this_projkey = project_name_to_key(by_project)
+        this_projkey = by_project
         cursor = rdb.table("datasets").filter({"projkey": this_projkey})\
                                       .run(g.rdb_conn)
         return [entry for entry in cursor]
@@ -316,7 +319,8 @@ def add_project(name, desc="", addl_authed_users=[], user_email="auto"):
     new_projkey = rdb.table("projects").insert({
         "name": name,
         "description": desc,
-        "created": str(rdb.now().in_timezone('-08:00').run(g.rdb_conn))
+        "created": str(rdb.now().in_timezone('-08:00').run(g.rdb_conn)),
+        "addl_authed_users": addl_authed_users
     }).run(g.rdb_conn)['generated_keys'][0]
     return new_projkey
 
@@ -356,13 +360,15 @@ def delete_project_by_key(project_key):
     return msg
 
 
-def get_project_details(project_name):
+@app.route('/getProjectDetails/<project_id>', methods=["GET"])
+@app.route('/getProjectDetails', methods=["GET"])
+def get_project_details(project_id):
     """Return dict containing project details.
 
     Parameters
     ----------
-    project_name : str
-        Name of project.
+    project_id : str
+        ID of project.
 
     Returns
     -------
@@ -379,10 +385,15 @@ def get_project_details(project_name):
         "description": project description
 
     """
+    info_dict = rdb.table("projects").get(project_id).run(g.rdb_conn)
     # TODO: add following info: associated featuresets, models
-    entries = []
-    cursor = rdb.table("projects").filter({"name": project_name}).run(g.rdb_conn)
-    # TOOD
+    if request.method == "GET":
+        return Response(json.dumps(info_dict),
+                        mimetype='application/json',
+                        headers={'Cache-Control': 'no-cache',
+                                 'Access-Control-Allow-Origin': '*'})
+    else:
+        return info_dict
 
 
 @app.route('/newProject', methods=['POST'])
@@ -408,7 +419,6 @@ def newProject():
             user_email = str(request.form["user_email"]).strip()
         else:
             user_email = "auto"  # will be determined through Flask
-
         addl_users = [addl_user.strip() for addl_user in addl_users]
         if user_email == "":
             return jsonify({
@@ -420,6 +430,48 @@ def newProject():
             user_email=user_email)
         return Response(json.dumps(list_projects(auth_only=False,
                                                  name_only=False)),
+                        mimetype='application/json',
+                        headers={'Cache-Control': 'no-cache',
+                                 'Access-Control-Allow-Origin': '*'})
+
+
+@app.route('/updateProject', methods=['POST'])
+def updateProject():
+    """Handle new project form and creates new RethinkDB entry.
+
+    """
+    if request.method == 'POST':
+        project_id = str(request.form["project_id"])
+        proj_name = str(request.form["Project Name"]).strip()
+        if proj_name == "":
+            return jsonify({
+                "result": ("Project name must contain at least one "
+                           "non-whitespace character. Please try another name.")
+            })
+
+        proj_description = str(request.form["Description/notes"]).strip()
+
+        addl_users = str(request.form["Addl Authorized Users"])\
+            .strip().split(',')
+        if addl_users in [[''], ["None"]]:
+            addl_users = []
+        if "user_email" in request.form:
+            user_email = str(request.form["user_email"]).strip()
+        else:
+            user_email = "auto"  # will be determined through Flask
+        addl_users = [addl_user.strip() for addl_user in addl_users]
+        if user_email == "":
+            return jsonify({
+                "result": ("Required parameter 'user_email' must be a valid "
+                           "email address.")})
+
+        rdb.table("projects").get(project_id).update({
+            "name": proj_name,
+            "description": proj_description,
+            "addl_authed_users": addl_users
+        }).run(g.rdb_conn)
+        proj_list = list_projects(auth_only=False, name_only=False)
+        return Response(json.dumps(proj_list),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
@@ -485,16 +537,16 @@ def uploadData(dataset_name=None, headerfile=None, zipfile=None, project_name=No
         print("Saved", headerfile_name, "and", zipfile_name)
         try:
             check_headerfile_and_tsdata_format(headerfile_path, zipfile_path)
-        except custom_exceptions.DataFormatError as err:
-            os.remove(headerfile_path)
-            os.remove(zipfile_path)
-            print("Removed", headerfile_name, "and", zipfile_name)
-            return jsonify({"message": str(err), "type": "error"})
-        except custom_exceptions.TimeSeriesFileNameError as err:
-            os.remove(headerfile_path)
-            os.remove(zipfile_path)
-            print("Removed", headerfile_name, "and", zipfile_name)
-            return jsonify({"message": str(err), "type": "error"})
+        #except custom_exceptions.DataFormatError as err:
+        #    os.remove(headerfile_path)
+        #    os.remove(zipfile_path)
+        #    print("Removed", headerfile_name, "and", zipfile_name)
+        #    return jsonify({"message": str(err), "type": "error"})
+        #except custom_exceptions.TimeSeriesFileNameError as err:
+        #    os.remove(headerfile_path)
+        #    os.remove(zipfile_path)
+        #    print("Removed", headerfile_name, "and", zipfile_name)
+        #    return jsonify({"message": str(err), "type": "error"})
         except:
             raise
         new_dataset_id = add_dataset(name=dataset_name, projkey=projkey)
@@ -576,6 +628,102 @@ def FeaturizeData(
             dataset_id=dataset_id,
             featlist=features_to_use, is_test=is_test,
             email_user=email_user, custom_script_path=customscript_path)
+
+
+def check_headerfile_and_tsdata_format(headerfile_path, zipfile_path):
+    """Ensure uploaded files are correctly formatted.
+
+    Ensures that headerfile_path and zipfile_path conform
+    to expected format - returns False if so, raises Exception if not.
+
+    Parameters
+    ----------
+    headerfile_path : str
+        Path to header file to inspect.
+    zipfile_path : str
+        Path to tarball to inspect.
+
+    Returns
+    -------
+    bool
+        Returns False if files are correctly formatted, otherwise
+        raises an exception (see below).
+
+    Raises
+    ------
+    custom_exceptions.TimeSeriesFileNameError
+        If any provided time-series data files' names are absent in
+        provided header file.
+    custom_exceptions.DataFormatError
+        If provided time-series data files or header file are
+        improperly formatted.
+
+    """
+    with open(headerfile_path) as f:
+        all_header_fnames = []
+        column_header_line = str(f.readline())
+        for line in f:
+            line = str(line)
+            if line.strip() != '':
+                if len(line.strip().split(",")) < 2:
+                    raise custom_exceptions.DataFormatError((
+                        "Header file improperly formatted. At least two "
+                        "comma-separated columns (file_name,class_name) are "
+                        "required."))
+                else:
+                    all_header_fnames.append(line.strip().split(",")[0])
+    the_zipfile = tarfile.open(zipfile_path)
+    file_list = list(the_zipfile.getnames())
+    all_fname_variants = []
+    for file_name in file_list:
+        this_file = the_zipfile.getmember(file_name)
+        if this_file.isfile():
+            file_name_variants = list_filename_variants(file_name)
+            all_fname_variants.extend(file_name_variants)
+            if (len(list(set(file_name_variants) &
+                         set(all_header_fnames))) == 0):
+                raise custom_exceptions.TimeSeriesFileNameError((
+                    "Time series data file %s provided in tarball/zip file "
+                    "has no corresponding entry in header file.")
+                    % str(file_name))
+            f = the_zipfile.extractfile(this_file)
+            all_lines = [
+                line.strip() for line in f.readlines() if line.strip() != '']
+            line_no = 1
+            for line in all_lines:
+                line = str(line)
+                if line_no == 1:
+                    num_labels = len(line.split(','))
+                    if num_labels < 2:
+                        raise custom_exceptions.DataFormatError((
+                            "Time series data file improperly formatted; at "
+                            "least two comma-separated columns "
+                            "(time,measurement) are required. Error occurred "
+                            "on file %s") % str(file_name))
+                else:
+                    if len(line.split(',')) != num_labels:
+                        raise custom_exceptions.DataFormatError((
+                            "Time series data file improperly formatted; in "
+                            "file %s line number %s has %s columns while the "
+                            "first line has %s columns.") %
+                            (
+                                file_name, str(line_no),
+                                str(len(line.split(","))), str(num_labels)))
+                line_no += 1
+    for header_fname in all_header_fnames:
+        if header_fname not in all_fname_variants:
+            raise custom_exceptions.TimeSeriesFileNameError((
+                "Header file entry with file_name=%s has no corresponding "
+                "file in provided tarball/zip file.") % header_fname)
+    return False
+
+
+def list_filename_variants(file_name):
+    """Return list of possible matching file name variants.
+    """
+    return [file_name, os.path.basename(file_name),
+            os.path.splitext(file_name)[0],
+            os.path.splitext(os.path.basename(file_name))[0]]
 
 
 if __name__ == '__main__':
