@@ -260,7 +260,7 @@ var ProjectsTabContent = React.createClass({
 var NewProjectForm = React.createClass({
     render: function() {
         return (
-            <div className="formTableDiv">
+            <div className="formTableDiv" data-test-name="newProjectForm">
                 <FormTitleRow formTitle="Create a new project"
                 />
                 <FormInputRow inputName="Project Name"
@@ -639,4 +639,3 @@ ReactDOM.render(
     <MainContent />,
     document.getElementById('content')
 );
-
