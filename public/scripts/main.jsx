@@ -20,7 +20,6 @@ var MainContent = React.createClass({
                 newProject: {
                     "Project Name": "",
                     "Description/notes": "",
-                    "Additional Authorized Users": ""
                 },
                 newDataset: {
                     "Select Project": "",
@@ -29,12 +28,11 @@ var MainContent = React.createClass({
                     "Tarball Containing Data": ""
                 },
                 selectedProjectToEdit: {
-                    "Addl Authorized Users": "",
                     "Description/notes": "",
                     "Project Name": ""
                 }
             },
-            projectsList: [{"name": "", "created": "", "id": ""}],
+            projectsList: [],
             datasetsList: []
         };
     },
@@ -86,8 +84,6 @@ var MainContent = React.createClass({
             success: function(data) {
                 data["Project Name"] = data["name"];
                 data["Description/notes"] = data["description"];
-                data["Addl Authorized Users"] = data["addl_authed_users"].join();
-                delete data["addl_authed_users"];
                 data["project_id"] = projectID;
                 var form_state = this.state.forms;
                 form_state["selectedProjectToEdit"] = data;
@@ -280,12 +276,6 @@ var NewProjectForm = React.createClass({
                               value={this.props.formFields["Description/notes"]}
                               handleInputChange={this.props.handleInputChange}
                 />
-                <FormInputRow inputName="Additional Authorized Users"
-                              inputTag="textarea"
-                              formName="newProject"
-                              value={this.props.formFields["Additional Authorized Users"]}
-                              handleInputChange={this.props.handleInputChange}
-                />
                 <div className="submitButtonDiv" style={{marginTop: 15}}>
                     <input type="submit"
                            onClick={this.props.handleSubmit}
@@ -435,13 +425,6 @@ var EditProjectForm = React.createClass({
                                   inputType="text"
                                   formName="selectedProjectToEdit"
                                   value={this.props.projectDetails["Description/notes"]}
-                                  handleInputChange={this.props.handleInputChange}
-                    />
-                    <FormInputRow inputName="Addl Authorized Users"
-                                  inputTag="input"
-                                  inputType="text"
-                                  formName="selectedProjectToEdit"
-                                  value={this.props.projectDetails["Addl Authorized Users"]}
                                   handleInputChange={this.props.handleInputChange}
                     />
                     <div className="submitButtonDiv" style={{marginTop: 15}}>

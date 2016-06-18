@@ -15,7 +15,10 @@ db = pw.PostgresqlDatabase(**cfg['database'], autocommit=True,
 
 class BaseModel(pw.Model):
     def __str__(self):
-        return to_json(model_to_dict(self, recurse=False, backrefs=False))
+        return to_json(self.__dict__())
+
+    def __dict__(self):
+        return model_to_dict(self, recurse=False, backrefs=False)
 
     class Meta:
         database = db
@@ -84,11 +87,10 @@ if __name__ == "__main__":
 
     print("Inserting dummy projects...")
     for i in range(5):
-        p = Project(name='test project {}'.format(i))
-        p.save()
-
+        p = Project.create(name='test project {}'.format(i))
         print(p)
+
 
     print("Creating dummy project owners...")
     p = Project.get()
-    UserProject(user='testuser@gmail.com', project=p).save()
+    UserProject.create(user='testuser@gmail.com', project=p)

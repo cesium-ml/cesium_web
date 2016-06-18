@@ -4,7 +4,7 @@ import sys
 import os
 from os.path import join as pjoin
 import tarfile
-import json
+from json_util import to_json
 import rethinkdb as rdb
 from rethinkdb.errors import RqlRuntimeError, RqlDriverError
 from flask import (
@@ -23,46 +23,22 @@ from cesium import featurize
 from cesium import predict
 from cesium import build_model
 
+import models as m
 
 # Flask initialization
 app = Flask(__name__, static_url_path='', static_folder='public')
 app.add_url_rule('/', 'root',
                  lambda: app.send_static_file('index.html'))
 
-# RethinkDB config:
-RDB_HOST = os.environ.get('RDB_HOST') or 'localhost'
-RDB_PORT = os.environ.get('RDB_PORT') or 28015
-
-CESIUM_DB = "cesium_mock"
-
-if not ('--help' in sys.argv or '--install' in sys.argv):
-
-    try:
-        rdb_conn = rdb.connect(host=RDB_HOST, port=RDB_PORT, db=CESIUM_DB)
-    except rdb.errors.RqlDriverError as e:
-        print(e)
-        print('Unable to connect to RethinkDB. '
-              'Please ensure that it is running.')
-        sys.exit(-1)
-
 
 @app.before_request
 def before_request():
-    """Establish connection to RethinkDB DB before each request."""
-    try:
-        g.rdb_conn = rdb.connect(host=RDB_HOST, port=RDB_PORT, db=CESIUM_DB)
-    except RqlDriverError:
-        print("No database connection could be established.")
-        abort(503, "No database connection could be established.")
+    m.db.connect()
 
 
 @app.teardown_request
 def teardown_request(exception):
-    """Close connection to RethinkDB DB after each request is completed."""
-    try:
-        g.rdb_conn.close()
-    except AttributeError:
-        pass
+    m.db.close()
 
 
 def db_init(force=False):
@@ -81,48 +57,13 @@ def db_init(force=False):
         Defaults to False.
 
     """
-    try:
-        connection = rdb.connect(host=RDB_HOST, port=RDB_PORT)
-    except RqlDriverError as e:
-        print('db_init:', e.message)
-        if 'not connect' in e.message:
-            print('Launch the database by executing `rethinkdb`.')
-        return
     if force:
-        try:
-            rdb.db_drop(CESIUM_DB).run(connection)
-        except:
-            pass
-    try:
-        rdb.db_create(CESIUM_DB).run(connection)
-    except RqlRuntimeError as e:
-        print('db_init:', e.message)
-        print('The table may already exist.  Specify the --force flag '
-              'to clear existing data.')
-        return
-    table_names = ['projects', 'users', 'datasets', 'features',
-                   'models', 'userauth', 'predictions']
+        m.drop_tables()
 
-    db = rdb.db(CESIUM_DB)
-
-    for table_name in table_names:
-        print('Creating table', table_name)
-        db.table_create(table_name, durability='soft').run(connection)
-    connection.close()
+    m.create_tables()
 
     print('Database setup completed.')
 
-
-def get_all_projkeys():
-    """Return all project keys.
-
-    Returns
-    -------
-    list of str
-        A list of project keys (strings).
-
-    """
-    return [entry["id"] for entry in rdb.table("projects").run(g.rdb_conn)]
 
 
 @app.route('/get_list_of_projects', methods=['POST', 'GET'])
@@ -139,8 +80,7 @@ def get_list_of_projects():
 
     """
     if request.method == 'GET':
-        return Response(json.dumps(list_projects(auth_only=False,
-                                                 name_only=False)),
+        return Response(to_json(list_projects()),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
@@ -152,133 +92,16 @@ def get_state():
     """
     if request.method == 'GET':
         state = {}
-        state["projectsList"] = list_projects(auth_only=False, name_only=False)
-        state["datasetsList"] = list_datasets(auth_only=False)
-        state["modelsList"] = list_models(auth_only=False)
-        state["predictionsList"] = list_predictions(auth_only=False)
-        return Response(json.dumps(state),
+        state["projectsList"] = list_projects()
+        state["datasetsList"] = list_datasets()
+        return Response(to_json(state),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
 
 
-def list_predictions(
-        auth_only=False, by_project=False):
-    """Return list of strings describing entries in 'predictions' table.
-
-    Parameters
-    ----------
-    auth_only : bool, optional
-        If True, returns only those entries whose parent projects
-        current user is authenticated to access. Defaults to False.
-    by_project : str, optional
-        ID of project to restrict results to. Defaults to False.
-
-    Returns
-    -------
-    list of str
-        List of dicts describing entries in 'models' table.
-
-    """
-    if by_project:
-        this_projkey = by_project
-        cursor = rdb.table("predictions").filter({"projkey": this_projkey})\
-                                         .run(g.rdb_conn)
-        return [entry for entry in cusor]
-    else:
-        authed_proj_keys = (
-            get_authed_projkeys() if auth_only else get_all_projkeys())
-        if len(authed_proj_keys) == 0:
-            return []
-        return [entry for this_projkey in authed_proj_keys
-                for entry in rdb.table("predictions")
-                .filter({"projkey": this_projkey}).run(g.rdb_conn)]
-
-
-def list_models(auth_only=True, by_project=False):
-    """Return list of strings describing entries in 'models' table.
-
-    Parameters
-    ----------
-    auth_only : bool, optional
-        If True, returns only those entries whose parent projects
-        current user is authenticated to access. Defaults to True.
-    by_project : str, optional
-        Must be project ID or False. Filters by project. Defaults
-        to False.
-
-    Returns
-    -------
-    list of str
-        List of dicts describing entries in 'models' table.
-
-    """
-    authed_proj_keys = (
-        get_authed_projkeys() if auth_only else get_all_projkeys())
-
-    if by_project:
-        this_projkey = by_project
-        cursor = rdb.table("models").filter({"projkey": this_projkey})\
-                                    .pluck("name", "featureset_name", "created",
-                                           "type", "id", "meta_feats",
-                                           "projkey")\
-                                    .run(g.rdb_conn)
-        return [entry for entry in cursor]
-    else:
-        if len(authed_proj_keys) == 0:
-            return []
-        return [entry for this_projkey in authed_proj_keys
-                for entry in
-                rdb.table("models").filter({"projkey": this_projkey})
-                .pluck("name", "featureset_name", "created", "type",
-                       "id", "meta_feats", "projkey").run(g.rdb_conn)]
-
-
-def list_datasets(auth_only=True, by_project=False):
-    """Return list of strings describing entries in 'datasets' table.
-
-    Parameters
-    ----------
-    auth_only : bool, optional
-        If True, returns only those entries whose parent projects
-        current user is authenticated to access. Defaults to True.
-    by_project : str, optional
-        Project ID. Filters by project if not False. Defaults to
-        False.
-
-    Returns
-    -------
-    list of str
-        List of dicts describing entries in 'datasets' table.
-
-    """
-    authed_proj_keys = (
-        get_authed_projkeys() if auth_only else get_all_projkeys())
-    if by_project:
-        this_projkey = by_project
-        cursor = rdb.table("datasets").filter({"projkey": this_projkey})\
-                                      .run(g.rdb_conn)
-        return [entry for entry in cursor]
-    else:
-        if len(authed_proj_keys) == 0:
-            return []
-        return [entry for this_projkey in authed_proj_keys
-                for entry in rdb.table("datasets")
-                .filter({"projkey": this_projkey}).run(g.rdb_conn)]
-
-
-def list_projects(auth_only=True, name_only=False):
+def list_projects():
     """Return list of strings describing entries in 'projects' table.
-
-    Parameters
-    ----------
-    auth_only : bool, optional
-        If True, returns only those projects that the current user is
-        authenticated to access, else all projects in table are
-        returned. Defaults to True.
-    name_only : bool, optional
-        If True, includes date & time created, omits if False.
-        Defaults to False.
 
     Returns
     -------
@@ -286,43 +109,19 @@ def list_projects(auth_only=True, name_only=False):
         List of strings describing project entries.
 
     """
-    return [entry for entry in rdb.table('projects').run(g.rdb_conn)]
+    return list(m.Project.select().order_by(m.Project.created))
 
 
-def add_project(name, desc="", addl_authed_users=[], user_email="auto"):
-    """Add a new entry to the rethinkDB 'projects' table.
-
-    Parameters
-    ----------
-    name : str
-        New project name.
-    desc : str, optional
-        Project description. Defaults to an empty strings.
-    addl_authed_users : list of str, optional
-        List of email addresses (str format) of additional users
-        authorized to access this new project. Defaults to empty list.
-    user_email : str, optional
-        Email of user creating new project. If "auto", user email
-        determined by `stormpath.user` thread-local. Defauls to "auto".
+def list_datasets():
+    """Return list of strings describing entries in 'projects' table.
 
     Returns
     -------
-    str
-        RethinkDB key/ID of newly created project entry.
+    list of str
+        List of strings describing project entries.
 
     """
-    if user_email in ["auto", None, "None", "none", "Auto"]:
-        user_email = "None" # get_current_userkey()
-    if isinstance(addl_authed_users, str):
-        if addl_authed_users.strip() in [",", ""]:
-            addl_authed_users = []
-    new_projkey = rdb.table("projects").insert({
-        "name": name,
-        "description": desc,
-        "created": str(rdb.now().in_timezone('-08:00').run(g.rdb_conn)),
-        "addl_authed_users": addl_authed_users
-    }).run(g.rdb_conn)['generated_keys'][0]
-    return new_projkey
+    return [str(p) for p in m.Dataset.select()]
 
 
 def add_dataset(name, projkey):
@@ -355,11 +154,6 @@ def set_dataset_filenames(dataset_id, ts_filenames):
                                                   ts_filenames}).run(rdb_conn)
 
 
-def delete_project_by_key(project_key):
-    msg = rdb.table("projects").get(project_key).delete().run(g.rdb_conn)
-    return msg
-
-
 @app.route('/getProjectDetails/<project_id>', methods=["GET"])
 @app.route('/getProjectDetails', methods=["GET"])
 def get_project_details(project_id):
@@ -385,10 +179,12 @@ def get_project_details(project_id):
         "description": project description
 
     """
-    info_dict = rdb.table("projects").get(project_id).run(g.rdb_conn)
+    # TODO: Dangerous--check that project belongs to user
+    info_dict = m.Project.get(m.Project.id == project_id)
+
     # TODO: add following info: associated featuresets, models
     if request.method == "GET":
-        return Response(json.dumps(info_dict),
+        return Response(to_json(info_dict),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
@@ -411,25 +207,16 @@ def newProject():
 
         proj_description = str(request.form["Description/notes"]).strip()
 
-        addl_users = str(request.form["Additional Authorized Users"])\
-            .strip().split(',')
-        if addl_users in [[''], ["None"]]:
-            addl_users = []
-        if "user_email" in request.form:
-            user_email = str(request.form["user_email"]).strip()
-        else:
-            user_email = "auto"  # will be determined through Flask
-        addl_users = [addl_user.strip() for addl_user in addl_users]
-        if user_email == "":
-            return jsonify({
-                "result": ("Required parameter 'user_email' must be a valid "
-                           "email address.")})
+        # TODO: FIXME!
+        username = "test@testuser.com" # get_current_userkey()
 
-        new_projkey = add_project(
-            proj_name, desc=proj_description, addl_authed_users=addl_users,
-            user_email=user_email)
-        return Response(json.dumps(list_projects(auth_only=False,
-                                                 name_only=False)),
+        with m.db.atomic():
+            p = m.Project.create(name=proj_name,
+                                 description=proj_description)
+            m.UserProject.create(user=username, project=p)
+
+
+        return Response(to_json(list_projects()),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
@@ -451,27 +238,13 @@ def updateProject():
 
         proj_description = str(request.form["Description/notes"]).strip()
 
-        addl_users = str(request.form["Addl Authorized Users"])\
-            .strip().split(',')
-        if addl_users in [[''], ["None"]]:
-            addl_users = []
-        if "user_email" in request.form:
-            user_email = str(request.form["user_email"]).strip()
-        else:
-            user_email = "auto"  # will be determined through Flask
-        addl_users = [addl_user.strip() for addl_user in addl_users]
-        if user_email == "":
-            return jsonify({
-                "result": ("Required parameter 'user_email' must be a valid "
-                           "email address.")})
+        query = m.Project.update(
+            name=proj_name,
+            description=proj_description,
+            ).where(m.Project.id == project_id)
+        query.execute()
 
-        rdb.table("projects").get(project_id).update({
-            "name": proj_name,
-            "description": proj_description,
-            "addl_authed_users": addl_users
-        }).run(g.rdb_conn)
-        proj_list = list_projects(auth_only=False, name_only=False)
-        return Response(json.dumps(proj_list),
+        return Response(to_json(list_projects()),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
@@ -490,9 +263,9 @@ def deleteProject():
     if request.method == 'POST':
         proj_key = str(request.form["project_key"])
 
-        result = delete_project_by_key(proj_key)
-        return Response(json.dumps(list_projects(auth_only=False,
-                                                 name_only=False)),
+        m.Project.get(m.Project.id == proj_key).delete_instance()
+
+        return Response(to_json(list_projects()),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
@@ -560,7 +333,7 @@ def uploadData(dataset_name=None, headerfile=None, zipfile=None, project_name=No
             "dataset_name": dataset_name,
             "headerfile_name": headerfile_name, "zipfile_name": zipfile_name,
             "dataset_id": new_dataset_id,
-            "datasetsList": list_datasets(auth_only=False)})
+            "datasetsList": list_datasets()})
 
 
 @app.route(('/FeaturizeData/<dataset_id>/<project_name>'
