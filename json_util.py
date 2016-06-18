@@ -11,6 +11,9 @@ class Encoder(json.JSONEncoder):
         elif isinstance(o, peewee.Model):
             return o.__dict__()
 
+        elif isinstance(o, peewee.SelectQuery):
+            return [self.default(item) for item in list(o)]
+
         return json.JSONEncoder.default(self, o)
 
 

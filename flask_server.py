@@ -31,6 +31,10 @@ app.add_url_rule('/', 'root',
                  lambda: app.send_static_file('index.html'))
 
 
+# TODO: FIXME!
+USERNAME = "testuser@gmail.com" # get_current_userkey()
+
+
 @app.before_request
 def before_request():
     m.db.connect()
@@ -80,7 +84,7 @@ def get_list_of_projects():
 
     """
     if request.method == 'GET':
-        return Response(to_json(list_projects()),
+        return Response(to_json(m.Project.all(USERNAME)),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
@@ -92,24 +96,12 @@ def get_state():
     """
     if request.method == 'GET':
         state = {}
-        state["projectsList"] = list_projects()
+        state["projectsList"] = m.Project.all(USERNAME)
         state["datasetsList"] = list_datasets()
         return Response(to_json(state),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
-
-
-def list_projects():
-    """Return list of strings describing entries in 'projects' table.
-
-    Returns
-    -------
-    list of str
-        List of strings describing project entries.
-
-    """
-    return list(m.Project.select().order_by(m.Project.created))
 
 
 def list_datasets():
@@ -207,16 +199,13 @@ def newProject():
 
         proj_description = str(request.form["Description/notes"]).strip()
 
-        # TODO: FIXME!
-        username = "test@testuser.com" # get_current_userkey()
-
         with m.db.atomic():
             p = m.Project.create(name=proj_name,
                                  description=proj_description)
-            m.UserProject.create(user=username, project=p)
+            m.UserProject.create(user=USERNAME, project=p)
 
 
-        return Response(to_json(list_projects()),
+        return Response(to_json(m.Project.all(USERNAME)),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
@@ -244,7 +233,7 @@ def updateProject():
             ).where(m.Project.id == project_id)
         query.execute()
 
-        return Response(to_json(list_projects()),
+        return Response(to_json(m.Project.all(USERNAME)),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
@@ -265,7 +254,7 @@ def deleteProject():
 
         m.Project.get(m.Project.id == proj_key).delete_instance()
 
-        return Response(to_json(list_projects()),
+        return Response(to_json(m.Project.all(USERNAME)),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})

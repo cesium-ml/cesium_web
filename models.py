@@ -32,6 +32,14 @@ class Project(BaseModel):
     description = pw.CharField(null=True)
     created = pw.DateTimeField(default=datetime.datetime.now)
 
+    @staticmethod
+    def all(username):
+        return (Project
+                    .select()
+                    .join(UserProject)
+                    .where(UserProject.username == username)
+                    .order_by(Project.created))
+
 
 class TimeSeries(BaseModel):
     """
@@ -52,13 +60,13 @@ class Dataset(BaseModel):
 
 
 class UserProject(BaseModel):
-    user = pw.CharField()
-    project = pw.ForeignKeyField(Project, related_name='users',
+    username = pw.CharField()
+    project = pw.ForeignKeyField(Project, related_name='owners',
                                  on_delete='CASCADE')
 
     class Meta:
         indexes = (
-            (('user', 'project'), True),
+            (('username', 'project'), True),
         )
 
 
@@ -92,5 +100,11 @@ if __name__ == "__main__":
 
 
     print("Creating dummy project owners...")
-    p = Project.get()
-    UserProject.create(user='testuser@gmail.com', project=p)
+    for i in range(3):
+        p = Project.get(Project.id == i + 1)
+        u = UserProject.create(username='testuser@gmail.com', project=p)
+        print(u)
+
+    print('ASSERT User should have 3 projects')
+    print(to_json(p.all('testuser@gmail.com')))
+    assert(len(list(p.all('testuser@gmail.com'))) == 3)
