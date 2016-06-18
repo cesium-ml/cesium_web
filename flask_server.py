@@ -5,8 +5,6 @@ import os
 from os.path import join as pjoin
 import tarfile
 from json_util import to_json
-import rethinkdb as rdb
-from rethinkdb.errors import RqlRuntimeError, RqlDriverError
 from flask import (
     Flask, request, abort, render_template,
     session, Response, jsonify, g, send_from_directory)
@@ -40,9 +38,10 @@ def before_request():
     m.db.connect()
 
 
-@app.teardown_request
-def teardown_request(exception):
+@app.after_request
+def after_request(response):
     m.db.close()
+    return response
 
 
 def db_init(force=False):
@@ -202,7 +201,7 @@ def newProject():
         with m.db.atomic():
             p = m.Project.create(name=proj_name,
                                  description=proj_description)
-            m.UserProject.create(user=USERNAME, project=p)
+            m.UserProject.create(username=USERNAME, project=p)
 
 
         return Response(to_json(m.Project.all(USERNAME)),
