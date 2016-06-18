@@ -14,3 +14,7 @@ Run `make install` to install dependencies locally.
 Run `make bundle` to run `webpack`.
 
 See the above section to run the app from here.
+
+## Dev tips
+
+- Run `webpack -w` to continually watch for changes in jsx
