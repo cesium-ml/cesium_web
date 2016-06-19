@@ -44,31 +44,6 @@ def after_request(response):
     return response
 
 
-def db_init(force=False):
-    """Initialize RethinkDB tables.
-
-    Create a RethinkDB database whose name is the value of the global
-    `CESIUM_DB` defined above, and creates tables within the new DB
-    with the names 'projects', 'users', 'datasets', 'features', 'models',
-    'userauth' and 'predictions', respectively.
-
-    Parameters
-    ----------
-    force : boolean, optional
-        If True, any pre-existing database associated with this app and
-        all its tables will be deleted and replaced by empty tables.
-        Defaults to False.
-
-    """
-    if force:
-        m.drop_tables()
-
-    m.create_tables()
-
-    print('Database setup completed.')
-
-
-
 @app.route('/get_list_of_projects', methods=['POST', 'GET'])
 def get_list_of_projects():
     """Return list of project names current user can access.

@@ -22,8 +22,16 @@ def main():
 
 
     if args.db_init:
-        from flask_server import db_init
-        db_init(force=args.force)
+        from models import drop_tables, create_tables
+        if args.force:
+            print("Dropping tables...")
+            drop_tables()
+
+        print("Re-creating tables, if non-existent...")
+        create_tables()
+
+        print("Database setup complete.")
+
         sys.exit(0)
 
     from flask_server import app
