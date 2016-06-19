@@ -198,11 +198,7 @@ def newProject():
 
         proj_description = str(request.form["Description/notes"]).strip()
 
-        with m.db.atomic():
-            p = m.Project.create(name=proj_name,
-                                 description=proj_description)
-            m.UserProject.create(username=USERNAME, project=p)
-
+        m.Project.add(proj_name, proj_description, USERNAME)
 
         return Response(to_json(m.Project.all(USERNAME)),
                         mimetype='application/json',

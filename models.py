@@ -40,6 +40,12 @@ class Project(BaseModel):
                     .where(UserProject.username == username)
                     .order_by(Project.created))
 
+    @staticmethod
+    def add(name, description, username):
+        with db.atomic():
+            p = Project.create(name=name, description=description)
+            UserProject.create(username=username, project=p)
+
 
 class TimeSeries(BaseModel):
     """
