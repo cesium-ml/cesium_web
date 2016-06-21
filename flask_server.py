@@ -67,52 +67,17 @@ def get_list_of_projects():
 @app.route('/get_state', methods=['GET'])
 def get_state():
     """
+    TODO change to use REST/CRUD
     """
     if request.method == 'GET':
         state = {}
         state["projectsList"] = m.Project.all(USERNAME)
-        state["datasetsList"] = list_datasets()
+        state["datasetsList"] = [d for p in state["projectsList"]
+                                 for d in p.datasets]
         return Response(to_json(state),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
-
-
-def list_datasets():
-    """Return list of strings describing entries in 'projects' table.
-
-    Returns
-    -------
-    list of str
-        List of strings describing project entries.
-
-    """
-    return [str(p) for p in m.Dataset.select()]
-
-
-def add_dataset(name, projkey):
-    """Add a new entry to the rethinkDB 'datasets' table.
-
-    Parameters
-    ----------
-    name : str
-        New dataset name.
-    projkey : str
-        RethinkDB key/ID of parent project.
-
-    Returns
-    -------
-    str
-        RethinkDB key/ID of newly created dataset entry.
-
-    """
-    new_dataset_id = rdb.table('datasets').insert({
-        'projkey': projkey,
-        'name': name,
-        'created': str(rdb.now().in_timezone('-08:00').run(g.rdb_conn)),
-    }).run(g.rdb_conn)['generated_keys'][0]
-    print("Dataset %s entry added to cesium_app db." % name)
-    return new_dataset_id
 
 
 def set_dataset_filenames(dataset_id, ts_filenames):
@@ -281,18 +246,19 @@ def uploadData(dataset_name=None, headerfile=None, zipfile=None, project_name=No
         #    return jsonify({"message": str(err), "type": "error"})
         except:
             raise
-        new_dataset_id = add_dataset(name=dataset_name, projkey=projkey)
-        time_series = data_management.parse_and_store_ts_data(
-            zipfile_path, cfg['paths']['ts_data_folder'], headerfile_path,
-            new_dataset_id)
+        p = m.Project.get(m.Project.id == projkey)
+        time_series = data_management.parse_and_store_ts_data(zipfile_path,
+            cfg['paths']['ts_data_folder'], headerfile_path)
         ts_paths = [ts.path for ts in time_series]
-        set_dataset_filenames(new_dataset_id, ts_paths)
+        d = m.Dataset.add(name=dataset_name, project=p, ts_paths=ts_paths)
+# TODO just return status 'OK'
         return jsonify({
             "message": "New time series files saved successfully.",
             "dataset_name": dataset_name,
             "headerfile_name": headerfile_name, "zipfile_name": zipfile_name,
             "dataset_id": new_dataset_id,
-            "datasetsList": list_datasets()})
+#            "datasetsList": list_datasets()
+        })
 
 
 @app.route(('/FeaturizeData/<dataset_id>/<project_name>'
