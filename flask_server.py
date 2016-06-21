@@ -424,5 +424,16 @@ def list_filename_variants(file_name):
             os.path.splitext(os.path.basename(file_name))[0]]
 
 
+@app.route("/get_features_list", methods=["GET"])
+def get_features_list():
+    if request.method == "GET":
+        return jsonify({
+            "status": "success",
+            "data": {
+                "obs_features": oft.FEATURES_LIST,
+                "science_features": sft.FEATURES_LIST},
+            "message": None})
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=4000)

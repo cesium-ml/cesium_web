@@ -4,6 +4,7 @@ var ReactCSSTransitionGroup = require("react-addons-css-transition-group");
 var Modal = require("react-modal");
 var FileInput = require("react-file-input");
 var ReactTabs = require('react-tabs');
+var CheckboxGroup = require('react-checkbox-group');
 var Tab = ReactTabs.Tab;
 var Tabs = ReactTabs.Tabs;
 var TabList = ReactTabs.TabList;
@@ -26,6 +27,12 @@ var MainContent = React.createClass({
                     "Dataset Name": "",
                     "Header File": "",
                     "Tarball Containing Data": ""
+                },
+                featurize: {
+                    "Select Project": "",
+                    "Select Dataset": "",
+                    "Feature Set Title": "",
+                    "Select Features": []
                 },
                 selectedProjectToEdit: {
                     "Description/notes": "",
@@ -141,10 +148,10 @@ var MainContent = React.createClass({
             contentType: false,
             processData: false,
             data: formData,
-            // data: this.state.forms.newDataset,
             success: function(data) {
                 var form_state = this.state.forms;
                 form_state.newDataset = this.getInitialState().forms.newDataset;
+                console.log(data.datasetsList);
                 this.setState({datasetsList: data.datasetsList, forms: form_state});
             }.bind(this),
             error: function(xhr, status, err) {
@@ -152,18 +159,6 @@ var MainContent = React.createClass({
                               xhr.repsonseText);
             }.bind(this)
         });
-
-        {/*
-        $("#datasetForm").ajaxSubmit({
-            success: function(response) {
-                console.log(response);
-            },
-            error: function(response) {
-                console.log("error");
-                console.log(response);
-            }
-        });
-        */}
     },
     handleInputChange: function(inputName, inputType, formName, e) {
         var form_state = this.state.forms;
@@ -218,7 +213,7 @@ var MainContent = React.createClass({
                             loadState={this.loadState}
                             handleNewDatasetSubmit={this.handleNewDatasetSubmit}
                             handleInputChange={this.handleInputChange}
-                            formFields={this.state.forms.newDataset}
+                            formFields={this.state.forms.featurize}
                             projectsList={this.state.projectsList}
                             datasetsList={this.state.datasetsList}
                         />
@@ -467,10 +462,10 @@ var FormInputRow = React.createClass({
 
 var FormSelectInput = React.createClass({
     render: function() {
-        var selectOptions = this.props.projectsList.map(function(project) {
+        var selectOptions = this.props.optionsList.map(function(option) {
             return (
-                <option value={project.id} key={project.id}>
-                    {project.name}
+                <option value={option.id} key={option.id}>
+                    {option.name}
                 </option>
             );
         }.bind(this));
@@ -484,6 +479,10 @@ var FormSelectInput = React.createClass({
                      style={{marginLeft: 340, marginTop: 5}}>
                     <select
                         value={this.props.value}
+                        onLoad={this.props.handleInputChange.bind(
+                                null, this.props.inputName,
+                                this.props.inputType,
+                                this.props.formName)}
                         onChange={this.props.handleInputChange.bind(
                                 null, this.props.inputName,
                                 this.props.inputType,
@@ -536,7 +535,7 @@ var DatasetsForm = React.createClass({
                     <FormSelectInput inputName="Select Project"
                                      inputTag="select"
                                      formName="newDataset"
-                                     projectsList={this.props.projectsList}
+                                     optionsList={this.props.projectsList}
                                      value={this.props.formFields["Select Project"]}
                                      handleInputChange={this.props.handleInputChange}
                     />
@@ -599,14 +598,14 @@ var FeaturizeForm = React.createClass({
                     <FormSelectInput inputName="Select Project"
                                      inputTag="select"
                                      formName="featurize"
-                                     projectsList={this.props.projectsList}
+                                     optionsList={this.props.projectsList}
                                      value={this.props.formFields["Select Project"]}
                                      handleInputChange={this.props.handleInputChange}
                     />
                     <FormSelectInput inputName="Select Dataset"
                                      inputTag="select"
                                      formName="featurize"
-                                     projectsList={this.props.projectsList}
+                                     optionsList={this.props.datasetsList}
                                      value={this.props.formFields["Select Dataset"]}
                                      handleInputChange={this.props.handleInputChange}
                     />
@@ -630,7 +629,76 @@ var FeaturizeForm = React.createClass({
                         />
                     </div>
                 </form>
+                <FeatureSelectionDialog />
             </div>
+        );
+    }
+});
+
+var FeatureSelectionDialog = React.createClass({
+    getInitialState: function() {
+        return {
+            obs_features: [],
+            science_features: []
+        };
+    },
+    componentDidMount: function () {
+        $.ajax({
+            url: "/get_features_list",
+            dataType: "json",
+            cache: false,
+            success: function(data) {
+                this.setState({obs_features: data.data["obs_features"],
+                               science_features: data.data["science_features"]});
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error("/get_features_list", status, err.toString(),
+                              xhr.repsonseText);
+            }.bind(this)
+        });
+    },
+    updateObsFeats: function(obs_feats) {
+        this.setState({
+            obs_features: obs_feats
+        });
+    },
+    render: function() {
+        // the checkboxes can be arbitrarily deep. They will always be fetched and
+        // attached the `name` attribute correctly. `value` is optional
+        return (
+            <CheckboxGroup
+                name="obs_feature_selection"
+                value={this.state.obs_features}
+                onChange={this.updateObsFeats}
+            >
+                {
+                    Checkbox => (
+                        <form>
+                            {/* this.state.obs_features.map(feature =>
+                            (
+                            <div>
+                                <label>
+                                    <Checkbox value={feature} /> {feature}
+                                </label>
+                            </div>
+                            )
+                               ); */}
+                        var checkboxlist;
+                        for (var i in this.state.obs_features) {
+                            checkboxlist += (
+                                <div>
+                                    <label>
+                                        <Checkbox value={this.state.obs_features[i]} />
+                                        {this.state.obs_features[i]}
+                                    </label>
+                                </div>
+                            )
+                        }
+                        {checkboxlist}
+                        </form>
+                    )
+                }
+            </CheckboxGroup>
         );
     }
 });
