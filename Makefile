@@ -3,9 +3,7 @@ SHELL = /bin/bash
 .DEFAULT_GOAL := run_debug
 
 db_init:
-	-sudo -u postgres psql -c 'CREATE DATABASE cesium;'
-	-sudo -u postgres psql -c 'CREATE USER cesium;'
-	-sudo -u postgres psql -c 'GRANT ALL PRIVILEGES ON DATABASE cesium to cesium;'
+	-create_db.sh
 
 db_init_force:
 	./cesium_react_mock --db-init --force
