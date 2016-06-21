@@ -3,8 +3,8 @@ import inspect
 import sys
 
 import peewee as pw
-from playhouse.fields import ManyToManyField 
-from playhouse.postgres_ext import ArrayField, HStoreField, BinaryJSONField
+from playhouse.fields import ManyToManyField
+from playhouse.postgres_ext import ArrayField, BinaryJSONField
 from playhouse.shortcuts import model_to_dict
 from json_util import to_json
 
@@ -13,6 +13,7 @@ from config import cfg
 
 db = pw.PostgresqlDatabase(**cfg['database'], autocommit=True,
                            autorollback=True)
+
 
 class BaseModel(pw.Model):
     def __str__(self):
@@ -34,10 +35,10 @@ class Project(BaseModel):
     @staticmethod
     def all(username):
         return (Project
-                    .select()
-                    .join(UserProject)
-                    .where(UserProject.username == username)
-                    .order_by(Project.created))
+                .select()
+                .join(UserProject)
+                .where(UserProject.username == username)
+                .order_by(Project.created))
 
     @staticmethod
     def add(name, description, username):
@@ -58,9 +59,9 @@ class UserProject(BaseModel):
         )
 
 
-class TimeSeries(BaseModel):
+class File(BaseModel):
     """ORM model of the TimeSeries table"""
-    filename = pw.CharField()
+    uri = pw.CharField(primary_key=True)  # s3://cesium_bin/3eef6601a
     created = pw.DateTimeField(default=datetime.datetime.now)
 
 
@@ -70,36 +71,32 @@ class Dataset(BaseModel):
                                  related_name='datasets')
     name = pw.CharField()
     created = pw.DateTimeField(default=datetime.datetime.now)
-    time_series = ManyToManyField(TimeSeries)
+    files = ManyToManyField(File)
 
     @staticmethod
-    def add(name, project, ts_paths=[]):
+    def add(name, project, file_uris=[]):
         with db.atomic():
             d = Dataset.create(name=name, project=project)
-            # TODO createorget for ts_paths?
-            d.time_series = [TimeSeries.create(filename=ts_path)
-                             for ts_path in ts_paths]
+            d.files, created = zip(*(
+                File.create_or_get(uri=uri) for uri in file_uris)
+                )
         return d
 
 
-TimeSeriesDataset = Dataset.time_series.get_through_model()
+DatasetFileThrough = Dataset.files.get_through_model()
 
 
 class Featureset(BaseModel):
     """ORM model of the Featureset table"""
     project = pw.ForeignKeyField(Project, on_delete='CASCADE',
                                  related_name='featuresets')
-    dataset = pw.ForeignKeyField(Dataset, on_delete='CASCADE', null=True,
-                                 related_name='featuresets')
     name = pw.CharField()
     created = pw.DateTimeField(default=datetime.datetime.now)
-    feat_list = ArrayField(pw.CharField, default=[])
-    meta_feats = ArrayField(pw.CharField, default=[])
-    pid = pw.IntegerField(null=True)
+
+    # could potentially live in the file
     custom_features_script = pw.CharField(null=True)
-    filename = pw.CharField(null=True)
-#    "headerfile_path": headerfile_path,
-#    "zipfile_path": zipfile_path
+
+    file = pw.ForeignKeyField(File, on_delete='CASCADE')
 
 
 class Model(BaseModel):
@@ -110,12 +107,9 @@ class Model(BaseModel):
                                     related_name='models')
     name = pw.CharField()
     created = pw.DateTimeField(default=datetime.datetime.now)
-#    feat_list = ArrayField(pw.CharField)
-#    meta_feats = ArrayField(pw.CharField, default=[]) # TODO why?
-    pid = pw.IntegerField(null=True)
     params = BinaryJSONField(default={})
     type = pw.CharField()
-    filename = pw.CharField(null=True)
+    file = pw.ForeignKeyField(File, on_delete='CASCADE')
 
 
 class Prediction(BaseModel):
@@ -125,8 +119,7 @@ class Prediction(BaseModel):
     model = pw.ForeignKeyField(Model, on_delete='CASCADE',
                                related_name='predictions')
     created = pw.DateTimeField(default=datetime.datetime.now)
-    pid = pw.IntegerField(null=True)
-    filename = pw.CharField(null=True)
+    file = pw.ForeignKeyField(File, on_delete='CASCADE')
 
 
 models = [
@@ -167,16 +160,18 @@ if __name__ == "__main__":
     assert(len(list(p.all('testuser@gmail.com'))) == 3)
 
     print("Inserting dummy dataset and time series...")
-    ts_paths = ['/dir/ts{}.nc'.format(i) for i in range(3)]
-    d = Dataset.add(name='test dataset', project=p, ts_paths=ts_paths)
+    file_uris = ['/dir/ts{}.nc'.format(i) for i in range(3)]
+    d = Dataset.add(name='test dataset', project=p, file_uris=file_uris)
 
     print("Inserting dummy featureset...")
+    test_file = File.get()
     f = Featureset.create(project=p, dataset=d, name='test featureset',
-                          feat_list=['f1', 'f2'], meta_fets=['meta1'])
+                          file=test_file)
 
     print("Inserting dummy model...")
     m = Model.create(project=p, featureset=f, name='test model',
-                     params={'n_estimators': 10}, type='RFC')
+                     params={'n_estimators': 10}, type='RFC',
+                     file=test_file)
 
     print("Inserting dummy prediction...")
-    pr = Prediction.create(project=p, model=m)
+    pr = Prediction.create(project=p, model=m, file=test_file)
