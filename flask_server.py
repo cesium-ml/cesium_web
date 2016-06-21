@@ -253,11 +253,9 @@ def uploadData(dataset_name=None, headerfile=None, zipfile=None, project_name=No
         d = m.Dataset.add(name=dataset_name, project=p, ts_paths=ts_paths)
 # TODO just return status 'OK'
         return jsonify({
-            "message": "New time series files saved successfully.",
-            "dataset_name": dataset_name,
-            "headerfile_name": headerfile_name, "zipfile_name": zipfile_name,
-            "dataset_id": new_dataset_id,
-#            "datasetsList": list_datasets()
+            "status": "success",
+            "message": None,
+            "data": {}
         })
 
 

@@ -20,7 +20,7 @@ var MainContent = React.createClass({
             forms: {
                 newProject: {
                     "Project Name": "",
-                    "Description/notes": "",
+                    "Description/notes": ""
                 },
                 newDataset: {
                     "Select Project": "",
@@ -149,10 +149,7 @@ var MainContent = React.createClass({
             processData: false,
             data: formData,
             success: function(data) {
-                var form_state = this.state.forms;
-                form_state.newDataset = this.getInitialState().forms.newDataset;
-                console.log(data.datasetsList);
-                this.setState({datasetsList: data.datasetsList, forms: form_state});
+                console.log(data['status']);
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error("/uploadData", status, err.toString(),
