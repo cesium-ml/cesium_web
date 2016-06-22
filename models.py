@@ -48,6 +48,15 @@ class Project(BaseModel):
         return p
 
 
+    @staticmethod
+    def delete(project_id, by_user):
+        (Project
+         .select()
+         .join(UserProject)
+         .where(UserProject.username == by_user)
+         .where(m.Project.id == project_id).delete_instance())
+
+
 class UserProject(BaseModel):
     username = pw.CharField()
     project = pw.ForeignKeyField(Project, related_name='owners',

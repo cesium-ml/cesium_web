@@ -11,6 +11,8 @@ var TabList = ReactTabs.TabList;
 var TabPanel = ReactTabs.TabPanel;
 var $ = require("jquery");
 global.jQuery = $;
+var _ = require("underscore");
+var filter = require('filter-values');
 require("bootstrap-css");
 require("bootstrap");
 
@@ -149,6 +151,7 @@ var MainContent = React.createClass({
             processData: false,
             data: formData,
             success: function(data) {
+                // TODO: Get new data
                 console.log(data['status']);
             }.bind(this),
             error: function(xhr, status, err) {
@@ -635,8 +638,10 @@ var FeaturizeForm = React.createClass({
 var FeatureSelectionDialog = React.createClass({
     getInitialState: function() {
         return {
-            obs_features: [],
-            science_features: []
+            available_features: {
+                obs_features: {"feat1": "checked"},
+                science_features: {"feat1": "checked"}
+            }
         };
     },
     componentDidMount: function () {
@@ -645,8 +650,16 @@ var FeatureSelectionDialog = React.createClass({
             dataType: "json",
             cache: false,
             success: function(data) {
-                this.setState({obs_features: data.data["obs_features"],
-                               science_features: data.data["science_features"]});
+                var obs_features_dict = _.object(
+                    _.map(data.data["obs_features"], function(feat) {
+                        return [feat, "checked"]; }));
+                var sci_features_dict = _.object(
+                    _.map(data.data["science_features"], function(feat) {
+                        return [feat, "checked"]; }));
+                this.setState({
+                    available_features: {
+                        obs_features: obs_features_dict,
+                        science_features: sci_features_dict}});
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error("/get_features_list", status, err.toString(),
@@ -654,46 +667,41 @@ var FeatureSelectionDialog = React.createClass({
             }.bind(this)
         });
     },
-    updateObsFeats: function(obs_feats) {
+    updateObsFeats: function(sel_obs_feats) {
+        var obs_feats_dict = this.state.available_features.obs_features;
+        for (var k in this.state.available_features.obs_features) {
+            console.log(k);
+            console.log(sel_obs_feats.indexOf(k) != -1);
+            obs_feats_dict[k] = (sel_obs_feats.indexOf(k) == -1) ? "unchkd" : "checked";
+        }
+        console.log(obs_feats_dict);
         this.setState({
-            obs_features: obs_feats
+            available_features: {
+                obs_features: obs_feats_dict,
+                science_features: this.state.available_features.science_features
+            }
         });
     },
     render: function() {
-        // the checkboxes can be arbitrarily deep. They will always be fetched and
-        // attached the `name` attribute correctly. `value` is optional
+        console.log(this.state.available_features["obs_features"]);
         return (
             <CheckboxGroup
                 name="obs_feature_selection"
-                value={this.state.obs_features}
+                value={Object.keys(filter(
+                    this.state.available_features["obs_features"], "checked"))}
                 onChange={this.updateObsFeats}
             >
-                {
-                    Checkbox => (
-                        <form>
-                            {/* this.state.obs_features.map(feature =>
-                            (
-                            <div>
-                                <label>
-                                    <Checkbox value={feature} /> {feature}
-                                </label>
-                            </div>
-                            )
-                               ); */}
-                        var checkboxlist;
-                        for (var i in this.state.obs_features) {
-                            checkboxlist += (
-                                <div>
-                                    <label>
-                                        <Checkbox value={this.state.obs_features[i]} />
-                                        {this.state.obs_features[i]}
-                                    </label>
-                                </div>
-                            )
-                        }
-                        {checkboxlist}
-                        </form>
-                    )
+                { Checkbox => (
+                <form>
+                    {
+                      Object.keys(this.state.available_features.obs_features).map(title =>
+                      (
+                    <p key={title}><Checkbox value={title}/> {title}</p>
+                          )
+                      )
+                    }
+                  </form>
+                  )
                 }
             </CheckboxGroup>
         );

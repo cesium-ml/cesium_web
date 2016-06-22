@@ -44,24 +44,46 @@ def after_request(response):
     return response
 
 
-@app.route('/get_list_of_projects', methods=['POST', 'GET'])
-def get_list_of_projects():
-    """Return list of project names current user can access.
-
-    Called from browser to populate select options.
-
-    Returns
-    -------
-    flask.Response() object
-        Creates flask.Response() object with JSONified dict
-        (``{'list':list_of_projects}``).
-
+@app.route("/project", methods=["GET", "POST"])
+@app.route("/project/<project_id>", methods=["GET", "PUT", "DELETE"])
+def Project(project_id=None):
     """
-    if request.method == 'GET':
-        return Response(to_json(m.Project.all(USERNAME)),
-                        mimetype='application/json',
-                        headers={'Cache-Control': 'no-cache',
-                                 'Access-Control-Allow-Origin': '*'})
+    """
+    if request.method == 'POST':
+        proj_name = str(request.form["Project Name"]).strip()
+        proj_description = str(request.form["Description/notes"]).strip()
+        try:
+            m.Project.add(proj_name, proj_description, USERNAME)
+        except Exception as e:
+            return jsonify({
+                "status": "error",
+                "message": str(e)})
+        return jsonify({
+            "status": "success"})
+
+    elif request.method == "GET":
+        if project_id is not None:
+            proj_info = m.Project.get(m.Project.id == project_id)
+        else:
+            proj_info = m.Project.all(USERNAME)
+
+        return jsonify({
+            "status": "success",
+            "data": proj_info})
+
+    elif request.method == "PUT":
+        # TODO: update project info
+        pass
+
+    elif request.method == "DELETE":
+        if project_id is None:
+            return jsonify({
+                "status": "error",
+                "message": "Invalid request - project ID not provided."})
+        m.Project.delete(project_id, USERNAME)
+
+        return jsonify({
+            "status": "success"})
 
 
 @app.route('/get_state', methods=['GET'])
@@ -85,67 +107,6 @@ def set_dataset_filenames(dataset_id, ts_filenames):
                                                   ts_filenames}).run(rdb_conn)
 
 
-@app.route('/getProjectDetails/<project_id>', methods=["GET"])
-@app.route('/getProjectDetails', methods=["GET"])
-def get_project_details(project_id):
-    """Return dict containing project details.
-
-    Parameters
-    ----------
-    project_id : str
-        ID of project.
-
-    Returns
-    -------
-    dict
-        Dictionary with the following key-value pairs:
-        "authed_users": a list of emails of authenticated users
-        "featuresets": a string of HTML markup of a table describing
-            all associated featuresets
-        "models": a string of HTML markup of a table describing all
-            associated models
-        "predictions": a string of HTML markup of a table describing
-            all associated predictions
-        "created": date/time created
-        "description": project description
-
-    """
-    # TODO: Dangerous--check that project belongs to user
-    info_dict = m.Project.get(m.Project.id == project_id)
-
-    # TODO: add following info: associated featuresets, models
-    if request.method == "GET":
-        return Response(to_json(info_dict),
-                        mimetype='application/json',
-                        headers={'Cache-Control': 'no-cache',
-                                 'Access-Control-Allow-Origin': '*'})
-    else:
-        return info_dict
-
-
-@app.route('/newProject', methods=['POST'])
-def newProject():
-    """Handle new project form and creates new RethinkDB entry.
-
-    """
-    if request.method == 'POST':
-        proj_name = str(request.form["Project Name"]).strip()
-        if proj_name == "":
-            return jsonify({
-                "result": ("Project name must contain at least one "
-                           "non-whitespace character. Please try another name.")
-            })
-
-        proj_description = str(request.form["Description/notes"]).strip()
-
-        m.Project.add(proj_name, proj_description, USERNAME)
-
-        return Response(to_json(m.Project.all(USERNAME)),
-                        mimetype='application/json',
-                        headers={'Cache-Control': 'no-cache',
-                                 'Access-Control-Allow-Origin': '*'})
-
-
 @app.route('/updateProject', methods=['POST'])
 def updateProject():
     """Handle new project form and creates new RethinkDB entry.
@@ -167,27 +128,6 @@ def updateProject():
             description=proj_description,
             ).where(m.Project.id == project_id)
         query.execute()
-
-        return Response(to_json(m.Project.all(USERNAME)),
-                        mimetype='application/json',
-                        headers={'Cache-Control': 'no-cache',
-                                 'Access-Control-Allow-Origin': '*'})
-
-
-@app.route('/deleteProject', methods=['POST'])
-def deleteProject():
-    """Handle 'deleteProject' form submission.
-
-    Returns
-    -------
-    JSON response object
-        JSONified dict containing result message.
-
-    """
-    if request.method == 'POST':
-        proj_key = str(request.form["project_key"])
-
-        m.Project.get(m.Project.id == proj_key).delete_instance()
 
         return Response(to_json(m.Project.all(USERNAME)),
                         mimetype='application/json',
