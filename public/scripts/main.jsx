@@ -670,11 +670,8 @@ var FeatureSelectionDialog = React.createClass({
     updateObsFeats: function(sel_obs_feats) {
         var obs_feats_dict = this.state.available_features.obs_features;
         for (var k in this.state.available_features.obs_features) {
-            console.log(k);
-            console.log(sel_obs_feats.indexOf(k) != -1);
             obs_feats_dict[k] = (sel_obs_feats.indexOf(k) == -1) ? "unchkd" : "checked";
         }
-        console.log(obs_feats_dict);
         this.setState({
             available_features: {
                 obs_features: obs_feats_dict,
@@ -683,7 +680,6 @@ var FeatureSelectionDialog = React.createClass({
         });
     },
     render: function() {
-        console.log(this.state.available_features["obs_features"]);
         return (
             <CheckboxGroup
                 name="obs_feature_selection"
