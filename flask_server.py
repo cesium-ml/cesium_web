@@ -72,8 +72,19 @@ def Project(project_id=None):
             "data": proj_info})
 
     elif request.method == "PUT":
-        # TODO: update project info
-        pass
+        if project_id is None:
+            return jsonify({
+                "status": "error",
+                "message": "Invalid request - project ID not provided."})
+        proj_name = str(request.form["Project Name"]).strip()
+
+        proj_description = str(request.form["Description/notes"]).strip()
+
+        query = m.Project.update(
+            name=proj_name,
+            description=proj_description,
+            ).where(m.Project.id == project_id)
+        query.execute()
 
     elif request.method == "DELETE":
         if project_id is None:
@@ -105,34 +116,6 @@ def get_state():
 def set_dataset_filenames(dataset_id, ts_filenames):
     rdb.table('datasets').get(dataset_id).update({'ts_filenames':
                                                   ts_filenames}).run(rdb_conn)
-
-
-@app.route('/updateProject', methods=['POST'])
-def updateProject():
-    """Handle new project form and creates new RethinkDB entry.
-
-    """
-    if request.method == 'POST':
-        project_id = str(request.form["project_id"])
-        proj_name = str(request.form["Project Name"]).strip()
-        if proj_name == "":
-            return jsonify({
-                "result": ("Project name must contain at least one "
-                           "non-whitespace character. Please try another name.")
-            })
-
-        proj_description = str(request.form["Description/notes"]).strip()
-
-        query = m.Project.update(
-            name=proj_name,
-            description=proj_description,
-            ).where(m.Project.id == project_id)
-        query.execute()
-
-        return Response(to_json(m.Project.all(USERNAME)),
-                        mimetype='application/json',
-                        headers={'Cache-Control': 'no-cache',
-                                 'Access-Control-Allow-Origin': '*'})
 
 
 @app.route(('/uploadData/<dataset_name>/<headerfile>/<zipfile>/<project_name>'),
