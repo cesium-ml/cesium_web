@@ -1,20 +1,22 @@
-var React = require("react");
-var ReactDOM = require("react-dom");
-var ReactCSSTransitionGroup = require("react-addons-css-transition-group");
-var Modal = require("react-modal");
-var FileInput = require("react-file-input");
-var ReactTabs = require('react-tabs');
-var CheckboxGroup = require('react-checkbox-group');
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import Modal from 'react-modal';
+import FileInput from 'react-file-input';
+import ReactTabs from 'react-tabs';
+import CheckboxGroup from 'react-checkbox-group';
+
 var Tab = ReactTabs.Tab;
 var Tabs = ReactTabs.Tabs;
 var TabList = ReactTabs.TabList;
 var TabPanel = ReactTabs.TabPanel;
-var $ = require("jquery");
-global.jQuery = $;
-var _ = require("underscore");
-var filter = require('filter-values');
-require("bootstrap-css");
-require("bootstrap");
+
+import _ from 'underscore';
+import filter from 'filter-values';
+
+import 'bootstrap-css';
+import 'bootstrap';
+
 
 var MainContent = React.createClass({
     getInitialState: function() {
