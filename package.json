@@ -19,7 +19,10 @@
         "bootstrap-css": "latest",
         "underscore": "latest",
         "filter-values": "latest",
-        "react-checkbox-group": "latest"
+        "react-checkbox-group": "latest",
+        "redux": "latest",
+        "react-redux": "latest",
+        "redux-thunk": "latest"
     },
     "devDependencies": {
         "babel": "latest",
