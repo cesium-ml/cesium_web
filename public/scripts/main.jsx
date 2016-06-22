@@ -132,7 +132,7 @@ var MainContent = React.createClass({
                 this.setState({forms: form_state});
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error("/getProjectDetails", status, err.toString(),
+                console.error("/project", status, err.toString(),
                               xhr.repsonseText);
             }.bind(this)
         });
@@ -150,7 +150,7 @@ var MainContent = React.createClass({
                 this.setState({projectsList: data, forms: form_state});
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error("/updateProject", status, err.toString(),
+                console.error("/project", status, err.toString(),
                               xhr.repsonseText);
             }.bind(this)
         });
@@ -164,7 +164,7 @@ var MainContent = React.createClass({
                 this.updateProjectList();
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error("/deleteProject", status, err.toString(),
+                console.error("/project", status, err.toString(),
                               xhr.repsonseText);
             }.bind(this)
         });
@@ -176,7 +176,7 @@ var MainContent = React.createClass({
             formData.append(key, this.state.forms.newDataset[key]);
         }
         $.ajax({
-            url: "/uploadData",
+            url: "/dataset",
             dataType: "json",
             type: "POST",
             contentType: false,
@@ -186,7 +186,7 @@ var MainContent = React.createClass({
                 this.loadState();
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error("/uploadData", status, err.toString(),
+                console.error("/dataset", status, err.toString(),
                               xhr.repsonseText);
             }.bind(this)
         });

@@ -15,10 +15,6 @@ db = pw.PostgresqlDatabase(**cfg['database'], autocommit=True,
                            autorollback=True)
 
 
-class UnauthorizedAccess(Exception):
-    pass
-
-
 class BaseModel(pw.Model):
     def __str__(self):
         return to_json(self.__dict__())
@@ -51,14 +47,9 @@ class Project(BaseModel):
             UserProject.create(username=username, project=p)
         return p
 
-    @staticmethod
-    def delete_by(project_id, by_user):
-        p = Project.get(Project.id == project_id)
-        users = [o.username for o in p.owners]
-        if by_user in users:
-            p.delete_instance()
-        else:
-            raise UnauthorizedAccess("User not authorized for project.")
+    def is_owned_by(self, username):
+        users = [o.username for o in self.owners]
+        return username in users
 
 
 class UserProject(BaseModel):
@@ -95,6 +86,9 @@ class Dataset(BaseModel):
                 )
         return d
 
+    def is_owned_by(self, username):
+        return self.project.is_owned_by(username)
+
 
 DatasetFileThrough = Dataset.files.get_through_model()
 
@@ -111,6 +105,9 @@ class Featureset(BaseModel):
 
     file = pw.ForeignKeyField(File, on_delete='CASCADE')
 
+    def is_owned_by(self, username):
+        return self.project.is_owned_by(username)
+
 
 class Model(BaseModel):
     """ORM model of the Model table"""
@@ -124,6 +121,9 @@ class Model(BaseModel):
     type = pw.CharField()
     file = pw.ForeignKeyField(File, on_delete='CASCADE')
 
+    def is_owned_by(self, username):
+        return self.project.is_owned_by(username)
+
 
 class Prediction(BaseModel):
     """ORM model of the Prediction table"""
@@ -133,6 +133,9 @@ class Prediction(BaseModel):
                                related_name='predictions')
     created = pw.DateTimeField(default=datetime.datetime.now)
     file = pw.ForeignKeyField(File, on_delete='CASCADE')
+
+    def is_owned_by(self, username):
+        return self.project.is_owned_by(username)
 
 
 models = [

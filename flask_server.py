@@ -20,6 +20,7 @@ from cesium import transformation
 from cesium import featurize
 from cesium import predict
 from cesium import build_model
+from cesium import custom_exceptions
 
 import models as m
 
@@ -31,6 +32,10 @@ app.add_url_rule('/', 'root',
 
 # TODO: FIXME!
 USERNAME = "testuser@gmail.com" # get_current_userkey()
+
+
+class UnauthorizedAccess(Exception):
+    pass
 
 
 @app.before_request
@@ -98,7 +103,11 @@ def Project(project_id=None):
                     "status": "error",
                     "message": "Invalid request - project ID not provided."
                 })
-        m.Project.delete_by(project_id, USERNAME)
+        p = m.Project.get(m.Project.id == project_id)
+        if p.is_owned_by(USERNAME):
+            p.delete_instance()
+        else:
+            raise UnauthorizedAccess("User not authorized for project.")
 
         return to_json({"status": "success"})
 
@@ -124,33 +133,29 @@ def set_dataset_filenames(dataset_id, ts_filenames):
                                                   ts_filenames}).run(rdb_conn)
 
 
-@app.route(('/uploadData/<dataset_name>/<headerfile>/<zipfile>/<project_name>'),
-           methods=['POST'])
-@app.route('/uploadData', methods=['POST'])
-def uploadData(dataset_name=None, headerfile=None, zipfile=None, project_name=None):
-    """Save uploaded time series data files
-
-    Handles POST form submission.
-
-    Returns
-    -------
-    Redirects to featurizationPage, see that function for output
-    details.
-
+@app.route('/dataset', methods=['POST', 'GET'])
+@app.route('/dataset/<dataset_id>', methods=['GET', 'PUT', 'DELETE'])
+def Dataset(dataset_id=None):
+    """
     """
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
     if request.method == 'POST':
-        post_method = "browser"
+
         # Parse form fields
         dataset_name = str(request.form["Dataset Name"]).strip()
         headerfile = request.files["Header File"]
         zipfile = request.files["Tarball Containing Data"]
+
         if dataset_name == "":
-            return to_json({
-                "message": ("Dataset Title must contain non-whitespace "
-                            "characters. Please try a different title."),
-                "type": "error"})
-        projkey = (request.form["Select Project"])
+            return to_json(
+                {
+                    "message": ("Dataset Title must contain non-whitespace "
+                                "characters. Please try a different title."),
+                    "type": "error"
+                })
+
+        project_id = (request.form["Select Project"])
+
         # Create unique file names
         headerfile_name = (str(uuid.uuid4()) + "_" +
                            str(secure_filename(headerfile.filename)))
@@ -163,29 +168,65 @@ def uploadData(dataset_name=None, headerfile=None, zipfile=None, project_name=No
         print("Saved", headerfile_name, "and", zipfile_name)
         try:
             check_headerfile_and_tsdata_format(headerfile_path, zipfile_path)
-        #except custom_exceptions.DataFormatError as err:
-        #    os.remove(headerfile_path)
-        #    os.remove(zipfile_path)
-        #    print("Removed", headerfile_name, "and", zipfile_name)
-        #    return to_json({"message": str(err), "type": "error"})
-        #except custom_exceptions.TimeSeriesFileNameError as err:
-        #    os.remove(headerfile_path)
-        #    os.remove(zipfile_path)
-        #    print("Removed", headerfile_name, "and", zipfile_name)
-        #    return to_json({"message": str(err), "type": "error"})
+        except custom_exceptions.DataFormatError as err:
+            os.remove(headerfile_path)
+            os.remove(zipfile_path)
+            print("Removed", headerfile_name, "and", zipfile_name)
+            return to_json({"message": str(err), "status": "error"})
+        except custom_exceptions.TimeSeriesFileNameError as err:
+            os.remove(headerfile_path)
+            os.remove(zipfile_path)
+            print("Removed", headerfile_name, "and", zipfile_name)
+            return to_json({"message": str(err), "status": "error"})
         except:
             raise
-        p = m.Project.get(m.Project.id == projkey)
+
+        p = m.Project.get(m.Project.id == project_id)
         time_series = data_management.parse_and_store_ts_data(zipfile_path,
             cfg['paths']['ts_data_folder'], headerfile_path)
         ts_paths = [ts.path for ts in time_series]
         d = m.Dataset.add(name=dataset_name, project=p, ts_paths=ts_paths)
-# TODO just return status 'OK'
-        return to_json({
-            "status": "success",
-            "message": None,
-            "data": {}
-        })
+
+        return to_json({"status": "success"})
+    elif request.method == "GET":
+        if dataset_id is not None:
+            dataset_info = m.Dataset.get(m.Dataset.id == dataset_id)
+        else:
+            dataset_info = [d for p in m.Project.all(USERNAME)
+                            for d in p.datasets]
+
+        return to_json(
+            {
+                "status": "success",
+                "data": dataset_info
+            })
+    elif request.method == "DELETE":
+        if dataset_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - data set ID not provided."
+                })
+        d = m.Dataset.get(m.Dataset.id == dataset_id)
+        if d.is_owned_by(USERNAME):
+            d.delete_instance()
+        else:
+            raise UnauthorizedAccess("User not authorized for project.")
+
+        return to_json({"status": "success"})
+    elif request.method == "PUT":
+        if dataset_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - data set ID not provided."
+                })
+        # TODO
+        return to_json(
+            {
+                "status": "error",
+                "message": "Functionality for this endpoint is not yet implemented."
+            })
 
 
 @app.route(('/FeaturizeData/<dataset_id>/<project_name>'
