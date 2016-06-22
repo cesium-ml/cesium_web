@@ -53,13 +53,14 @@ def Project(project_id=None):
         proj_name = str(request.form["Project Name"]).strip()
         proj_description = str(request.form["Description/notes"]).strip()
         try:
-            m.Project.add(proj_name, proj_description, USERNAME)
+            m.Project.add_by(proj_name, proj_description, USERNAME)
         except Exception as e:
-            return jsonify({
-                "status": "error",
-                "message": str(e)})
-        return jsonify({
-            "status": "success"})
+            return to_json(
+                {
+                    "status": "error",
+                    "message": str(e)
+                })
+        return to_json({"status": "success"})
 
     elif request.method == "GET":
         if project_id is not None:
@@ -67,17 +68,21 @@ def Project(project_id=None):
         else:
             proj_info = m.Project.all(USERNAME)
 
-        return jsonify({
-            "status": "success",
-            "data": proj_info})
+        return to_json(
+            {
+                "status": "success",
+                "data": proj_info
+            })
 
     elif request.method == "PUT":
         if project_id is None:
-            return jsonify({
-                "status": "error",
-                "message": "Invalid request - project ID not provided."})
-        proj_name = str(request.form["Project Name"]).strip()
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - project ID not provided."
+                })
 
+        proj_name = str(request.form["Project Name"]).strip()
         proj_description = str(request.form["Description/notes"]).strip()
 
         query = m.Project.update(
@@ -88,13 +93,14 @@ def Project(project_id=None):
 
     elif request.method == "DELETE":
         if project_id is None:
-            return jsonify({
-                "status": "error",
-                "message": "Invalid request - project ID not provided."})
-        m.Project.delete(project_id, USERNAME)
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - project ID not provided."
+                })
+        m.Project.delete_by(project_id, USERNAME)
 
-        return jsonify({
-            "status": "success"})
+        return to_json({"status": "success"})
 
 
 @app.route('/get_state', methods=['GET'])
@@ -140,7 +146,7 @@ def uploadData(dataset_name=None, headerfile=None, zipfile=None, project_name=No
         headerfile = request.files["Header File"]
         zipfile = request.files["Tarball Containing Data"]
         if dataset_name == "":
-            return jsonify({
+            return to_json({
                 "message": ("Dataset Title must contain non-whitespace "
                             "characters. Please try a different title."),
                 "type": "error"})
@@ -161,12 +167,12 @@ def uploadData(dataset_name=None, headerfile=None, zipfile=None, project_name=No
         #    os.remove(headerfile_path)
         #    os.remove(zipfile_path)
         #    print("Removed", headerfile_name, "and", zipfile_name)
-        #    return jsonify({"message": str(err), "type": "error"})
+        #    return to_json({"message": str(err), "type": "error"})
         #except custom_exceptions.TimeSeriesFileNameError as err:
         #    os.remove(headerfile_path)
         #    os.remove(zipfile_path)
         #    print("Removed", headerfile_name, "and", zipfile_name)
-        #    return jsonify({"message": str(err), "type": "error"})
+        #    return to_json({"message": str(err), "type": "error"})
         except:
             raise
         p = m.Project.get(m.Project.id == projkey)
@@ -175,7 +181,7 @@ def uploadData(dataset_name=None, headerfile=None, zipfile=None, project_name=No
         ts_paths = [ts.path for ts in time_series]
         d = m.Dataset.add(name=dataset_name, project=p, ts_paths=ts_paths)
 # TODO just return status 'OK'
-        return jsonify({
+        return to_json({
             "status": "success",
             "message": None,
             "data": {}
@@ -207,7 +213,7 @@ def FeaturizeData(
         # Parse form fields
         featureset_name = str(request.form["featureset_name"]).strip()
         if featureset_name == "":
-            return jsonify({
+            return to_json({
                 "message": ("Feature Set Title must contain non-whitespace "
                             "characters. Please try a different title."),
                 "type": "error"})
@@ -348,7 +354,7 @@ def list_filename_variants(file_name):
 @app.route("/get_features_list", methods=["GET"])
 def get_features_list():
     if request.method == "GET":
-        return jsonify({
+        return to_json({
             "status": "success",
             "data": {
                 "obs_features": oft.FEATURES_LIST,

@@ -45,15 +45,14 @@ class Project(BaseModel):
                 .order_by(Project.created))
 
     @staticmethod
-    def add(name, description, username):
+    def add_by(name, description, username):
         with db.atomic():
             p = Project.create(name=name, description=description)
             UserProject.create(username=username, project=p)
         return p
 
-
     @staticmethod
-    def delete(project_id, by_user):
+    def delete_by(project_id, by_user):
         p = Project.get(Project.id == project_id)
         users = [o.username for o in p.owners]
         if by_user in users:
