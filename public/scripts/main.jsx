@@ -155,7 +155,7 @@ var MainContent = React.createClass({
             processData: false,
             data: formData,
             success: function(data) {
-                // TODO: Get new data
+                // TODO: Get new datasets  list
                 console.log(data['status']);
             }.bind(this),
             error: function(xhr, status, err) {
@@ -224,7 +224,7 @@ var MainContent = React.createClass({
     render: function() {
         return (
             <div className="mainContent">
-                <Tabs>
+                <Tabs classname="first">
                     <TabList>
                         <Tab>Projects</Tab>
                         <Tab>Data</Tab>
@@ -713,25 +713,58 @@ var FeatureSelectionDialog = React.createClass({
     },
     render: function() {
         return (
-            <CheckboxGroup
-                name="obs_feature_selection"
-                value={Object.keys(filter(
-                    this.props.available_features["obs_features"], "checked"))}
-                onChange={this.updateObsFeats}
-            >
-                { Checkbox => (
-                <form>
-                    {
-                      Object.keys(this.props.available_features.obs_features).map(title =>
-                      (
-                    <div key={title}><Checkbox value={title}/> {title}</div>
+            <Tabs classname="second">
+                <TabList>
+                    <Tab>Feature Set 1</Tab>
+                    <Tab>Feature Set 2</Tab>
+                    <Tab>Custom Features</Tab>
+                </TabList>
+                <TabPanel>
+                    <CheckboxGroup
+                        name="obs_feature_selection"
+                        value={Object.keys(filter(
+                                this.props.available_features["obs_features"], "checked"))}
+                        onChange={this.updateObsFeats}
+                    >
+                        { Checkbox => (
+                              <form>
+                                  {
+                                      Object.keys(this.props.available_features.obs_features).map(title =>
+                                          (
+                                              <div key={title}><Checkbox value={title}/> {title}</div>
+                                          )
+                                      )
+                                  }
+                              </form>
                           )
-                      )
-                    }
-                  </form>
-                  )
-                }
-            </CheckboxGroup>
+                        }
+                    </CheckboxGroup>
+                </TabPanel>
+                <TabPanel>
+                    <CheckboxGroup
+                        name="sci_feature_selection"
+                        value={Object.keys(filter(
+                                this.props.available_features["sci_features"], "checked"))}
+                        onChange={this.updateSciFeats}
+                    >
+                        { Checkbox => (
+                              <form>
+                                  {
+                                      Object.keys(this.props.available_features.sci_features).map(title =>
+                                          (
+                                              <div key={title}><Checkbox value={title}/> {title}</div>
+                                          )
+                                      )
+                                  }
+                              </form>
+                          )
+                        }
+                    </CheckboxGroup>
+                </TabPanel>
+                <TabPanel>
+                    Coming Soon...
+                </TabPanel>
+            </Tabs>
         );
     }
 });
