@@ -15,6 +15,10 @@ db = pw.PostgresqlDatabase(**cfg['database'], autocommit=True,
                            autorollback=True)
 
 
+class UnauthorizedAccess(Exception):
+    pass
+
+
 class BaseModel(pw.Model):
     def __str__(self):
         return to_json(self.__dict__())
@@ -50,11 +54,12 @@ class Project(BaseModel):
 
     @staticmethod
     def delete(project_id, by_user):
-        (Project
-         .select()
-         .join(UserProject)
-         .where(UserProject.username == by_user)
-         .where(Project.id == project_id).delete_instance())
+        p = Project.get(Project.id == project_id)
+        users = [o.username for o in p.owners]
+        if by_user in users:
+            p.delete_instance()
+        else:
+            raise UnauthorizedAccess("User not authorized for project.")
 
 
 class UserProject(BaseModel):
