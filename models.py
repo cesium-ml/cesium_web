@@ -54,7 +54,7 @@ class Project(BaseModel):
          .select()
          .join(UserProject)
          .where(UserProject.username == by_user)
-         .where(m.Project.id == project_id).delete_instance())
+         .where(Project.id == project_id).delete_instance())
 
 
 class UserProject(BaseModel):
