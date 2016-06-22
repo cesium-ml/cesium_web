@@ -229,27 +229,13 @@ def Dataset(dataset_id=None):
             })
 
 
-@app.route(('/FeaturizeData/<dataset_id>/<project_name>'
-            '/<featureset_name>/<features_to_use>/<custom_features_script>/'
-            '<is_test>'), methods=['POST'])
-@app.route('/FeaturizeData', methods=['POST', 'GET'])
-def FeaturizeData(
-        dataset_id=None, project_name=None,
-        featureset_name=None, features_to_use=None,
-        custom_features_script=None, is_test=False):
-    """Save uploaded time series data files and begin featurization.
-
-    Handles POST form submission.
-
-    Returns
-    -------
-    Redirects to featurizationPage, see that function for output
-    details.
-
+@app.route('/features', methods=['POST', 'GET'])
+@app.route('/features/<featureset_id>', methods=['GET', 'PUT', 'DELETE'])
+def Features(featureset_id=None):
+    """
     """
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
     if request.method == 'POST':
-        post_method = "browser"
         # Parse form fields
         featureset_name = str(request.form["featureset_name"]).strip()
         if featureset_name == "":
@@ -282,11 +268,51 @@ def FeaturizeData(
         except:  # unchecked
             is_test = False
         proj_key = project_name_to_key(project_name)
+        # TODO: this is messy
         return featurizationPage(
             featureset_name=featureset_name, project_name=project_name,
             dataset_id=dataset_id,
             featlist=features_to_use, is_test=is_test,
             custom_script_path=customscript_path)
+    elif request.method == 'GET':
+        if featureset_id is not None:
+            featureset_info = m.Featureset.get(m.Featureset.id == featureset_id)
+        else:
+            featureset_info = [f for p in m.Project.all(USERNAME)
+                               for f in p.featuresets]
+
+        return to_json(
+            {
+                "status": "success",
+                "data": featureset_info
+            })
+    elif request.method == 'DELETE':
+        if featureset_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - feature set ID not provided."
+                })
+        f = m.Featureset.get(m.Featureset.id == featureset_id)
+        if f.is_owned_by(USERNAME):
+            f.delete_instance()
+        else:
+            raise UnauthorizedAccess("User not authorized for project.")
+
+        return to_json({"status": "success"})
+    elif request.method == 'PUT':
+        if featureset_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - feature set ID not provided."
+                })
+        # TODO!
+        return to_json(
+            {
+                "status": "error",
+                "message": "Functionality for this endpoint is not yet implemented."
+            })
 
 
 def check_headerfile_and_tsdata_format(headerfile_path, zipfile_path):
