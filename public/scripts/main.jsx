@@ -37,7 +37,9 @@ var MainContent = React.createClass({
                     "Select Project": "",
                     "Select Dataset": "",
                     "Feature Set Title": "",
-                    "Select Features": []
+                    "Custom Features File": "",
+                    "Custom Features Script Tested": false,
+                    "Selected Features": []
                 },
                 selectedProjectToEdit:
                 {
@@ -181,8 +183,7 @@ var MainContent = React.createClass({
             processData: false,
             data: formData,
             success: function(data) {
-                // TODO: Get new datasets  list
-                console.log(data['status']);
+                this.loadState();
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error("/uploadData", status, err.toString(),
@@ -244,6 +245,10 @@ var MainContent = React.createClass({
                 }
             });
     },
+    testCustomFeatScript: function (e) {
+        // TODO: DO STUFF HERE
+        console.log("testCustomFeatScript called... Nothing here yet.");
+    },
     handleInputChange: function(inputName, inputType, formName, e) {
         var form_state = this.state.forms;
         if (inputType == "file") {
@@ -304,6 +309,7 @@ var MainContent = React.createClass({
                             updateSeldObsFeats={this.updateSeldObsFeats}
                             updateSeldSciFeats={this.updateSeldSciFeats}
                             onFeaturesDialogMount={this.onFeaturesDialogMount}
+                            testCustomFeatScript={this.testCustomFeatScript}
                         />
                     </TabPanel>
                     <TabPanel>
@@ -673,6 +679,7 @@ var FeaturesTabContent = React.createClass({
                     updateSeldObsFeats={this.props.updateSeldObsFeats}
                     updateSeldSciFeats={this.props.updateSeldSciFeats}
                     onFeaturesDialogMount={this.props.onFeaturesDialogMount}
+                    testCustomFeatScript={this.props.testCustomFeatScript}
                 />
             </div>
         );
@@ -723,6 +730,8 @@ var FeaturizeForm = React.createClass({
                     updateSeldObsFeats={this.props.updateSeldObsFeats}
                     updateSeldSciFeats={this.props.updateSeldSciFeats}
                     onFeaturesDialogMount={this.props.onFeaturesDialogMount}
+                    handleInputChange={this.props.handleInputChange}
+                    testCustomFeatScript={this.props.testCustomFeatScript}
                 />
 
             </div>
@@ -791,7 +800,23 @@ var FeatureSelectionDialog = React.createClass({
                     </CheckboxGroup>
                 </TabPanel>
                 <TabPanel>
-                    Coming Soon...
+                    Select Python file containing custom feature definitions:
+                    <br /><br />
+                    <div id='script_file_input_div'>
+                        <FileInput name="Custom Features File"
+                                   placeholder="Select .py file"
+                                   onChange={this.props.handleInputChange.bind(
+                                           null, "Custom Features File",
+                                           "file", "featurize")}
+                        />
+                    </div>
+                    <br />
+                    <div>
+                        <input type='button'
+                               onClick={this.props.testCustomFeatScript}
+                               value='Click to test' />
+                    </div>
+                    <div id='file_upload_message_div'></div>
                 </TabPanel>
             </Tabs>
         );
