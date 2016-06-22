@@ -41,6 +41,10 @@ var MainContent = React.createClass({
                     "Project Name": ""
                 }
             },
+            available_features: {
+                obs_features: {"feat1": "checked"},
+                sci_features: {"feat1": "checked"}
+            },
             projectsList: [],
             datasetsList: []
         };
@@ -160,6 +164,53 @@ var MainContent = React.createClass({
             }.bind(this)
         });
     },
+    onFeaturesDialogMount: function() {
+        $.ajax({
+            url: "/get_features_list",
+            dataType: "json",
+            cache: false,
+            success: function(data) {
+                var obs_features_dict = _.object(
+                    _.map(data.data["obs_features"], function(feat) {
+                        return [feat, "checked"]; }));
+                var sci_features_dict = _.object(
+                    _.map(data.data["sci_features"], function(feat) {
+                        return [feat, "checked"]; }));
+                this.setState({
+                    available_features: {
+                        obs_features: obs_features_dict,
+                        sci_features: sci_features_dict}});
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error("/get_features_list", status, err.toString(),
+                              xhr.repsonseText);
+            }.bind(this)
+        });
+    },
+    updateSeldObsFeats: function(sel_obs_feats) {
+        var obs_feats_dict = this.state.available_features.obs_features;
+        for (var k in this.state.available_features.obs_features) {
+            obs_feats_dict[k] = (sel_obs_feats.indexOf(k) == -1) ? "unchkd" : "checked";
+        }
+        this.setState({
+            available_features: {
+                obs_features: obs_feats_dict,
+                sci_features: this.state.available_features.sci_features
+            }
+        });
+    },
+    updateSeldSciFeats: function(sel_sci_feats) {
+        var sci_feats_dict = this.state.available_features.sci_features;
+        for (var k in this.state.available_features.sci_features) {
+            sci_feats_dict[k] = (sel_sci_feats.indexOf(k) == -1) ? "unchkd" : "checked";
+        }
+        this.setState({
+            available_features: {
+                sci_features: sci_feats_dict,
+                obs_features: this.state.available_features.obs_features
+            }
+        });
+    },
     handleInputChange: function(inputName, inputType, formName, e) {
         var form_state = this.state.forms;
         if (inputType == "file") {
@@ -216,6 +267,10 @@ var MainContent = React.createClass({
                             formFields={this.state.forms.featurize}
                             projectsList={this.state.projectsList}
                             datasetsList={this.state.datasetsList}
+                            available_features={this.state.available_features}
+                            updateSeldObsFeats={this.updateSeldObsFeats}
+                            updateSeldSciFeats={this.updateSeldSciFeats}
+                            onFeaturesDialogMount={this.onFeaturesDialogMount}
                         />
                     </TabPanel>
                     <TabPanel>
@@ -581,6 +636,10 @@ var FeaturesTabContent = React.createClass({
                     featuresetsList={this.props.featuresetsList}
                     projectsList={this.props.projectsList}
                     formName={this.props.formName}
+                    available_features={this.props.available_features}
+                    updateSeldObsFeats={this.props.updateSeldObsFeats}
+                    updateSeldSciFeats={this.props.updateSeldSciFeats}
+                    onFeaturesDialogMount={this.props.onFeaturesDialogMount}
                 />
             </div>
         );
@@ -629,80 +688,41 @@ var FeaturizeForm = React.createClass({
                         />
                     </div>
                 </form>
-                <FeatureSelectionDialog />
+
+                <FeatureSelectionDialog
+                    available_features={this.props.available_features}
+                    updateSeldObsFeats={this.props.updateSeldObsFeats}
+                    updateSeldSciFeats={this.props.updateSeldSciFeats}
+                    onFeaturesDialogMount={this.props.onFeaturesDialogMount}
+                />
+
             </div>
         );
     }
 });
 
 var FeatureSelectionDialog = React.createClass({
-    getInitialState: function() {
-        return {
-            available_features: {
-                obs_features: {"feat1": "checked"},
-                sci_features: {"feat1": "checked"}
-            }
-        };
-    },
     componentDidMount: function () {
-        $.ajax({
-            url: "/get_features_list",
-            dataType: "json",
-            cache: false,
-            success: function(data) {
-                var obs_features_dict = _.object(
-                    _.map(data.data["obs_features"], function(feat) {
-                        return [feat, "checked"]; }));
-                var sci_features_dict = _.object(
-                    _.map(data.data["sci_features"], function(feat) {
-                        return [feat, "checked"]; }));
-                this.setState({
-                    available_features: {
-                        obs_features: obs_features_dict,
-                        sci_features: sci_features_dict}});
-            }.bind(this),
-            error: function(xhr, status, err) {
-                console.error("/get_features_list", status, err.toString(),
-                              xhr.repsonseText);
-            }.bind(this)
-        });
+        this.props.onFeaturesDialogMount();
     },
-    updateObsFeats: function(sel_obs_feats) {
-        var obs_feats_dict = this.state.available_features.obs_features;
-        for (var k in this.state.available_features.obs_features) {
-            obs_feats_dict[k] = (sel_obs_feats.indexOf(k) == -1) ? "unchkd" : "checked";
-        }
-        this.setState({
-            available_features: {
-                obs_features: obs_feats_dict,
-                sci_features: this.state.available_features.sci_features
-            }
-        });
+    updateObsFeats: function (seld_obs_feats) {
+        this.props.updateSeldObsFeats(seld_obs_feats);
     },
-    updateSciFeats: function(sel_sci_feats) {
-        var sci_feats_dict = this.state.available_features.sci_features;
-        for (var k in this.state.available_features.sci_features) {
-            sci_feats_dict[k] = (sel_sci_feats.indexOf(k) == -1) ? "unchkd" : "checked";
-        }
-        this.setState({
-            available_features: {
-                sci_features: sci_feats_dict,
-                obs_features: this.state.available_features.obs_features
-            }
-        });
+    updateSciFeats: function (seld_sci_feats) {
+        this.props.updateSeldSciFeats(seld_sci_feats);
     },
     render: function() {
         return (
             <CheckboxGroup
                 name="obs_feature_selection"
                 value={Object.keys(filter(
-                    this.state.available_features["obs_features"], "checked"))}
+                    this.props.available_features["obs_features"], "checked"))}
                 onChange={this.updateObsFeats}
             >
                 { Checkbox => (
                 <form>
                     {
-                      Object.keys(this.state.available_features.obs_features).map(title =>
+                      Object.keys(this.props.available_features.obs_features).map(title =>
                       (
                     <div key={title}><Checkbox value={title}/> {title}</div>
                           )
