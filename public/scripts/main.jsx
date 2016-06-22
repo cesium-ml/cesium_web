@@ -20,28 +20,33 @@ var MainContent = React.createClass({
     getInitialState: function() {
         return {
             forms: {
-                newProject: {
+                newProject:
+                {
                     "Project Name": "",
                     "Description/notes": ""
                 },
-                newDataset: {
+                newDataset:
+                {
                     "Select Project": "",
                     "Dataset Name": "",
                     "Header File": "",
                     "Tarball Containing Data": ""
                 },
-                featurize: {
+                featurize:
+                {
                     "Select Project": "",
                     "Select Dataset": "",
                     "Feature Set Title": "",
                     "Select Features": []
                 },
-                selectedProjectToEdit: {
+                selectedProjectToEdit:
+                {
                     "Description/notes": "",
                     "Project Name": ""
                 }
             },
-            available_features: {
+            available_features:
+            {
                 obs_features: {"feat1": "checked"},
                 sci_features: {"feat1": "checked"}
             },
@@ -58,12 +63,14 @@ var MainContent = React.createClass({
             dataType: "json",
             cache: false,
             success: function(data) {
-                this.setState({projectsList: data.projectsList,
-                               datasetsList: data.datasetsList,
-                               modelsList: data.modelsList,
-                               featuresetList: data.featuresetList,
-                               predictionsList: data.predictionsList
-                });
+                this.setState(
+                    {
+                        projectsList: data.projectsList,
+                        datasetsList: data.datasetsList,
+                        modelsList: data.modelsList,
+                        featuresetList: data.featuresetList,
+                        predictionsList: data.predictionsList
+                    });
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error("/get_state", status, err.toString(),
@@ -71,35 +78,55 @@ var MainContent = React.createClass({
             }.bind(this)
         });
     },
+    updateProjectList: function() {
+        $.ajax({
+            url: "/project",
+            dataType: "json",
+            type: "GET",
+            success: function(data) {
+                var form_state = this.state.forms;
+                form_state.newProject = this.getInitialState().forms.newProject;
+                this.setState(
+                    {
+                        projectsList: data.data,
+                        forms: form_state
+                    });
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error("/project", status, err.toString(),
+                              xhr.repsonseText);
+            }.bind(this)
+        });
+    },
     handleNewProjectSubmit: function(e) {
         e.preventDefault();
         $.ajax({
-            url: "/newProject",
+            url: "/project",
             dataType: "json",
             type: "POST",
             data: this.state.forms.newProject,
             success: function(data) {
-                var form_state = this.state.forms;
-                form_state.newProject = this.getInitialState().forms.newProject;
-                this.setState({projectsList: data, forms: form_state});
+                this.updateProjectList();
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error("/newProject", status, err.toString(),
+                console.error("/project", status, err.toString(),
                               xhr.repsonseText);
             }.bind(this)
         });
     },
     handleClickEditProject: function(projectID, e) {
         $.ajax({
-            url: "/getProjectDetails/" + projectID,
+            url: "/project/" + projectID,
             dataType: "json",
             cache: false,
+            type: "GET",
             success: function(data) {
-                data["Project Name"] = data["name"];
-                data["Description/notes"] = data["description"];
-                data["project_id"] = projectID;
+                var projData = {};
+                projData["Project Name"] = data.data["name"];
+                projData["Description/notes"] = data.data["description"];
+                projData["project_id"] = projectID;
                 var form_state = this.state.forms;
-                form_state["selectedProjectToEdit"] = data;
+                form_state["selectedProjectToEdit"] = projData;
                 this.setState({forms: form_state});
             }.bind(this),
             error: function(xhr, status, err) {
@@ -111,7 +138,7 @@ var MainContent = React.createClass({
     updateProjectInfo: function(e) {
         e.preventDefault();
         $.ajax({
-            url: "/updateProject",
+            url: "/project",
             dataType: "json",
             type: "POST",
             data: this.state.forms.selectedProjectToEdit,
@@ -128,12 +155,11 @@ var MainContent = React.createClass({
     },
     handleDeleteProject: function(projectID, e) {
         $.ajax({
-            url: "/deleteProject",
+            url: "/project/" + projectID,
             dataType: "json",
-            type: "POST",
-            data: {"project_key": projectID},
+            type: "DELETE",
             success: function(data) {
-                this.setState({projectsList: data});
+                this.updateProjectList();
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error("/deleteProject", status, err.toString(),
@@ -176,10 +202,14 @@ var MainContent = React.createClass({
                 var sci_features_dict = _.object(
                     _.map(data.data["sci_features"], function(feat) {
                         return [feat, "checked"]; }));
-                this.setState({
-                    available_features: {
-                        obs_features: obs_features_dict,
-                        sci_features: sci_features_dict}});
+                this.setState(
+                    {
+                        available_features:
+                        {
+                            obs_features: obs_features_dict,
+                            sci_features: sci_features_dict
+                        }
+                    });
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error("/get_features_list", status, err.toString(),
@@ -192,24 +222,27 @@ var MainContent = React.createClass({
         for (var k in this.state.available_features.obs_features) {
             obs_feats_dict[k] = (sel_obs_feats.indexOf(k) == -1) ? "unchkd" : "checked";
         }
-        this.setState({
-            available_features: {
-                obs_features: obs_feats_dict,
-                sci_features: this.state.available_features.sci_features
-            }
-        });
+        this.setState(
+            {
+                available_features:
+                {
+                    obs_features: obs_feats_dict,
+                    sci_features: this.state.available_features.sci_features
+                }
+            });
     },
     updateSeldSciFeats: function(sel_sci_feats) {
         var sci_feats_dict = this.state.available_features.sci_features;
         for (var k in this.state.available_features.sci_features) {
             sci_feats_dict[k] = (sel_sci_feats.indexOf(k) == -1) ? "unchkd" : "checked";
         }
-        this.setState({
-            available_features: {
-                sci_features: sci_feats_dict,
-                obs_features: this.state.available_features.obs_features
-            }
-        });
+        this.setState(
+            {
+                available_features: {
+                    sci_features: sci_feats_dict,
+                    obs_features: this.state.available_features.obs_features
+                }
+            });
     },
     handleInputChange: function(inputName, inputType, formName, e) {
         var form_state = this.state.forms;
@@ -676,10 +709,6 @@ var FeaturizeForm = React.createClass({
                                   handleInputChange={this.props.handleInputChange}
                     />
 
-
-                    // TODO: FEATURE SELECTION DIALOG!!
-
-
                     <div className="submitButtonDiv" style={{marginTop: 15}}>
                         <input type="submit"
                                onClick={this.props.handleSubmit}
@@ -688,7 +717,7 @@ var FeaturizeForm = React.createClass({
                         />
                     </div>
                 </form>
-
+                <h4>Select Features to Compute (TODO: Make this a pop-up dialog)</h4>
                 <FeatureSelectionDialog
                     available_features={this.props.available_features}
                     updateSeldObsFeats={this.props.updateSeldObsFeats}
