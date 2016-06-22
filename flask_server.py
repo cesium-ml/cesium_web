@@ -369,7 +369,7 @@ def get_features_list():
             "status": "success",
             "data": {
                 "obs_features": oft.FEATURES_LIST,
-                "science_features": sft.FEATURES_LIST},
+                "sci_features": sft.FEATURES_LIST},
             "message": None})
 
 

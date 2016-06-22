@@ -640,7 +640,7 @@ var FeatureSelectionDialog = React.createClass({
         return {
             available_features: {
                 obs_features: {"feat1": "checked"},
-                science_features: {"feat1": "checked"}
+                sci_features: {"feat1": "checked"}
             }
         };
     },
@@ -654,12 +654,12 @@ var FeatureSelectionDialog = React.createClass({
                     _.map(data.data["obs_features"], function(feat) {
                         return [feat, "checked"]; }));
                 var sci_features_dict = _.object(
-                    _.map(data.data["science_features"], function(feat) {
+                    _.map(data.data["sci_features"], function(feat) {
                         return [feat, "checked"]; }));
                 this.setState({
                     available_features: {
                         obs_features: obs_features_dict,
-                        science_features: sci_features_dict}});
+                        sci_features: sci_features_dict}});
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error("/get_features_list", status, err.toString(),
@@ -675,7 +675,19 @@ var FeatureSelectionDialog = React.createClass({
         this.setState({
             available_features: {
                 obs_features: obs_feats_dict,
-                science_features: this.state.available_features.science_features
+                sci_features: this.state.available_features.sci_features
+            }
+        });
+    },
+    updateSciFeats: function(sel_sci_feats) {
+        var sci_feats_dict = this.state.available_features.sci_features;
+        for (var k in this.state.available_features.sci_features) {
+            sci_feats_dict[k] = (sel_sci_feats.indexOf(k) == -1) ? "unchkd" : "checked";
+        }
+        this.setState({
+            available_features: {
+                sci_features: sci_feats_dict,
+                obs_features: this.state.available_features.obs_features
             }
         });
     },
@@ -692,7 +704,7 @@ var FeatureSelectionDialog = React.createClass({
                     {
                       Object.keys(this.state.available_features.obs_features).map(title =>
                       (
-                    <p key={title}><Checkbox value={title}/> {title}</p>
+                    <div key={title}><Checkbox value={title}/> {title}</div>
                           )
                       )
                     }
