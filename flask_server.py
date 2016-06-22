@@ -154,7 +154,7 @@ def Dataset(dataset_id=None):
                     "type": "error"
                 })
 
-        project_id = (request.form["Select Project"])
+        project_id = request.form["Select Project"]
 
         # Create unique file names
         headerfile_name = (str(uuid.uuid4()) + "_" +
@@ -221,7 +221,7 @@ def Dataset(dataset_id=None):
                     "status": "error",
                     "message": "Invalid request - data set ID not provided."
                 })
-        # TODO
+        # TODO!
         return to_json(
             {
                 "status": "error",
@@ -231,13 +231,12 @@ def Dataset(dataset_id=None):
 
 @app.route(('/FeaturizeData/<dataset_id>/<project_name>'
             '/<featureset_name>/<features_to_use>/<custom_features_script>/'
-            '<user_email>/<email_user>/<is_test>'), methods=['POST'])
+            '<is_test>'), methods=['POST'])
 @app.route('/FeaturizeData', methods=['POST', 'GET'])
 def FeaturizeData(
         dataset_id=None, project_name=None,
         featureset_name=None, features_to_use=None,
-        custom_features_script=None, user_email=None, email_user=False,
-        is_test=False):
+        custom_features_script=None, is_test=False):
     """Save uploaded time series data files and begin featurization.
 
     Handles POST form submission.
@@ -277,12 +276,6 @@ def FeaturizeData(
             customscript_path = False
         print("Selected features:", features_to_use)
         try:
-            email_user = request.form["email_user"]
-            if email_user == "True":
-                email_user = True
-        except:  # unchecked
-            email_user = False
-        try:
             is_test = request.form["is_test"]
             if is_test == "True":
                 is_test = True
@@ -293,7 +286,7 @@ def FeaturizeData(
             featureset_name=featureset_name, project_name=project_name,
             dataset_id=dataset_id,
             featlist=features_to_use, is_test=is_test,
-            email_user=email_user, custom_script_path=customscript_path)
+            custom_script_path=customscript_path)
 
 
 def check_headerfile_and_tsdata_format(headerfile_path, zipfile_path):
