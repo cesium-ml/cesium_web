@@ -34,10 +34,6 @@ app.add_url_rule('/', 'root',
 USERNAME = "testuser@gmail.com" # get_current_userkey()
 
 
-class UnauthorizedAccess(Exception):
-    pass
-
-
 @app.before_request
 def before_request():
     m.db.connect()
@@ -239,7 +235,7 @@ def Features(featureset_id=None):
         # Parse form fields
         featureset_name = request.form["Feature Set Title"].strip()
         dataset_id = request.form["Select Dataset"].strip()
-        proj_key = request.form["Select Project"].strip()
+        project_id = request.form["Select Project"].strip()
         features_to_use = request.form.getlist("Selected Features")
         custom_script_tested = str(request.form["Custom Features Script Tested"])
         if custom_script_tested == "true":
@@ -263,7 +259,7 @@ def Features(featureset_id=None):
             is_test = False
         # TODO: this is messy
         return featurizationPage(
-            proj_key=proj_key, featureset_name=featureset_name,
+            project_id=project_id, featureset_name=featureset_name,
             dataset_id=dataset_id,
             featlist=features_to_use, is_test=is_test,
             custom_script_path=customscript_path)
