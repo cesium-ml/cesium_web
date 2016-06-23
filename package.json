@@ -16,7 +16,10 @@
         "jquery": "latest",
         "jquery-form": "latest",
         "bootstrap": "latest",
-        "bootstrap-css": "latest"
+        "bootstrap-css": "latest",
+        "underscore": "latest",
+        "filter-values": "latest",
+        "react-checkbox-group": "latest"
     },
     "devDependencies": {
         "babel": "latest",

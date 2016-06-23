@@ -20,6 +20,7 @@ from cesium import transformation
 from cesium import featurize
 from cesium import predict
 from cesium import build_model
+from cesium import custom_exceptions
 
 import models as m
 
@@ -44,24 +45,67 @@ def after_request(response):
     return response
 
 
-@app.route('/get_list_of_projects', methods=['POST', 'GET'])
-def get_list_of_projects():
-    """Return list of project names current user can access.
-
-    Called from browser to populate select options.
-
-    Returns
-    -------
-    flask.Response() object
-        Creates flask.Response() object with JSONified dict
-        (``{'list':list_of_projects}``).
-
+@app.route("/project", methods=["GET", "POST"])
+@app.route("/project/<project_id>", methods=["GET", "PUT", "DELETE"])
+def Project(project_id=None):
     """
-    if request.method == 'GET':
-        return Response(to_json(m.Project.all(USERNAME)),
-                        mimetype='application/json',
-                        headers={'Cache-Control': 'no-cache',
-                                 'Access-Control-Allow-Origin': '*'})
+    """
+    if request.method == 'POST':
+        proj_name = str(request.form["Project Name"]).strip()
+        proj_description = str(request.form["Description/notes"]).strip()
+        try:
+            m.Project.add_by(proj_name, proj_description, USERNAME)
+        except Exception as e:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": str(e)
+                })
+        return to_json({"status": "success"})
+
+    elif request.method == "GET":
+        if project_id is not None:
+            proj_info = m.Project.get(m.Project.id == project_id)
+        else:
+            proj_info = m.Project.all(USERNAME)
+
+        return to_json(
+            {
+                "status": "success",
+                "data": proj_info
+            })
+
+    elif request.method == "PUT":
+        if project_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - project ID not provided."
+                })
+
+        proj_name = str(request.form["Project Name"]).strip()
+        proj_description = str(request.form["Description/notes"]).strip()
+
+        query = m.Project.update(
+            name=proj_name,
+            description=proj_description,
+            ).where(m.Project.id == project_id)
+        query.execute()
+
+    elif request.method == "DELETE":
+        if project_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - project ID not provided."
+                })
+        p = m.Project.get(m.Project.id == project_id)
+        if p.is_owned_by(USERNAME):
+            p.delete_instance()
+        else:
+            raise UnauthorizedAccess("User not authorized for project.")
+
+        return to_json({"status": "success"})
 
 
 @app.route('/get_state', methods=['GET'])
@@ -85,143 +129,29 @@ def set_dataset_filenames(dataset_id, ts_filenames):
                                                   ts_filenames}).run(rdb_conn)
 
 
-@app.route('/getProjectDetails/<project_id>', methods=["GET"])
-@app.route('/getProjectDetails', methods=["GET"])
-def get_project_details(project_id):
-    """Return dict containing project details.
-
-    Parameters
-    ----------
-    project_id : str
-        ID of project.
-
-    Returns
-    -------
-    dict
-        Dictionary with the following key-value pairs:
-        "authed_users": a list of emails of authenticated users
-        "featuresets": a string of HTML markup of a table describing
-            all associated featuresets
-        "models": a string of HTML markup of a table describing all
-            associated models
-        "predictions": a string of HTML markup of a table describing
-            all associated predictions
-        "created": date/time created
-        "description": project description
-
+@app.route('/dataset', methods=['POST', 'GET'])
+@app.route('/dataset/<dataset_id>', methods=['GET', 'PUT', 'DELETE'])
+def Dataset(dataset_id=None):
     """
-    # TODO: Dangerous--check that project belongs to user
-    info_dict = m.Project.get(m.Project.id == project_id)
-
-    # TODO: add following info: associated featuresets, models
-    if request.method == "GET":
-        return Response(to_json(info_dict),
-                        mimetype='application/json',
-                        headers={'Cache-Control': 'no-cache',
-                                 'Access-Control-Allow-Origin': '*'})
-    else:
-        return info_dict
-
-
-@app.route('/newProject', methods=['POST'])
-def newProject():
-    """Handle new project form and creates new RethinkDB entry.
-
-    """
-    if request.method == 'POST':
-        proj_name = str(request.form["Project Name"]).strip()
-        if proj_name == "":
-            return jsonify({
-                "result": ("Project name must contain at least one "
-                           "non-whitespace character. Please try another name.")
-            })
-
-        proj_description = str(request.form["Description/notes"]).strip()
-
-        m.Project.add(proj_name, proj_description, USERNAME)
-
-        return Response(to_json(m.Project.all(USERNAME)),
-                        mimetype='application/json',
-                        headers={'Cache-Control': 'no-cache',
-                                 'Access-Control-Allow-Origin': '*'})
-
-
-@app.route('/updateProject', methods=['POST'])
-def updateProject():
-    """Handle new project form and creates new RethinkDB entry.
-
-    """
-    if request.method == 'POST':
-        project_id = str(request.form["project_id"])
-        proj_name = str(request.form["Project Name"]).strip()
-        if proj_name == "":
-            return jsonify({
-                "result": ("Project name must contain at least one "
-                           "non-whitespace character. Please try another name.")
-            })
-
-        proj_description = str(request.form["Description/notes"]).strip()
-
-        query = m.Project.update(
-            name=proj_name,
-            description=proj_description,
-            ).where(m.Project.id == project_id)
-        query.execute()
-
-        return Response(to_json(m.Project.all(USERNAME)),
-                        mimetype='application/json',
-                        headers={'Cache-Control': 'no-cache',
-                                 'Access-Control-Allow-Origin': '*'})
-
-
-@app.route('/deleteProject', methods=['POST'])
-def deleteProject():
-    """Handle 'deleteProject' form submission.
-
-    Returns
-    -------
-    JSON response object
-        JSONified dict containing result message.
-
-    """
-    if request.method == 'POST':
-        proj_key = str(request.form["project_key"])
-
-        m.Project.get(m.Project.id == proj_key).delete_instance()
-
-        return Response(to_json(m.Project.all(USERNAME)),
-                        mimetype='application/json',
-                        headers={'Cache-Control': 'no-cache',
-                                 'Access-Control-Allow-Origin': '*'})
-
-
-@app.route(('/uploadData/<dataset_name>/<headerfile>/<zipfile>/<project_name>'),
-           methods=['POST'])
-@app.route('/uploadData', methods=['POST'])
-def uploadData(dataset_name=None, headerfile=None, zipfile=None, project_name=None):
-    """Save uploaded time series data files
-
-    Handles POST form submission.
-
-    Returns
-    -------
-    Redirects to featurizationPage, see that function for output
-    details.
-
     """
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
     if request.method == 'POST':
-        post_method = "browser"
+
         # Parse form fields
         dataset_name = str(request.form["Dataset Name"]).strip()
         headerfile = request.files["Header File"]
         zipfile = request.files["Tarball Containing Data"]
+
         if dataset_name == "":
-            return jsonify({
-                "message": ("Dataset Title must contain non-whitespace "
-                            "characters. Please try a different title."),
-                "type": "error"})
-        projkey = (request.form["Select Project"])
+            return to_json(
+                {
+                    "message": ("Dataset Title must contain non-whitespace "
+                                "characters. Please try a different title."),
+                    "type": "error"
+                })
+
+        project_id = request.form["Select Project"]
+
         # Create unique file names
         headerfile_name = (str(uuid.uuid4()) + "_" +
                            str(secure_filename(headerfile.filename)))
@@ -234,98 +164,144 @@ def uploadData(dataset_name=None, headerfile=None, zipfile=None, project_name=No
         print("Saved", headerfile_name, "and", zipfile_name)
         try:
             check_headerfile_and_tsdata_format(headerfile_path, zipfile_path)
-        #except custom_exceptions.DataFormatError as err:
-        #    os.remove(headerfile_path)
-        #    os.remove(zipfile_path)
-        #    print("Removed", headerfile_name, "and", zipfile_name)
-        #    return jsonify({"message": str(err), "type": "error"})
-        #except custom_exceptions.TimeSeriesFileNameError as err:
-        #    os.remove(headerfile_path)
-        #    os.remove(zipfile_path)
-        #    print("Removed", headerfile_name, "and", zipfile_name)
-        #    return jsonify({"message": str(err), "type": "error"})
+        except custom_exceptions.DataFormatError as err:
+            os.remove(headerfile_path)
+            os.remove(zipfile_path)
+            print("Removed", headerfile_name, "and", zipfile_name)
+            return to_json({"message": str(err), "status": "error"})
+        except custom_exceptions.TimeSeriesFileNameError as err:
+            os.remove(headerfile_path)
+            os.remove(zipfile_path)
+            print("Removed", headerfile_name, "and", zipfile_name)
+            return to_json({"message": str(err), "status": "error"})
         except:
             raise
-        p = m.Project.get(m.Project.id == projkey)
+
+        p = m.Project.get(m.Project.id == project_id)
         time_series = data_management.parse_and_store_ts_data(zipfile_path,
             cfg['paths']['ts_data_folder'], headerfile_path)
         ts_paths = [ts.path for ts in time_series]
         d = m.Dataset.add(name=dataset_name, project=p, ts_paths=ts_paths)
-# TODO just return status 'OK'
-        return jsonify({
-            "message": "New time series files saved successfully.",
-            "dataset_name": dataset_name,
-            "headerfile_name": headerfile_name, "zipfile_name": zipfile_name,
-            "dataset_id": new_dataset_id,
-#            "datasetsList": list_datasets()
-        })
+
+        return to_json({"status": "success"})
+    elif request.method == "GET":
+        if dataset_id is not None:
+            dataset_info = m.Dataset.get(m.Dataset.id == dataset_id)
+        else:
+            dataset_info = [d for p in m.Project.all(USERNAME)
+                            for d in p.datasets]
+
+        return to_json(
+            {
+                "status": "success",
+                "data": dataset_info
+            })
+    elif request.method == "DELETE":
+        if dataset_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - data set ID not provided."
+                })
+        d = m.Dataset.get(m.Dataset.id == dataset_id)
+        if d.is_owned_by(USERNAME):
+            d.delete_instance()
+        else:
+            raise UnauthorizedAccess("User not authorized for project.")
+
+        return to_json({"status": "success"})
+    elif request.method == "PUT":
+        if dataset_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - data set ID not provided."
+                })
+        # TODO!
+        return to_json(
+            {
+                "status": "error",
+                "message": "Functionality for this endpoint is not yet implemented."
+            })
 
 
-@app.route(('/FeaturizeData/<dataset_id>/<project_name>'
-            '/<featureset_name>/<features_to_use>/<custom_features_script>/'
-            '<user_email>/<email_user>/<is_test>'), methods=['POST'])
-@app.route('/FeaturizeData', methods=['POST', 'GET'])
-def FeaturizeData(
-        dataset_id=None, project_name=None,
-        featureset_name=None, features_to_use=None,
-        custom_features_script=None, user_email=None, email_user=False,
-        is_test=False):
-    """Save uploaded time series data files and begin featurization.
-
-    Handles POST form submission.
-
-    Returns
-    -------
-    Redirects to featurizationPage, see that function for output
-    details.
-
+@app.route('/features', methods=['POST', 'GET'])
+@app.route('/features/<featureset_id>', methods=['GET', 'PUT', 'DELETE'])
+def Features(featureset_id=None):
+    """
     """
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
     if request.method == 'POST':
-        post_method = "browser"
         # Parse form fields
-        featureset_name = str(request.form["featureset_name"]).strip()
-        if featureset_name == "":
-            return jsonify({
-                "message": ("Feature Set Title must contain non-whitespace "
-                            "characters. Please try a different title."),
-                "type": "error"})
-        dataset_id = str(request.form["featureset_dataset_select"]).strip()
-        project_name = (str(request.form["featureset_project_name_select"]).
-                        strip().split(" (created")[0])
-        features_to_use = request.form.getlist("features_selected")
-        custom_script_tested = str(request.form["custom_script_tested"])
-        if custom_script_tested == "yes":
-            custom_script = request.files["custom_feat_script_file"]
+        featureset_name = request.form["Feature Set Title"].strip()
+        dataset_id = request.form["Select Dataset"].strip()
+        project_id = request.form["Select Project"].strip()
+        features_to_use = request.form.getlist("Selected Features")
+        custom_script_tested = str(request.form["Custom Features Script Tested"])
+        if custom_script_tested == "true":
+            custom_script = request.files["Custom Features File"]
             customscript_fname = str(secure_filename(custom_script.filename))
-            print(customscript_fname, 'uploaded.')
             customscript_path = pjoin(
                     cfg['paths']['upload_folder'], "custom_feature_scripts",
                     str(uuid.uuid4()) + "_" + str(customscript_fname))
             custom_script.save(customscript_path)
-            custom_features = request.form.getlist("custom_feature_checkbox")
+            custom_features = request.form.getlist("Custom Features List")
             features_to_use += custom_features
         else:
             customscript_path = False
-        print("Selected features:", features_to_use)
-        try:
-            email_user = request.form["email_user"]
-            if email_user == "True":
-                email_user = True
-        except:  # unchecked
-            email_user = False
         try:
             is_test = request.form["is_test"]
             if is_test == "True":
                 is_test = True
-        except:  # unchecked
+            else:
+                is_test = False
+        except:
             is_test = False
-        proj_key = project_name_to_key(project_name)
+        # TODO: this is messy
         return featurizationPage(
-            featureset_name=featureset_name, project_name=project_name,
+            project_id=project_id, featureset_name=featureset_name,
             dataset_id=dataset_id,
             featlist=features_to_use, is_test=is_test,
-            email_user=email_user, custom_script_path=customscript_path)
+            custom_script_path=customscript_path)
+    elif request.method == 'GET':
+        if featureset_id is not None:
+            featureset_info = m.Featureset.get(m.Featureset.id == featureset_id)
+        else:
+            featureset_info = [f for p in m.Project.all(USERNAME)
+                               for f in p.featuresets]
+
+        return to_json(
+            {
+                "status": "success",
+                "data": featureset_info
+            })
+    elif request.method == 'DELETE':
+        if featureset_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - feature set ID not provided."
+                })
+        f = m.Featureset.get(m.Featureset.id == featureset_id)
+        if f.is_owned_by(USERNAME):
+            f.delete_instance()
+        else:
+            raise UnauthorizedAccess("User not authorized for project.")
+
+        return to_json({"status": "success"})
+    elif request.method == 'PUT':
+        if featureset_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - feature set ID not provided."
+                })
+        # TODO!
+        return to_json(
+            {
+                "status": "error",
+                "message": "Functionality for this endpoint is not yet implemented."
+            })
 
 
 def check_headerfile_and_tsdata_format(headerfile_path, zipfile_path):
@@ -422,6 +398,17 @@ def list_filename_variants(file_name):
     return [file_name, os.path.basename(file_name),
             os.path.splitext(file_name)[0],
             os.path.splitext(os.path.basename(file_name))[0]]
+
+
+@app.route("/features_list", methods=["GET"])
+def get_features_list():
+    if request.method == "GET":
+        return to_json({
+            "status": "success",
+            "data": {
+                "obs_features": oft.FEATURES_LIST,
+                "sci_features": sft.FEATURES_LIST},
+            "message": None})
 
 
 if __name__ == '__main__':

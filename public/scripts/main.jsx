@@ -4,12 +4,15 @@ var ReactCSSTransitionGroup = require("react-addons-css-transition-group");
 var Modal = require("react-modal");
 var FileInput = require("react-file-input");
 var ReactTabs = require('react-tabs');
+var CheckboxGroup = require('react-checkbox-group');
 var Tab = ReactTabs.Tab;
 var Tabs = ReactTabs.Tabs;
 var TabList = ReactTabs.TabList;
 var TabPanel = ReactTabs.TabPanel;
 var $ = require("jquery");
 global.jQuery = $;
+var _ = require("underscore");
+var filter = require('filter-values');
 require("bootstrap-css");
 require("bootstrap");
 
@@ -17,20 +20,38 @@ var MainContent = React.createClass({
     getInitialState: function() {
         return {
             forms: {
-                newProject: {
+                newProject:
+                {
                     "Project Name": "",
-                    "Description/notes": "",
+                    "Description/notes": ""
                 },
-                newDataset: {
+                newDataset:
+                {
                     "Select Project": "",
                     "Dataset Name": "",
                     "Header File": "",
                     "Tarball Containing Data": ""
                 },
-                selectedProjectToEdit: {
+                featurize:
+                {
+                    "Select Project": "",
+                    "Select Dataset": "",
+                    "Feature Set Title": "",
+                    "Custom Features File": "",
+                    "Custom Features Script Tested": false,
+                    "Selected Features": [],
+                    "Custom Features List": []
+                },
+                selectedProjectToEdit:
+                {
                     "Description/notes": "",
                     "Project Name": ""
                 }
+            },
+            available_features:
+            {
+                obs_features: {"feat1": "checked"},
+                sci_features: {"feat1": "checked"}
             },
             projectsList: [],
             datasetsList: []
@@ -45,12 +66,14 @@ var MainContent = React.createClass({
             dataType: "json",
             cache: false,
             success: function(data) {
-                this.setState({projectsList: data.projectsList,
-                               datasetsList: data.datasetsList,
-                               modelsList: data.modelsList,
-                               featuresetList: data.featuresetList,
-                               predictionsList: data.predictionsList
-                });
+                this.setState(
+                    {
+                        projectsList: data.projectsList,
+                        datasetsList: data.datasetsList,
+                        modelsList: data.modelsList,
+                        featuresetList: data.featuresetList,
+                        predictionsList: data.predictionsList
+                    });
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error("/get_state", status, err.toString(),
@@ -58,39 +81,59 @@ var MainContent = React.createClass({
             }.bind(this)
         });
     },
+    updateProjectList: function() {
+        $.ajax({
+            url: "/project",
+            dataType: "json",
+            type: "GET",
+            success: function(data) {
+                var form_state = this.state.forms;
+                form_state.newProject = this.getInitialState().forms.newProject;
+                this.setState(
+                    {
+                        projectsList: data.data,
+                        forms: form_state
+                    });
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error("/project", status, err.toString(),
+                              xhr.repsonseText);
+            }.bind(this)
+        });
+    },
     handleNewProjectSubmit: function(e) {
         e.preventDefault();
         $.ajax({
-            url: "/newProject",
+            url: "/project",
             dataType: "json",
             type: "POST",
             data: this.state.forms.newProject,
             success: function(data) {
-                var form_state = this.state.forms;
-                form_state.newProject = this.getInitialState().forms.newProject;
-                this.setState({projectsList: data, forms: form_state});
+                this.updateProjectList();
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error("/newProject", status, err.toString(),
+                console.error("/project", status, err.toString(),
                               xhr.repsonseText);
             }.bind(this)
         });
     },
     handleClickEditProject: function(projectID, e) {
         $.ajax({
-            url: "/getProjectDetails/" + projectID,
+            url: "/project/" + projectID,
             dataType: "json",
             cache: false,
+            type: "GET",
             success: function(data) {
-                data["Project Name"] = data["name"];
-                data["Description/notes"] = data["description"];
-                data["project_id"] = projectID;
+                var projData = {};
+                projData["Project Name"] = data.data["name"];
+                projData["Description/notes"] = data.data["description"];
+                projData["project_id"] = projectID;
                 var form_state = this.state.forms;
-                form_state["selectedProjectToEdit"] = data;
+                form_state["selectedProjectToEdit"] = projData;
                 this.setState({forms: form_state});
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error("/getProjectDetails", status, err.toString(),
+                console.error("/project", status, err.toString(),
                               xhr.repsonseText);
             }.bind(this)
         });
@@ -98,7 +141,7 @@ var MainContent = React.createClass({
     updateProjectInfo: function(e) {
         e.preventDefault();
         $.ajax({
-            url: "/updateProject",
+            url: "/project",
             dataType: "json",
             type: "POST",
             data: this.state.forms.selectedProjectToEdit,
@@ -108,22 +151,21 @@ var MainContent = React.createClass({
                 this.setState({projectsList: data, forms: form_state});
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error("/updateProject", status, err.toString(),
+                console.error("/project", status, err.toString(),
                               xhr.repsonseText);
             }.bind(this)
         });
     },
     handleDeleteProject: function(projectID, e) {
         $.ajax({
-            url: "/deleteProject",
+            url: "/project/" + projectID,
             dataType: "json",
-            type: "POST",
-            data: {"project_key": projectID},
+            type: "DELETE",
             success: function(data) {
-                this.setState({projectsList: data});
+                this.updateProjectList();
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error("/deleteProject", status, err.toString(),
+                console.error("/project", status, err.toString(),
                               xhr.repsonseText);
             }.bind(this)
         });
@@ -135,35 +177,78 @@ var MainContent = React.createClass({
             formData.append(key, this.state.forms.newDataset[key]);
         }
         $.ajax({
-            url: "/uploadData",
+            url: "/dataset",
             dataType: "json",
             type: "POST",
             contentType: false,
             processData: false,
             data: formData,
-            // data: this.state.forms.newDataset,
             success: function(data) {
-                var form_state = this.state.forms;
-                form_state.newDataset = this.getInitialState().forms.newDataset;
-                this.setState({datasetsList: data.datasetsList, forms: form_state});
+                this.loadState();
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error("/uploadData", status, err.toString(),
+                console.error("/dataset", status, err.toString(),
                               xhr.repsonseText);
             }.bind(this)
         });
-
-        {/*
-        $("#datasetForm").ajaxSubmit({
-            success: function(response) {
-                console.log(response);
-            },
-            error: function(response) {
-                console.log("error");
-                console.log(response);
-            }
+    },
+    onFeaturesDialogMount: function() {
+        $.ajax({
+            url: "/features_list",
+            dataType: "json",
+            cache: false,
+            success: function(data) {
+                var obs_features_dict = _.object(
+                    _.map(data.data["obs_features"], function(feat) {
+                        return [feat, "checked"]; }));
+                var sci_features_dict = _.object(
+                    _.map(data.data["sci_features"], function(feat) {
+                        return [feat, "checked"]; }));
+                this.setState(
+                    {
+                        available_features:
+                        {
+                            obs_features: obs_features_dict,
+                            sci_features: sci_features_dict
+                        }
+                    });
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error("/features_list", status, err.toString(),
+                              xhr.repsonseText);
+            }.bind(this)
         });
-        */}
+    },
+    updateSeldObsFeats: function(sel_obs_feats) {
+        var obs_feats_dict = this.state.available_features.obs_features;
+        for (var k in this.state.available_features.obs_features) {
+            obs_feats_dict[k] = (sel_obs_feats.indexOf(k) == -1) ? "unchkd" : "checked";
+        }
+        this.setState(
+            {
+                available_features:
+                {
+                    obs_features: obs_feats_dict,
+                    sci_features: this.state.available_features.sci_features
+                }
+            });
+    },
+    updateSeldSciFeats: function(sel_sci_feats) {
+        var sci_feats_dict = this.state.available_features.sci_features;
+        for (var k in this.state.available_features.sci_features) {
+            sci_feats_dict[k] = (sel_sci_feats.indexOf(k) == -1) ? "unchkd" : "checked";
+        }
+        this.setState(
+            {
+                available_features: {
+                    sci_features: sci_feats_dict,
+                    obs_features: this.state.available_features.obs_features
+                }
+            });
+    },
+    testCustomFeatScript: function (e) {
+        // TODO: DO STUFF HERE
+        console.log("testCustomFeatScript called... Nothing here yet.");
     },
     handleInputChange: function(inputName, inputType, formName, e) {
         var form_state = this.state.forms;
@@ -178,7 +263,7 @@ var MainContent = React.createClass({
     render: function() {
         return (
             <div className="mainContent">
-                <Tabs>
+                <Tabs classname="first">
                     <TabList>
                         <Tab>Projects</Tab>
                         <Tab>Data</Tab>
@@ -218,9 +303,14 @@ var MainContent = React.createClass({
                             loadState={this.loadState}
                             handleNewDatasetSubmit={this.handleNewDatasetSubmit}
                             handleInputChange={this.handleInputChange}
-                            formFields={this.state.forms.newDataset}
+                            formFields={this.state.forms.featurize}
                             projectsList={this.state.projectsList}
                             datasetsList={this.state.datasetsList}
+                            available_features={this.state.available_features}
+                            updateSeldObsFeats={this.updateSeldObsFeats}
+                            updateSeldSciFeats={this.updateSeldSciFeats}
+                            onFeaturesDialogMount={this.onFeaturesDialogMount}
+                            testCustomFeatScript={this.testCustomFeatScript}
                         />
                     </TabPanel>
                     <TabPanel>
@@ -467,10 +557,10 @@ var FormInputRow = React.createClass({
 
 var FormSelectInput = React.createClass({
     render: function() {
-        var selectOptions = this.props.projectsList.map(function(project) {
+        var selectOptions = this.props.optionsList.map(function(option) {
             return (
-                <option value={project.id} key={project.id}>
-                    {project.name}
+                <option value={option.id} key={option.id}>
+                    {option.name}
                 </option>
             );
         }.bind(this));
@@ -484,6 +574,10 @@ var FormSelectInput = React.createClass({
                      style={{marginLeft: 340, marginTop: 5}}>
                     <select
                         value={this.props.value}
+                        onLoad={this.props.handleInputChange.bind(
+                                null, this.props.inputName,
+                                this.props.inputType,
+                                this.props.formName)}
                         onChange={this.props.handleInputChange.bind(
                                 null, this.props.inputName,
                                 this.props.inputType,
@@ -536,7 +630,7 @@ var DatasetsForm = React.createClass({
                     <FormSelectInput inputName="Select Project"
                                      inputTag="select"
                                      formName="newDataset"
-                                     projectsList={this.props.projectsList}
+                                     optionsList={this.props.projectsList}
                                      value={this.props.formFields["Select Project"]}
                                      handleInputChange={this.props.handleInputChange}
                     />
@@ -582,6 +676,11 @@ var FeaturesTabContent = React.createClass({
                     featuresetsList={this.props.featuresetsList}
                     projectsList={this.props.projectsList}
                     formName={this.props.formName}
+                    available_features={this.props.available_features}
+                    updateSeldObsFeats={this.props.updateSeldObsFeats}
+                    updateSeldSciFeats={this.props.updateSeldSciFeats}
+                    onFeaturesDialogMount={this.props.onFeaturesDialogMount}
+                    testCustomFeatScript={this.props.testCustomFeatScript}
                 />
             </div>
         );
@@ -599,14 +698,14 @@ var FeaturizeForm = React.createClass({
                     <FormSelectInput inputName="Select Project"
                                      inputTag="select"
                                      formName="featurize"
-                                     projectsList={this.props.projectsList}
+                                     optionsList={this.props.projectsList}
                                      value={this.props.formFields["Select Project"]}
                                      handleInputChange={this.props.handleInputChange}
                     />
                     <FormSelectInput inputName="Select Dataset"
                                      inputTag="select"
                                      formName="featurize"
-                                     projectsList={this.props.projectsList}
+                                     optionsList={this.props.datasetsList}
                                      value={this.props.formFields["Select Dataset"]}
                                      handleInputChange={this.props.handleInputChange}
                     />
@@ -618,10 +717,6 @@ var FeaturizeForm = React.createClass({
                                   handleInputChange={this.props.handleInputChange}
                     />
 
-
-                    // TODO: FEATURE SELECTION DIALOG!!
-
-
                     <div className="submitButtonDiv" style={{marginTop: 15}}>
                         <input type="submit"
                                onClick={this.props.handleSubmit}
@@ -630,7 +725,101 @@ var FeaturizeForm = React.createClass({
                         />
                     </div>
                 </form>
+                <h4>Select Features to Compute (TODO: Make this a pop-up dialog)</h4>
+                <FeatureSelectionDialog
+                    available_features={this.props.available_features}
+                    updateSeldObsFeats={this.props.updateSeldObsFeats}
+                    updateSeldSciFeats={this.props.updateSeldSciFeats}
+                    onFeaturesDialogMount={this.props.onFeaturesDialogMount}
+                    handleInputChange={this.props.handleInputChange}
+                    testCustomFeatScript={this.props.testCustomFeatScript}
+                />
+
             </div>
+        );
+    }
+});
+
+var FeatureSelectionDialog = React.createClass({
+    componentDidMount: function () {
+        this.props.onFeaturesDialogMount();
+    },
+    updateObsFeats: function (seld_obs_feats) {
+        this.props.updateSeldObsFeats(seld_obs_feats);
+    },
+    updateSciFeats: function (seld_sci_feats) {
+        this.props.updateSeldSciFeats(seld_sci_feats);
+    },
+    render: function() {
+        return (
+            <Tabs classname="second">
+                <TabList>
+                    <Tab>Feature Set 1</Tab>
+                    <Tab>Feature Set 2</Tab>
+                    <Tab>Custom Features</Tab>
+                </TabList>
+                <TabPanel>
+                    <CheckboxGroup
+                        name="obs_feature_selection"
+                        value={Object.keys(filter(
+                                this.props.available_features["obs_features"], "checked"))}
+                        onChange={this.updateObsFeats}
+                    >
+                        { Checkbox => (
+                              <form>
+                                  {
+                                      Object.keys(this.props.available_features.obs_features).map(title =>
+                                          (
+                                              <div key={title}><Checkbox value={title}/> {title}</div>
+                                          )
+                                      )
+                                  }
+                              </form>
+                          )
+                        }
+                    </CheckboxGroup>
+                </TabPanel>
+                <TabPanel>
+                    <CheckboxGroup
+                        name="sci_feature_selection"
+                        value={Object.keys(filter(
+                                this.props.available_features["sci_features"], "checked"))}
+                        onChange={this.updateSciFeats}
+                    >
+                        { Checkbox => (
+                              <form>
+                                  {
+                                      Object.keys(this.props.available_features.sci_features).map(title =>
+                                          (
+                                              <div key={title}><Checkbox value={title}/> {title}</div>
+                                          )
+                                      )
+                                  }
+                              </form>
+                          )
+                        }
+                    </CheckboxGroup>
+                </TabPanel>
+                <TabPanel>
+                    Select Python file containing custom feature definitions:
+                    <br /><br />
+                    <div id='script_file_input_div'>
+                        <FileInput name="Custom Features File"
+                                   placeholder="Select .py file"
+                                   onChange={this.props.handleInputChange.bind(
+                                           null, "Custom Features File",
+                                           "file", "featurize")}
+                        />
+                    </div>
+                    <br />
+                    <div>
+                        <input type='button'
+                               onClick={this.props.testCustomFeatScript}
+                               value='Click to test' />
+                    </div>
+                    <div id='file_upload_message_div'></div>
+                </TabPanel>
+            </Tabs>
         );
     }
 });
