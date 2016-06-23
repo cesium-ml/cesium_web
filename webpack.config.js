@@ -19,7 +19,7 @@ var config = {
         }
       },
       { test: /\.css$/, loader: "style!css" }
-    ]
+    ],
   },
   plugins: [
     new webpack.ProvidePlugin({
