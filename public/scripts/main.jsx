@@ -194,7 +194,7 @@ var MainContent = React.createClass({
     },
     onFeaturesDialogMount: function() {
         $.ajax({
-            url: "/get_features_list",
+            url: "/features_list",
             dataType: "json",
             cache: false,
             success: function(data) {
@@ -214,7 +214,7 @@ var MainContent = React.createClass({
                     });
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error("/get_features_list", status, err.toString(),
+                console.error("/features_list", status, err.toString(),
                               xhr.repsonseText);
             }.bind(this)
         });
