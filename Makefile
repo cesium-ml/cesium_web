@@ -25,7 +25,7 @@ run_debug: dev_dependencies dependencies
 run: $(bundle) dependencies
 	./cesium_react_mock
 
-$(bundle):
+$(bundle): webpack.config.js
 	$(webpack)
 
 bundle: $(bundle)

@@ -19,7 +19,13 @@
         "bootstrap-css": "latest",
         "underscore": "latest",
         "filter-values": "latest",
-        "react-checkbox-group": "latest"
+        "react-checkbox-group": "latest",
+        "redux": "latest",
+        "react-redux": "latest",
+        "redux-thunk": "latest",
+        "redux-logger": "latest",
+        "es6-promise": "latest",
+        "whatwg-fetch": "latest"
     },
     "devDependencies": {
         "babel": "latest",
@@ -30,7 +36,9 @@
         "css-loader": "latest",
         "style-loader": "latest",
         "webpack": "latest",
-        "webpack-dev-server": "latest"
+        "webpack-dev-server": "latest",
+        "imports-loader": "latest",
+        "exports-loader": "latest"
     },
     "repository": {
         "type": "git",

@@ -4,7 +4,7 @@ import sys
 import os
 from os.path import join as pjoin
 import tarfile
-from json_util import to_json
+
 from flask import (
     Flask, request, abort, render_template,
     session, Response, jsonify, g, send_from_directory)
@@ -21,6 +21,8 @@ from cesium import featurize
 from cesium import predict
 from cesium import build_model
 from cesium import custom_exceptions
+
+from json_util import to_json
 
 import models as m
 
