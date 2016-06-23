@@ -237,40 +237,33 @@ def Features(featureset_id=None):
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
     if request.method == 'POST':
         # Parse form fields
-        featureset_name = str(request.form["featureset_name"]).strip()
-        if featureset_name == "":
-            return to_json({
-                "message": ("Feature Set Title must contain non-whitespace "
-                            "characters. Please try a different title."),
-                "type": "error"})
-        dataset_id = str(request.form["featureset_dataset_select"]).strip()
-        project_name = (str(request.form["featureset_project_name_select"]).
-                        strip().split(" (created")[0])
-        features_to_use = request.form.getlist("features_selected")
-        custom_script_tested = str(request.form["custom_script_tested"])
-        if custom_script_tested == "yes":
-            custom_script = request.files["custom_feat_script_file"]
+        featureset_name = request.form["Feature Set Title"].strip()
+        dataset_id = request.form["Select Dataset"].strip()
+        proj_key = request.form["Select Project"].strip()
+        features_to_use = request.form.getlist("Selected Features")
+        custom_script_tested = str(request.form["Custom Features Script Tested"])
+        if custom_script_tested == "true":
+            custom_script = request.files["Custom Features File"]
             customscript_fname = str(secure_filename(custom_script.filename))
-            print(customscript_fname, 'uploaded.')
             customscript_path = pjoin(
                     cfg['paths']['upload_folder'], "custom_feature_scripts",
                     str(uuid.uuid4()) + "_" + str(customscript_fname))
             custom_script.save(customscript_path)
-            custom_features = request.form.getlist("custom_feature_checkbox")
+            custom_features = request.form.getlist("Custom Features List")
             features_to_use += custom_features
         else:
             customscript_path = False
-        print("Selected features:", features_to_use)
         try:
             is_test = request.form["is_test"]
             if is_test == "True":
                 is_test = True
-        except:  # unchecked
+            else:
+                is_test = False
+        except:
             is_test = False
-        proj_key = project_name_to_key(project_name)
         # TODO: this is messy
         return featurizationPage(
-            featureset_name=featureset_name, project_name=project_name,
+            proj_key=proj_key, featureset_name=featureset_name,
             dataset_id=dataset_id,
             featlist=features_to_use, is_test=is_test,
             custom_script_path=customscript_path)

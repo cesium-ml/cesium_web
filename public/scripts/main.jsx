@@ -39,7 +39,8 @@ var MainContent = React.createClass({
                     "Feature Set Title": "",
                     "Custom Features File": "",
                     "Custom Features Script Tested": false,
-                    "Selected Features": []
+                    "Selected Features": [],
+                    "Custom Features List": []
                 },
                 selectedProjectToEdit:
                 {
