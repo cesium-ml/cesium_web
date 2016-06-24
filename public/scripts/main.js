@@ -270,7 +270,7 @@ var MainContent = React.createClass({
     },
     render: function() {
         return (
-          <div className="mainContent">
+            <div className="mainContent">
                 <Tabs classname="first">
                     <TabList>
                         <Tab>Projects</Tab>
@@ -278,12 +278,6 @@ var MainContent = React.createClass({
                         <Tab>Features</Tab>
                         <Tab>Models</Tab>
                         <Tab>Predict</Tab>
-                        <Tab>
-                          <WebSocket url={'ws://' + this.props.root + 'websocket'}
-                                     auth_url={location.protocol + '//' + this.props.root + 'socket_auth_token'}
-                                     messageHandler={messageHandler}
-                          />
-                        </Tab>
                     </TabList>
                     <TabPanel>
                         <ProjectsTabContent
@@ -332,9 +326,6 @@ var MainContent = React.createClass({
                     </TabPanel>
                     <TabPanel>
                         Predictions...
-                    </TabPanel>
-                    <TabPanel>
-                      <h3>System Status</h3>
                     </TabPanel>
                 </Tabs>
             </div>
