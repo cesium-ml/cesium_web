@@ -11,7 +11,7 @@ from flask import (
 import uuid
 from werkzeug.utils import secure_filename
 
-from config import cfg
+from .config import cfg
 from cesium import obs_feature_tools as oft
 from cesium import science_feature_tools as sft
 from cesium import data_management
@@ -22,12 +22,12 @@ from cesium import predict
 from cesium import build_model
 from cesium import custom_exceptions
 
-from json_util import to_json
+from .json_util import to_json
 
-import models as m
+from . import models as m
 
 # Flask initialization
-app = Flask(__name__, static_url_path='', static_folder='public')
+app = Flask(__name__, static_url_path='', static_folder='../public')
 app.add_url_rule('/', 'root',
                  lambda: app.send_static_file('index.html'))
 

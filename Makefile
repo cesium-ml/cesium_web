@@ -7,23 +7,23 @@ webpack = ./node_modules/.bin/webpack
 node = ./node_modules/redux
 
 dev_dependencies:
-	@./install_deps.py requirements.dev.txt
+	@./tools/install_deps.py requirements.dev.txt
 
 dependencies: $(node)
-	@./install_deps.py requirements.txt
+	@./tools/install_deps.py requirements.txt
 
 db_init:
-	-create_db.sh
+	-./tools/create_db.sh
 
 db_init_force:
-	./cesium_react_mock --db-init --force
+	./cesium_launcher --db-init --force
 
 run_debug: dev_dependencies dependencies
 	@echo "Launching webpack & dev web server..."
-	@sh -c '$(webpack) -w & ./cesium_react_mock --debug'
+	@sh -c '$(webpack) -w & ./cesium_launcher --debug'
 
 run: $(bundle) dependencies
-	./cesium_react_mock
+	./cesium_launcher
 
 $(bundle): webpack.config.js
 	$(webpack)
