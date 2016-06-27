@@ -6,9 +6,9 @@ import peewee as pw
 from playhouse.fields import ManyToManyField
 from playhouse.postgres_ext import ArrayField, BinaryJSONField
 from playhouse.shortcuts import model_to_dict
-from json_util import to_json
 
-from config import cfg
+from cesium_app.json_util import to_json
+from cesium_app.config import cfg
 
 
 db = pw.PostgresqlDatabase(**cfg['database'], autocommit=True,

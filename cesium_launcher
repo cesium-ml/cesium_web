@@ -5,7 +5,7 @@ import sys
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='mock cesium w/ react web frontend')
+    parser = argparse.ArgumentParser(description='Cesium web frontend')
     parser.add_argument('--port', type=int, default=4000,
                         help='Port number (default 4000)')
     parser.add_argument('--host', type=str, default='127.0.0.1',
@@ -22,7 +22,7 @@ def main():
 
 
     if args.db_init:
-        from models import drop_tables, create_tables
+        from cesium_app.models import drop_tables, create_tables
         if args.force:
             print("Dropping tables...")
             drop_tables()
@@ -34,7 +34,7 @@ def main():
 
         sys.exit(0)
 
-    from flask_server import app
+    from cesium_app.flask_server import app
 
     if args.debug:
         app.config['DEBUG'] = True
