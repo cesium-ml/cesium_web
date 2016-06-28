@@ -9,14 +9,14 @@ var DatasetsTab = React.createClass({
   render: function() {
     return (
       <div className='datasetsTab'>
-      <DatasetsForm
-      handleInputChange={this.props.handleInputChange}
-      formFields={this.props.formFields}
-      handleSubmit={this.props.handleNewDatasetSubmit}
-      datasetsList={this.props.datasetsList}
-      projectsList={this.props.projects}
-      formName={this.props.formName}
-      />
+        <DatasetsForm
+            handleInputChange={this.props.handleInputChange}
+            formFields={this.props.formFields}
+            handleSubmit={this.props.handleNewDatasetSubmit}
+            datasetsList={this.props.datasetsList}
+            projectsList={this.props.projects}
+            formName={this.props.formName}
+        />
       </div>
     );
   }
@@ -75,4 +75,4 @@ var mapStateToProps = function(state) {
 }
 
 
-module.exports = connect(mapStateToProps)(DatasetsTab);
+module.exports = connect(mapStateToProps, null, null, { pure: false })(DatasetsTab);

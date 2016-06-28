@@ -57,7 +57,7 @@ var MainContent = React.createClass({
         },
         newDataset:
         {
-          'Select Project': '',
+          'Select Project': '1',
           'Dataset Name': '',
           'Header File': '',
           'Tarball Containing Data': ''
