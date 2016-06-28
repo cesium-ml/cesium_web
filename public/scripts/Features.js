@@ -2,6 +2,15 @@ import React from 'react'
 import { connect } from "react-redux"
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 import FileInput from 'react-file-input'
+import ReactTabs from 'react-tabs'
+import CheckboxGroup from 'react-checkbox-group'
+import _ from 'underscore'
+import filter from 'filter-values'
+
+var Tab = ReactTabs.Tab;
+var Tabs = ReactTabs.Tabs;
+var TabList = ReactTabs.TabList;
+var TabPanel = ReactTabs.TabPanel;
 
 
 var FeaturesTab = React.createClass({
