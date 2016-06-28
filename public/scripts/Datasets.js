@@ -1,6 +1,5 @@
 import React from 'react'
 import { connect } from "react-redux"
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 import FileInput from 'react-file-input'
 

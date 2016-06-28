@@ -32,6 +32,7 @@ let messageHandler = (new MessageHandler(store.dispatch)).handle;
 
 import ProjectList from './ProjectList'
 import DatasetsTab from './Datasets'
+import FeaturesTab from './Features'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 
 
@@ -298,7 +299,7 @@ var MainContent = React.createClass({
             />
           </TabPanel>
           <TabPanel>
-            <DatasetsTabContent
+            <DatasetsTab
               getInitialState={this.getInitialState}
               loadState={this.loadState}
               handleNewDatasetSubmit={this.handleNewDatasetSubmit}
@@ -310,7 +311,7 @@ var MainContent = React.createClass({
             />
           </TabPanel>
           <TabPanel>
-            <FeaturesTabContent
+            <FeaturesTab
               getInitialState={this.getInitialState}
               loadState={this.loadState}
               handleNewDatasetSubmit={this.handleNewDatasetSubmit}
@@ -394,70 +395,6 @@ var NewProjectForm = React.createClass({
 });
 
 
-var DatasetsTabContent = React.createClass({
-  render: function() {
-    return (
-      <div className='datasetsTabContent'>
-        <DatasetsForm
-          handleInputChange={this.props.handleInputChange}
-          formFields={this.props.formFields}
-          handleSubmit={this.props.handleNewDatasetSubmit}
-          datasetsList={this.props.datasetsList}
-          projectsList={this.props.projectsList}
-          formName={this.props.formName}
-        />
-      </div>
-    );
-  }
-});
-
-
-var DatasetsForm = React.createClass({
-  render: function() {
-    return (
-      <div className='formTableDiv'>
-        <form id='datasetForm' name='datasetForm'
-            action='/uploadData' enctype='multipart/form-data'
-            method='post'>
-          <FormTitleRow formTitle='Upload new time series data'/>
-          <FormSelectInput
-              inputName='Select Project'
-              inputTag='select'
-              formName='newDataset'
-              optionsList={this.props.projectsList}
-              value={this.props.formFields['Select Project']}
-              handleInputChange={this.props.handleInputChange}
-          />
-          <FormInputRow inputName='Dataset Name'
-                  inputTag='input'
-                  inputType='text'
-                  formName='newDataset'
-                  value={this.props.formFields['Dataset Name']}
-                  handleInputChange={this.props.handleInputChange}
-          />
-          <FileInput name='Header File'
-                 placeholder='Select Header File'
-                 onChange={this.props.handleInputChange.bind(
-                    null, 'Header File', 'file', 'newDataset')}
-          />
-          <FileInput name='Tarball Containing Data'
-                 placeholder='Select Data Tarball'
-                 onChange={this.props.handleInputChange.bind(
-                     null, 'Tarball Containing Data', 'file', 'newDataset')}
-          />
-          <div className='submitButtonDiv' style={{marginTop: 15}}>
-            <input type='submit'
-                 onClick={this.props.handleSubmit}
-                 value='Submit'
-                 className='submitButton'
-            />
-          </div>
-        </form>
-      </div>
-    );
-  }
-});
-
 var FeaturesTabContent = React.createClass({
   render: function() {
     return (
@@ -480,6 +417,7 @@ var FeaturesTabContent = React.createClass({
     );
   }
 });
+
 
 var FeaturizeForm = React.createClass({
   render: function() {
@@ -533,6 +471,7 @@ var FeaturizeForm = React.createClass({
     );
   }
 });
+
 
 var FeatureSelectionDialog = React.createClass({
   componentDidMount: function () {
@@ -618,11 +557,10 @@ var FeatureSelectionDialog = React.createClass({
   }
 });
 
-let content = document.getElementById('content');
 
 ReactDOM.render(
   <Provider store={store}>
-    <MainContent root={ location.host + location.pathname }/>
+  <MainContent />
   </Provider>,
-  content
+  document.getElementById('content')
 );
