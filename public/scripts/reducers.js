@@ -15,8 +15,10 @@ function projects(state = [], action) {
   }
 }
 
+
 const rootReducer = combineReducers({
   projects
 })
 
 export default rootReducer
+

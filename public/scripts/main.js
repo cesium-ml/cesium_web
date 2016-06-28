@@ -1,4 +1,5 @@
 import React from 'react'
+import { connect } from "react-redux"
 import ReactDOM from 'react-dom'
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import FileInput from 'react-file-input'
@@ -58,7 +59,7 @@ var MainContent = React.createClass({
         },
         newDataset:
         {
-          'Select Project': '1',
+          'Select Project': '',
           'Dataset Name': '',
           'Header File': '',
           'Tarball Containing Data': ''
@@ -72,6 +73,14 @@ var MainContent = React.createClass({
           'Custom Features Script Tested': false,
           'Selected Features': [],
           'Custom Features List': []
+        },
+        model:
+        {
+          'Select Project': ''
+        },
+        predict:
+        {
+          'Select Project': ''
         },
         selectedProjectToEdit:
         {
@@ -87,6 +96,23 @@ var MainContent = React.createClass({
       projectsList: [],
       datasetsList: []
     };
+  },
+  componentWillReceiveProps: function(nextProps) {
+    if (!this.state.forms.newDataset['Select Project']) {
+      var first_project_id = nextProps.projects[0].id;
+      this.setState(
+        {forms: {...this.state.forms,
+                 newDataset: { ...this.state.forms.newDataset,
+                               'Select Project': first_project_id },
+                 featurize: { ...this.state.forms.featurize,
+                              'Select Project': first_project_id },
+                 model: { ...this.state.forms.model,
+                           'Select Project': first_project_id },
+                 predict: { ...this.state.forms.predict,
+                           'Select Project': first_project_id }
+        }}
+      );
+    }
   },
   componentDidMount: function() {
     this.loadState();
@@ -393,6 +419,13 @@ var NewProjectForm = React.createClass({
     );
   }
 });
+
+var mapStateToProps = function(state) {
+  return {projects: state.projects};
+}
+
+MainContent = connect(mapStateToProps)(MainContent);
+
 
 
 var FeaturesTabContent = React.createClass({

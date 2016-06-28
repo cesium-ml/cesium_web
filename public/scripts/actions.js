@@ -16,14 +16,14 @@ export function hydrate() {
 export const FETCH_PROJECTS = 'FETCH_PROJECTS'
 
 export function fetchProjects() {
-  return dispatch => {
+  return dispatch => (
     fetch('/project')
       .then(response => response.json())
       .then(json => {
         dispatch(receiveProjects(json.data))
       }
-      ).catch(ex => console.log(ex));
-  }
+      ).catch(ex => console.log(ex))
+  )
 }
 
 
