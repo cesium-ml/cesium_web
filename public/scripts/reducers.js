@@ -6,7 +6,8 @@ import {
   RECEIVE_DATASETS,
   RECEIVE_FEATURESETS,
   RECEIVE_MODELS,
-  RECEIVE_PREDICTIONS
+  RECEIVE_PREDICTIONS,
+  CLEAR_FEATURES_FORM
 } from './actions'
 
 
@@ -34,6 +35,8 @@ function featuresets(state = [], action) {
   switch (action.type) {
     case RECEIVE_FEATURESETS:
       return action.payload
+    // case CLEAR_FEATURES_FORM:
+    //  return {
     default:
       return state
   }
@@ -47,4 +50,3 @@ const rootReducer = combineReducers({
 })
 
 export default rootReducer
-
