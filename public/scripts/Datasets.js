@@ -4,7 +4,7 @@ import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 import FileInput from 'react-file-input'
 
 
-export var DatasetsTab = React.createClass({
+var DatasetsTab = React.createClass({
   render: function() {
     return (
       <div className='datasetsTab'>
@@ -67,3 +67,6 @@ var DatasetsForm = React.createClass({
     );
   }
 });
+
+
+module.exports = DatasetsTab;

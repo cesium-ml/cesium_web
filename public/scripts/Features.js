@@ -13,7 +13,7 @@ var TabList = ReactTabs.TabList;
 var TabPanel = ReactTabs.TabPanel;
 
 
-export var FeaturesTab = React.createClass({
+var FeaturesTab = React.createClass({
   render: function() {
     return (
       <div className='featuresTabContent'>
@@ -174,3 +174,6 @@ var FeatureSelectionDialog = React.createClass({
     );
   }
 });
+
+
+module.exports = FeaturesTab;
