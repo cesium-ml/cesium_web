@@ -38,7 +38,7 @@ import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 
 
 function json_post(url, body) {
-  return fetch('/newProject', {
+  return fetch(url, {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
