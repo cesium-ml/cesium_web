@@ -186,7 +186,7 @@ def Dataset(dataset_id=None):
             cfg['paths']['ts_data_folder'],
             headerfile_path)
         ts_paths = [ts.path for ts in time_series]
-        d = m.Dataset.add(name=dataset_name, project=p, ts_paths=ts_paths)
+        d = m.Dataset.add(name=dataset_name, project=p, file_uris=ts_paths)
 
         return to_json({"status": "success"})
     elif request.method == "GET":
