@@ -13,7 +13,7 @@ var TabList = ReactTabs.TabList;
 var TabPanel = ReactTabs.TabPanel;
 
 
-var FeaturesTab = React.createClass({
+export var FeaturesTab = React.createClass({
   render: function() {
     return (
       <div className='featuresTabContent'>
@@ -21,9 +21,9 @@ var FeaturesTab = React.createClass({
       handleInputChange={this.props.handleInputChange}
       formFields={this.props.formFields}
       handleSubmit={this.props.handleNewDatasetSubmit}
-      datasetsList={this.props.datasetsList}
-      featuresetsList={this.props.featuresetsList}
-      projectsList={this.props.projects}
+      datasets={this.props.datasets}
+      featuresets={this.props.featuresets}
+      projects={this.props.projects}
       formName={this.props.formName}
       available_features={this.props.available_features}
       updateSeldObsFeats={this.props.updateSeldObsFeats}
@@ -48,14 +48,14 @@ var FeaturizeForm = React.createClass({
       <FormSelectInput inputName='Select Project'
       inputTag='select'
       formName='featurize'
-      optionsList={this.props.projectsList}
+      optionsList={this.props.projects}
       value={this.props.formFields['Select Project']}
       handleInputChange={this.props.handleInputChange}
       />
       <FormSelectInput inputName='Select Dataset'
       inputTag='select'
       formName='featurize'
-      optionsList={this.props.datasetsList}
+      optionsList={this.props.datasets}
       value={this.props.formFields['Select Dataset']}
       handleInputChange={this.props.handleInputChange}
       />
@@ -174,11 +174,3 @@ var FeatureSelectionDialog = React.createClass({
     );
   }
 });
-
-
-var mapStateToProps = function(state) {
-  return {projects: state.projects};
-}
-
-
-module.exports = connect(mapStateToProps, null, null, { pure: false })(FeaturesTab);

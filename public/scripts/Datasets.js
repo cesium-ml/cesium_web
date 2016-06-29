@@ -4,7 +4,7 @@ import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 import FileInput from 'react-file-input'
 
 
-var DatasetsTab = React.createClass({
+export var DatasetsTab = React.createClass({
   render: function() {
     return (
       <div className='datasetsTab'>
@@ -12,8 +12,8 @@ var DatasetsTab = React.createClass({
             handleInputChange={this.props.handleInputChange}
             formFields={this.props.formFields}
             handleSubmit={this.props.handleNewDatasetSubmit}
-            datasetsList={this.props.datasetsList}
-            projectsList={this.props.projects}
+            datasets={this.props.datasets}
+            projects={this.props.projects}
             formName={this.props.formName}
         />
       </div>
@@ -34,7 +34,7 @@ var DatasetsForm = React.createClass({
       inputName='Select Project'
       inputTag='select'
       formName='newDataset'
-      optionsList={this.props.projectsList}
+      optionsList={this.props.projects}
       value={this.props.formFields['Select Project']}
       handleInputChange={this.props.handleInputChange}
       />
@@ -67,11 +67,3 @@ var DatasetsForm = React.createClass({
     );
   }
 });
-
-
-var mapStateToProps = function(state) {
-  return {projects: state.projects};
-}
-
-
-module.exports = connect(mapStateToProps, null, null, { pure: false })(DatasetsTab);
