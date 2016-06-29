@@ -5,6 +5,11 @@ import re
 import subprocess
 
 
+pkg_import = {'pyyaml': 'yaml',
+              'pyzmq': 'zmq',
+              'pyjwt': 'jwt'}
+
+
 if len(sys.argv) != 2:
     print("Usage: install_deps.py requirements.dev.txt")
     sys.exit(1)
@@ -13,12 +18,12 @@ req_file = sys.argv[1]
 
 with open(req_file) as f:
     for dep in f:
-        if not dep.strip():
+        if not dep.strip() or dep.startswith('https'):
             continue
 
         dep = re.split('\W+', dep)[0]
         try:
-            __import__(dep.lower())
+            __import__(pkg_import.get(dep, dep.lower()))
         except ImportError:
             print(("Development dependency '{}' unfulfilled. "
                    "Installing requirements.").format(dep))

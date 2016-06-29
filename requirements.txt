@@ -1,3 +1,10 @@
-Flask
+https://github.com/cesium-ml/cesium/archive/master.zip # >=0.4.0 once released
+flask
 peewee
 psycopg2
+requests
+pyyaml
+waitress
+tornado
+pyzmq
+pyjwt

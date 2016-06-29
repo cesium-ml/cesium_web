@@ -17,4 +17,5 @@ See the above section to run the app from here.
 
 ## Dev tips
 
-- Run `webpack -w` to continually watch for changes in jsx
+- Run `make log` to watch log output
+

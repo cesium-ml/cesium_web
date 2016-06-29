@@ -1,39 +1,37 @@
 #!/usr/bin/python
 
-import sys
 import os
 from os.path import join as pjoin
 import tarfile
 
 from flask import (
-    Flask, request, abort, render_template,
-    session, Response, jsonify, g, send_from_directory)
+    Flask, request, session, Response, send_from_directory)
 import uuid
 from werkzeug.utils import secure_filename
+import jwt
+import datetime
 
 from .config import cfg
 from cesium import obs_feature_tools as oft
 from cesium import science_feature_tools as sft
 from cesium import data_management
-from cesium import time_series as tslib
-from cesium import transformation
-from cesium import featurize
-from cesium import predict
-from cesium import build_model
 from cesium import custom_exceptions
 
 from .json_util import to_json
 
 from . import models as m
+from .flow import Flow
 
 # Flask initialization
 app = Flask(__name__, static_url_path='', static_folder='../public')
 app.add_url_rule('/', 'root',
                  lambda: app.send_static_file('index.html'))
 
+flow = Flow()
 
 # TODO: FIXME!
-USERNAME = "testuser@gmail.com" # get_current_userkey()
+def get_username():
+    return "testuser@gmail.com"  # get_current_userkey()
 
 
 @app.before_request
@@ -47,6 +45,10 @@ def after_request(response):
     return response
 
 
+class UnauthorizedAccess(Exception):
+    pass
+
+
 @app.route("/project", methods=["GET", "POST"])
 @app.route("/project/<project_id>", methods=["GET", "PUT", "DELETE"])
 def Project(project_id=None):
@@ -56,20 +58,23 @@ def Project(project_id=None):
         proj_name = str(request.form["Project Name"]).strip()
         proj_description = str(request.form["Description/notes"]).strip()
         try:
-            m.Project.add_by(proj_name, proj_description, USERNAME)
+            m.Project.add_by(proj_name, proj_description, get_username())
         except Exception as e:
             return to_json(
                 {
                     "status": "error",
                     "message": str(e)
                 })
+
+        flow.push(get_username(), 'FETCH_PROJECTS')
+
         return to_json({"status": "success"})
 
     elif request.method == "GET":
         if project_id is not None:
             proj_info = m.Project.get(m.Project.id == project_id)
         else:
-            proj_info = m.Project.all(USERNAME)
+            proj_info = m.Project.all(get_username())
 
         return to_json(
             {
@@ -102,11 +107,12 @@ def Project(project_id=None):
                     "message": "Invalid request - project ID not provided."
                 })
         p = m.Project.get(m.Project.id == project_id)
-        if p.is_owned_by(USERNAME):
+        if p.is_owned_by(get_username()):
             p.delete_instance()
         else:
             raise UnauthorizedAccess("User not authorized for project.")
 
+        flow.push(get_username(), 'FETCH_PROJECTS')
         return to_json({"status": "success"})
 
 
@@ -117,18 +123,13 @@ def get_state():
     """
     if request.method == 'GET':
         state = {}
-        state["projectsList"] = m.Project.all(USERNAME)
+        state["projectsList"] = m.Project.all(get_username())
         state["datasetsList"] = [d for p in state["projectsList"]
                                  for d in p.datasets]
         return Response(to_json(state),
                         mimetype='application/json',
                         headers={'Cache-Control': 'no-cache',
                                  'Access-Control-Allow-Origin': '*'})
-
-
-def set_dataset_filenames(dataset_id, ts_filenames):
-    rdb.table('datasets').get(dataset_id).update({'ts_filenames':
-                                                  ts_filenames}).run(rdb_conn)
 
 
 @app.route('/dataset', methods=['POST', 'GET'])
@@ -180,8 +181,10 @@ def Dataset(dataset_id=None):
             raise
 
         p = m.Project.get(m.Project.id == project_id)
-        time_series = data_management.parse_and_store_ts_data(zipfile_path,
-            cfg['paths']['ts_data_folder'], headerfile_path)
+        time_series = data_management.parse_and_store_ts_data(
+            zipfile_path,
+            cfg['paths']['ts_data_folder'],
+            headerfile_path)
         ts_paths = [ts.path for ts in time_series]
         d = m.Dataset.add(name=dataset_name, project=p, ts_paths=ts_paths)
 
@@ -190,7 +193,7 @@ def Dataset(dataset_id=None):
         if dataset_id is not None:
             dataset_info = m.Dataset.get(m.Dataset.id == dataset_id)
         else:
-            dataset_info = [d for p in m.Project.all(USERNAME)
+            dataset_info = [d for p in m.Project.all(get_username())
                             for d in p.datasets]
 
         return to_json(
@@ -206,7 +209,7 @@ def Dataset(dataset_id=None):
                     "message": "Invalid request - data set ID not provided."
                 })
         d = m.Dataset.get(m.Dataset.id == dataset_id)
-        if d.is_owned_by(USERNAME):
+        if d.is_owned_by(get_username()):
             d.delete_instance()
         else:
             raise UnauthorizedAccess("User not authorized for project.")
@@ -223,7 +226,8 @@ def Dataset(dataset_id=None):
         return to_json(
             {
                 "status": "error",
-                "message": "Functionality for this endpoint is not yet implemented."
+                "message": "Functionality for this endpoint is not "
+                           "yet implemented."
             })
 
 
@@ -239,7 +243,8 @@ def Features(featureset_id=None):
         dataset_id = request.form["Select Dataset"].strip()
         project_id = request.form["Select Project"].strip()
         features_to_use = request.form.getlist("Selected Features")
-        custom_script_tested = str(request.form["Custom Features Script Tested"])
+        custom_script_tested = str(
+            request.form["Custom Features Script Tested"])
         if custom_script_tested == "true":
             custom_script = request.files["Custom Features File"]
             customscript_fname = str(secure_filename(custom_script.filename))
@@ -269,7 +274,7 @@ def Features(featureset_id=None):
         if featureset_id is not None:
             featureset_info = m.Featureset.get(m.Featureset.id == featureset_id)
         else:
-            featureset_info = [f for p in m.Project.all(USERNAME)
+            featureset_info = [f for p in m.Project.all(get_username())
                                for f in p.featuresets]
 
         return to_json(
@@ -285,7 +290,7 @@ def Features(featureset_id=None):
                     "message": "Invalid request - feature set ID not provided."
                 })
         f = m.Featureset.get(m.Featureset.id == featureset_id)
-        if f.is_owned_by(USERNAME):
+        if f.is_owned_by(get_username()):
             f.delete_instance()
         else:
             raise UnauthorizedAccess("User not authorized for project.")
@@ -337,7 +342,6 @@ def check_headerfile_and_tsdata_format(headerfile_path, zipfile_path):
     """
     with open(headerfile_path) as f:
         all_header_fnames = []
-        column_header_line = str(f.readline())
         for line in f:
             line = str(line)
             if line.strip() != '':
@@ -411,6 +415,20 @@ def get_features_list():
                 "obs_features": oft.FEATURES_LIST,
                 "sci_features": sft.FEATURES_LIST},
             "message": None})
+
+
+# !!!
+# This API call should **only be callable by logged in users**
+# !!!
+@app.route('/socket_auth_token', methods=['GET'])
+def socket_auth_token():
+    secret = cfg['flask']['secret-key']
+    token = jwt.encode({
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=15),
+        'username': get_username()
+        }, secret)
+    return to_json({'status': 'OK',
+                    'data': {'token': token}})
 
 
 if __name__ == '__main__':
