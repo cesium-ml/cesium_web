@@ -57,10 +57,11 @@ config_files.extend(glob.glob(
 
 config_files = [os.path.abspath(cf) for cf in config_files]
 
+
 # Load example config file as default template
 cfg = warn_defaultdict()
 cfg.update(yaml.load(open(os.path.join(os.path.dirname(__file__),
-                             "../cesium.yaml.example"))))
+                                       "../cesium.yaml.example"))))
 
 for cf in config_files:
     try:

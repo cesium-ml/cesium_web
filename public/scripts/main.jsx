@@ -25,6 +25,10 @@ import * as Action from './actions';
 
 const store = configureStore()
 
+import WebSocket from './WebSocket'
+import MessageHandler from './MessageHandler'
+let messageHandler = (new MessageHandler(store.dispatch)).handle;
+
 
 import ProjectList from './ProjectList'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
@@ -40,7 +44,6 @@ function json_post(url, body) {
     body: body,
   });
 }
-
 
 var MainContent = React.createClass({
     getInitialState: function() {
@@ -84,10 +87,7 @@ var MainContent = React.createClass({
         };
     },
     componentDidMount: function() {
-        this.loadState();
-    },
-    loadState: function() {
-      store.dispatch(Action.fetchProjects());
+      store.dispatch(Action.hydrate());
     },
     updateProjectList: function() {
         $.ajax({
@@ -270,7 +270,7 @@ var MainContent = React.createClass({
     },
     render: function() {
         return (
-            <div className="mainContent">
+          <div className="mainContent">
                 <Tabs classname="first">
                     <TabList>
                         <Tab>Projects</Tab>
@@ -278,6 +278,12 @@ var MainContent = React.createClass({
                         <Tab>Features</Tab>
                         <Tab>Models</Tab>
                         <Tab>Predict</Tab>
+                        <Tab>
+                          <WebSocket url={'ws://' + this.props.root + 'websocket'}
+                                     auth_url={location.protocol + '//' + this.props.root + 'socket_auth_token'}
+                                     messageHandler={messageHandler}
+                          />
+                        </Tab>
                     </TabList>
                     <TabPanel>
                         <ProjectsTabContent
@@ -326,6 +332,9 @@ var MainContent = React.createClass({
                     </TabPanel>
                     <TabPanel>
                         Predictions...
+                    </TabPanel>
+                    <TabPanel>
+                      <h3>System Status</h3>
                     </TabPanel>
                 </Tabs>
             </div>
@@ -609,9 +618,11 @@ var FeatureSelectionDialog = React.createClass({
     }
 });
 
+let content = document.getElementById('content');
+
 ReactDOM.render(
   <Provider store={store}>
-    <MainContent />
+    <MainContent root={ location.host + location.pathname }/>
   </Provider>,
-  document.getElementById('content')
+  content
 );

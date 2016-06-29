@@ -1,10 +1,12 @@
 SHELL = /bin/bash
+SUPERVISORD=supervisord
 
-.DEFAULT_GOAL := run_debug
+.DEFAULT_GOAL := run
 
 bundle = ./public/build/bundle.js
 webpack = ./node_modules/.bin/webpack
 node = ./node_modules/redux
+
 
 dev_dependencies:
 	@./tools/install_deps.py requirements.dev.txt
@@ -19,11 +21,6 @@ db_init_force:
 	./cesium_launcher --db-init --force
 
 run_debug: dev_dependencies dependencies
-	@echo "Launching webpack & dev web server..."
-	@sh -c '$(webpack) -w & ./cesium_launcher --debug'
-
-run: $(bundle) dependencies
-	./cesium_launcher
 
 $(bundle): webpack.config.js
 	$(webpack)
@@ -35,6 +32,17 @@ bundle-watch:
 
 $(node):
 	npm install
+
+paths:
+	mkdir -p log run tmp
+	mkdir -p log/sv_child
+	mkdir -p ~/.local/cesium/logs
+
+log: paths
+	./tools/watch_logs.py
+
+run: paths $(bundle) dependencies
+	$(SUPERVISORD) -c supervisord.conf
 
 clean:
 	rm $(bundle)

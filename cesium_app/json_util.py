@@ -8,6 +8,9 @@ class Encoder(json.JSONEncoder):
         if isinstance(o, datetime):
             return o.isoformat()
 
+        if isinstance(o, bytes):
+            return o.decode('utf-8')
+
         elif isinstance(o, peewee.Model):
             return o.__dict__()
 
