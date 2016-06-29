@@ -26,43 +26,43 @@ var DatasetsForm = React.createClass({
   render: function() {
     return (
       <div className='formTableDiv'>
-      <form id='datasetForm' name='datasetForm'
-      action='/uploadData' enctype='multipart/form-data'
-      method='post'>
-      <FormTitleRow formTitle='Upload new time series data'/>
-      <FormSelectInput
-      inputName='Select Project'
-      inputTag='select'
-      formName='newDataset'
-      optionsList={this.props.projects}
-      value={this.props.formFields['Select Project']}
-      handleInputChange={this.props.handleInputChange}
-      />
-      <FormInputRow inputName='Dataset Name'
-      inputTag='input'
-      inputType='text'
-      formName='newDataset'
-      value={this.props.formFields['Dataset Name']}
-      handleInputChange={this.props.handleInputChange}
-      />
-      <FileInput name='Header File'
-      placeholder='Select Header File'
-      onChange={this.props.handleInputChange.bind(
-        null, 'Header File', 'file', 'newDataset')}
-      />
-      <FileInput name='Tarball Containing Data'
-      placeholder='Select Data Tarball'
-      onChange={this.props.handleInputChange.bind(
-        null, 'Tarball Containing Data', 'file', 'newDataset')}
-      />
-      <div className='submitButtonDiv' style={{marginTop: 15}}>
-      <input type='submit'
-      onClick={this.props.handleSubmit}
-      value='Submit'
-      className='submitButton'
-      />
-      </div>
-      </form>
+        <form id='datasetForm' name='datasetForm'
+              action='/uploadData' enctype='multipart/form-data'
+              method='post'>
+          <FormTitleRow formTitle='Upload new time series data'/>
+          <FormSelectInput
+              inputName='Select Project'
+              inputTag='select'
+              formName='newDataset'
+              optionsList={this.props.projects}
+              value={this.props.formFields['Select Project']}
+              handleInputChange={this.props.handleInputChange}
+          />
+          <FormInputRow inputName='Dataset Name'
+                        inputTag='input'
+                        inputType='text'
+                        formName='newDataset'
+                        value={this.props.formFields['Dataset Name']}
+                        handleInputChange={this.props.handleInputChange}
+          />
+          <FileInput name='Header File'
+                     placeholder='Select Header File'
+                     onChange={this.props.handleInputChange.bind(
+                         null, 'Header File', 'file', 'newDataset')}
+          />
+          <FileInput name='Tarball Containing Data'
+                     placeholder='Select Data Tarball'
+                     onChange={this.props.handleInputChange.bind(
+                         null, 'Tarball Containing Data', 'file', 'newDataset')}
+          />
+          <div className='submitButtonDiv' style={{marginTop: 15}}>
+            <input type='submit'
+                   onClick={this.props.handleSubmit}
+                   value='Submit'
+                   className='submitButton'
+            />
+          </div>
+        </form>
       </div>
     );
   }
