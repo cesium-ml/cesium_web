@@ -3,6 +3,12 @@
 
 
 export const HYDRATE = 'HYDRATE'
+export const FETCH_PROJECTS = 'FETCH_PROJECTS'
+export const RECEIVE_PROJECTS = 'RECEIVE_PROJECTS'
+export const RECEIVE_DATASETS = 'RECEIVE_DATASETS'
+export const RECEIVE_FEATURESETS = 'RECEIVE_FEATURESETS'
+export const RECEIVE_MODELS = 'RECEIVE_MODELS'
+export const RECEIVE_PREDICTIONS = 'RECEIVE_PREDICTIONS'
 
 export function hydrate() {
   return dispatch => {
@@ -13,8 +19,6 @@ export function hydrate() {
 
 
 // Download projects
-export const FETCH_PROJECTS = 'FETCH_PROJECTS'
-
 export function fetchProjects() {
   return dispatch => (
     fetch('/project')
@@ -28,8 +32,6 @@ export function fetchProjects() {
 
 
 // Receive list of projects
-export const RECEIVE_PROJECTS = 'RECEIVE_PROJECTS'
-
 function receiveProjects(projects) {
   return {
     type: RECEIVE_PROJECTS,

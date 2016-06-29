@@ -119,6 +119,10 @@ var MainContent = React.createClass({
   },
   loadState: function() {
     store.dispatch(Action.fetchProjects());
+    store.dispatch(Action.fetchDatasets());
+    store.dispatch(Action.fetchFeaturesets());
+    // store.dispatch(Action.fetchModels());
+    // store.dispatch(Action.fetchPredictions());
   },
   updateProjectList: function() {
     $.ajax({
@@ -421,7 +425,11 @@ var NewProjectForm = React.createClass({
 });
 
 var mapStateToProps = function(state) {
-  return {projects: state.projects};
+  return {
+    projects: state.projects,
+    datasets: state.datasets,
+    featuresets: state.featuresets
+  };
 }
 
 MainContent = connect(mapStateToProps)(MainContent);
