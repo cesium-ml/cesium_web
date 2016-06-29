@@ -75,22 +75,36 @@ class Dataset(BaseModel):
                                  related_name='datasets')
     name = pw.CharField()
     created = pw.DateTimeField(default=datetime.datetime.now)
-    files = ManyToManyField(File)
 
     @staticmethod
     def add(name, project, file_uris=[]):
         with db.atomic():
             d = Dataset.create(name=name, project=project)
-            d.files, created = zip(*(
+            files, created = zip(*(
                 File.create_or_get(uri=uri) for uri in file_uris)
-                )
+            )
+            for f in files:
+                DatasetFile.create(dataset=d, file=f)
         return d
+
+    @property
+    def uris(self):
+        query = File.select().join(DatasetFile).join(Dataset).where(Dataset.id
+                                                                    == self.id)
+        return [f.uri for f in query]
 
     def is_owned_by(self, username):
         return self.project.is_owned_by(username)
 
 
-DatasetFileThrough = Dataset.files.get_through_model()
+class DatasetFile(BaseModel):
+    dataset = pw.ForeignKeyField(Dataset, on_delete='CASCADE')
+    file = pw.ForeignKeyField(File, on_delete='CASCADE')
+
+    class Meta:
+        indexes = (
+            (('dataset', 'file'), True),
+        )
 
 
 class Featureset(BaseModel):
@@ -129,6 +143,7 @@ class Prediction(BaseModel):
     """ORM model of the Prediction table"""
     project = pw.ForeignKeyField(Project, on_delete='CASCADE',
                                  related_name='predictions')
+    dataset = pw.ForeignKeyField(Dataset, on_delete='CASCADE')
     model = pw.ForeignKeyField(Model, on_delete='CASCADE',
                                related_name='predictions')
     created = pw.DateTimeField(default=datetime.datetime.now)

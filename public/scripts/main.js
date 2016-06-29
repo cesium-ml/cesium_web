@@ -100,16 +100,20 @@ var MainContent = React.createClass({
   componentWillReceiveProps: function(nextProps) {
     if (!this.state.forms.newDataset['Select Project']) {
       var first_project_id = nextProps.projects[0].id;
+      var first_dataset_id = nextProps.datasets[0].id;
       this.setState(
         {forms: {...this.state.forms,
                  newDataset: { ...this.state.forms.newDataset,
                                'Select Project': first_project_id },
                  featurize: { ...this.state.forms.featurize,
+                              'Select Dataset': first_dataset_id,
                               'Select Project': first_project_id },
                  model: { ...this.state.forms.model,
-                           'Select Project': first_project_id },
+                          'Select Dataset': first_dataset_id,
+                          'Select Project': first_project_id },
                  predict: { ...this.state.forms.predict,
-                           'Select Project': first_project_id }
+                            'Select Dataset': first_dataset_id,
+                            'Select Project': first_project_id }
         }}
       );
     }
@@ -220,7 +224,7 @@ var MainContent = React.createClass({
       processData: false,
       data: formData,
       success: function(data) {
-        this.loadState();
+        store.dispatch(Action.hydrate())
       }.bind(this),
       error: function(xhr, status, err) {
         console.error('/dataset', status, err.toString(),
@@ -348,7 +352,6 @@ var MainContent = React.createClass({
           <TabPanel>
             <ProjectsTabContent
               getInitialState={this.getInitialState}
-              loadState={this.loadState}
               handleNewProjectSubmit={this.handleNewProjectSubmit}
               handleClickEditProject={this.handleClickEditProject}
               handleDeleteProject={this.handleDeleteProject}
@@ -362,7 +365,6 @@ var MainContent = React.createClass({
           <TabPanel>
             <DatasetsTab
               getInitialState={this.getInitialState}
-              loadState={this.loadState}
               handleNewDatasetSubmit={this.handleNewDatasetSubmit}
               handleInputChange={this.handleInputChange}
               formFields={this.state.forms.newDataset}
@@ -374,7 +376,6 @@ var MainContent = React.createClass({
           <TabPanel>
             <FeaturesTab
               getInitialState={this.getInitialState}
-              loadState={this.loadState}
               handleSubmit={this.handleNewFeaturesetSubmit}
               handleInputChange={this.handleInputChange}
               formFields={this.state.forms.featurize}

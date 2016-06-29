@@ -3,6 +3,7 @@
 import os
 from os.path import join as pjoin
 import tarfile
+import multiprocessing
 
 from flask import (
     Flask, request, session, Response, send_from_directory)
@@ -16,11 +17,13 @@ from cesium import obs_feature_tools as oft
 from cesium import science_feature_tools as sft
 from cesium import data_management
 from cesium import custom_exceptions
+from cesium import util as csutil
 
 from .json_util import to_json
 
 from . import models as m
 from .flow import Flow
+from .celery_tasks import featurize_task, build_model_task, predict_task
 
 # Flask initialization
 app = Flask(__name__, static_url_path='', static_folder='../public')
@@ -139,8 +142,6 @@ def Dataset(dataset_id=None):
     """
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
     if request.method == 'POST':
-
-        # Parse form fields
         dataset_name = str(request.form["Dataset Name"]).strip()
         headerfile = request.files["Header File"]
         zipfile = request.files["Tarball Containing Data"]
@@ -165,20 +166,6 @@ def Dataset(dataset_id=None):
         headerfile.save(headerfile_path)
         zipfile.save(zipfile_path)
         print("Saved", headerfile_name, "and", zipfile_name)
-        try:
-            check_headerfile_and_tsdata_format(headerfile_path, zipfile_path)
-        except custom_exceptions.DataFormatError as err:
-            os.remove(headerfile_path)
-            os.remove(zipfile_path)
-            print("Removed", headerfile_name, "and", zipfile_name)
-            return to_json({"message": str(err), "status": "error"})
-        except custom_exceptions.TimeSeriesFileNameError as err:
-            os.remove(headerfile_path)
-            os.remove(zipfile_path)
-            print("Removed", headerfile_name, "and", zipfile_name)
-            return to_json({"message": str(err), "status": "error"})
-        except:
-            raise
 
         p = m.Project.get(m.Project.id == project_id)
         time_series = data_management.parse_and_store_ts_data(
@@ -238,33 +225,31 @@ def Features(featureset_id=None):
     """
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
     if request.method == 'POST':
-        # Parse form fields
         featureset_name = request.form["Feature Set Title"].strip()
-        dataset_id = request.form["Select Dataset"].strip()
-        project_id = request.form["Select Project"].strip()
-        features_to_use = request.form.getlist("Selected Features")
-        custom_script_tested = str(
-            request.form["Custom Features Script Tested"])
-        if custom_script_tested == "true":
+        dataset = m.Dataset.get(m.Dataset.id == request.form["Select Dataset"])
+        features_to_use = request.form.getlist("Selected Features[]")
+        custom_script_tested = (
+            request.form["Custom Features Script Tested"].strip() == "true")
+        if custom_script_tested:
             custom_script = request.files["Custom Features File"]
-            customscript_fname = str(secure_filename(custom_script.filename))
-            customscript_path = pjoin(
+            custom_script_fname = str(secure_filename(custom_script.filename))
+            custom_script_path = pjoin(
                     cfg['paths']['upload_folder'], "custom_feature_scripts",
-                    str(uuid.uuid4()) + "_" + str(customscript_fname))
-            custom_script.save(customscript_path)
+                    str(uuid.uuid4()) + "_" + str(custom_script_fname))
+            custom_script.save(custom_script_path)
             custom_features = request.form.getlist("Custom Features List")
             features_to_use += custom_features
         else:
-            customscript_path = False
-        try:
-            is_test = request.form["is_test"]
-            if is_test == "True":
-                is_test = True
-            else:
-                is_test = False
-        except:
-            is_test = False
-        # TODO: this is messy
+            custom_script_path = None
+        is_test = bool(request.form.get("is_test"))
+        fset_path = pjoin(cfg['paths']['features_folder'],
+                          '{}_featureset.nc'.format(uuid.uuid4()))
+        fset = m.Featureset.create(name=featureset_name,
+                                   file=m.File.create(uri=fset_path),
+                                   project=dataset.project,
+                                   custom_features_script=custom_script_path)
+        res = featurize_task.delay(dataset.uris, fset_path, features_to_use,
+                                   custom_script_path, is_test)
         return to_json({"status": "success"})
     elif request.method == 'GET':
         if featureset_id is not None:
@@ -272,7 +257,6 @@ def Features(featureset_id=None):
         else:
             featureset_info = [f for p in m.Project.all(get_username())
                                for f in p.featuresets]
-
         return to_json(
             {
                 "status": "success",
@@ -307,99 +291,139 @@ def Features(featureset_id=None):
             })
 
 
-def check_headerfile_and_tsdata_format(headerfile_path, zipfile_path):
-    """Ensure uploaded files are correctly formatted.
-
-    Ensures that headerfile_path and zipfile_path conform
-    to expected format - returns False if so, raises Exception if not.
-
-    Parameters
-    ----------
-    headerfile_path : str
-        Path to header file to inspect.
-    zipfile_path : str
-        Path to tarball to inspect.
-
-    Returns
-    -------
-    bool
-        Returns False if files are correctly formatted, otherwise
-        raises an exception (see below).
-
-    Raises
-    ------
-    custom_exceptions.TimeSeriesFileNameError
-        If any provided time-series data files' names are absent in
-        provided header file.
-    custom_exceptions.DataFormatError
-        If provided time-series data files or header file are
-        improperly formatted.
-
+@app.route('/models', methods=['POST', 'GET'])
+@app.route('/models/<model_id>', methods=['GET', 'PUT', 'DELETE'])
+def Models(model_id=None):
     """
-    with open(headerfile_path) as f:
-        all_header_fnames = []
-        for line in f:
-            line = str(line)
-            if line.strip() != '':
-                if len(line.strip().split(",")) < 2:
-                    raise custom_exceptions.DataFormatError((
-                        "Header file improperly formatted. At least two "
-                        "comma-separated columns (file_name,class_name) are "
-                        "required."))
-                else:
-                    all_header_fnames.append(line.strip().split(",")[0])
-    the_zipfile = tarfile.open(zipfile_path)
-    file_list = list(the_zipfile.getnames())
-    all_fname_variants = []
-    for file_name in file_list:
-        this_file = the_zipfile.getmember(file_name)
-        if this_file.isfile():
-            file_name_variants = list_filename_variants(file_name)
-            all_fname_variants.extend(file_name_variants)
-            if (len(list(set(file_name_variants) &
-                         set(all_header_fnames))) == 0):
-                raise custom_exceptions.TimeSeriesFileNameError((
-                    "Time series data file %s provided in tarball/zip file "
-                    "has no corresponding entry in header file.")
-                    % str(file_name))
-            f = the_zipfile.extractfile(this_file)
-            all_lines = [
-                line.strip() for line in f.readlines() if line.strip() != '']
-            line_no = 1
-            for line in all_lines:
-                line = str(line)
-                if line_no == 1:
-                    num_labels = len(line.split(','))
-                    if num_labels < 2:
-                        raise custom_exceptions.DataFormatError((
-                            "Time series data file improperly formatted; at "
-                            "least two comma-separated columns "
-                            "(time,measurement) are required. Error occurred "
-                            "on file %s") % str(file_name))
-                else:
-                    if len(line.split(',')) != num_labels:
-                        raise custom_exceptions.DataFormatError((
-                            "Time series data file improperly formatted; in "
-                            "file %s line number %s has %s columns while the "
-                            "first line has %s columns.") %
-                            (
-                                file_name, str(line_no),
-                                str(len(line.split(","))), str(num_labels)))
-                line_no += 1
-    for header_fname in all_header_fnames:
-        if header_fname not in all_fname_variants:
-            raise custom_exceptions.TimeSeriesFileNameError((
-                "Header file entry with file_name=%s has no corresponding "
-                "file in provided tarball/zip file.") % header_fname)
-    return False
-
-
-def list_filename_variants(file_name):
-    """Return list of possible matching file name variants.
     """
-    return [file_name, os.path.basename(file_name),
-            os.path.splitext(file_name)[0],
-            os.path.splitext(os.path.basename(file_name))[0]]
+    # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
+    if request.method == 'POST':
+        model_name = request.form["Model Title"].strip()
+        fset = m.Featureset.get(m.Featureset.id ==
+                                request.form["Select Featureset"])
+        model_type = str(request.form['model_type_select'])
+        params_to_optimize_list = request.form.getlist("optimize_checkbox")
+        model_params = {}
+        params_to_optimize = {}
+        for k in request.form:
+            if k.startswith(model_type + "_"):
+                param_name = k.replace(model_type + "_", "")
+                if param_name in params_to_optimize_list:
+                    params_to_optimize[param_name] = str(request.form[k])
+                else:
+                    model_params[param_name] = str(request.form[k])
+        model_params = {k: csutil.robust_literal_eval(v)
+                        for k, v in model_params.items()}
+        params_to_optimize = {k: csutil.robust_literal_eval(v)
+                              for k, v in params_to_optimize.items()}
+        csutil.check_model_param_types(model_type, model_params)
+        csutil.check_model_param_types(model_type, params_to_optimize,
+                                       all_as_lists=True)
+        model_path = pjoin(cfg['paths']['models_folder'],
+                           '{}_model.nc'.format(uuid.uuid4()))
+        model_file = m.Model.create(uri=model_path)
+        model = m.Model(name=model_name, file=model_file, featureset=fset,
+                        project=featureset.project, params=model_params,
+                        type=model_type)
+        build_model_task.delay(model_path, model_type, model_params,
+                               fset.file.uri, params_to_optimize)
+        return to_json({"status": "success"})
+    elif request.method == 'GET':
+        if model_id is not None:
+            model_info = m.Model.get(m.Model.id == model_id)
+        else:
+            model_info = [model for p in m.Project.all(USERNAME)
+                          for model in p.models]
+        return to_json(
+            {
+                "status": "success",
+                "data": model_info
+            })
+    elif request.method == 'DELETE':
+        if model_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - model set ID not provided."
+                })
+        f = m.Model.get(m.Model.id == model_id)
+        if f.is_owned_by(USERNAME):
+            f.delete_instance()
+        else:
+            raise UnauthorizedAccess("User not authorized for project.")
+
+        return to_json({"status": "success"})
+    elif request.method == 'PUT':
+        if model_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - model set ID not provided."
+                })
+        # TODO!
+        return to_json(
+            {
+                "status": "error",
+                "message": "Functionality for this endpoint is not yet implemented."
+            })
+
+
+@app.route('/predictions', methods=['POST', 'GET'])
+@app.route('/predictions/<prediction_id>', methods=['GET', 'PUT', 'DELETE'])
+def Predictions(prediction_id=None):
+    """
+    """
+    # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
+    if request.method == 'POST':
+        dataset = m.Dataset.get(m.Dataset.id == int(request.form["Select Dataset"]))
+        model = m.Model.get(m.Model.id == request.form["Select Model"])
+        fset = model.featureset
+        prediction_path = pjoin(cfg['paths']['predictions_folder'],
+                                '{}_prediction.nc'.format(uuid.uuid4()))
+        prediction_file = m.Prediction.create(uri=prediction_path)
+        prediction = m.Prediction(file=prediction_file, dataset=dataset,
+                                  project=dataset.project, model=model)
+        predict_task(dataset.uris, prediction_path, model.file.uri,
+                     custom_features_script=fset.custom_features_script)
+        return to_json({"status": "success"})
+    elif request.method == 'GET':
+        if prediction_id is not None:
+            prediction_info = m.Prediction.get(m.Prediction.id == prediction_id)
+        else:
+            prediction_info = [prediction for p in m.Project.all(USERNAME)
+                          for prediction in p.predictions]
+        return to_json(
+            {
+                "status": "success",
+                "data": prediction_info
+            })
+    elif request.method == 'DELETE':
+        if prediction_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - prediction set ID not provided."
+                })
+        f = m.Prediction.get(m.Prediction.id == prediction_id)
+        if f.is_owned_by(USERNAME):
+            f.delete_instance()
+        else:
+            raise UnauthorizedAccess("User not authorized for project.")
+
+        return to_json({"status": "success"})
+    elif request.method == 'PUT':
+        if prediction_id is None:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": "Invalid request - prediction set ID not provided."
+                })
+        # TODO!
+        return to_json(
+            {
+                "status": "error",
+                "message": "Functionality for this endpoint is not yet implemented."
+            })
 
 
 @app.route("/features_list", methods=["GET"])
@@ -425,7 +449,3 @@ def socket_auth_token():
         }, secret)
     return to_json({'status': 'OK',
                     'data': {'token': token}})
-
-
-if __name__ == '__main__':
-    app.run(debug=True, port=4000)
