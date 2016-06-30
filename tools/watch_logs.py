@@ -74,7 +74,7 @@ def nostdout():
 
 basedir = pjoin(os.path.dirname(__file__), '..')
 logdir = pjoin(basedir, 'log')
-supervisor_conf = pjoin(basedir, 'supervisord.conf')
+supervisor_conf = pjoin(basedir, 'conf/supervisord.conf')
 
 
 watched = []
