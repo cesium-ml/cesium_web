@@ -127,7 +127,7 @@ export function submitNewFeatureset(formdata) {
      dispatch(clearFeaturesForm())
      }
      ).catch(ex => console.log(ex))
-   */)
+   ) */
 }
 
 // Clear features form after submit
