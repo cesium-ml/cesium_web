@@ -20,7 +20,7 @@ var FeaturesTab = React.createClass({
         <FeaturizeForm
             handleInputChange={this.props.handleInputChange}
             formFields={this.props.formFields}
-            handleSubmit={this.props.handleNewDatasetSubmit}
+            handleSubmit={this.props.handleSubmit}
             datasets={this.props.datasets}
             featuresets={this.props.featuresets}
             projects={this.props.projects}
