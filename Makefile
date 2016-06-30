@@ -20,7 +20,6 @@ db_init:
 db_init_force:
 	./cesium_launcher --db-init --force
 
-run_debug: dev_dependencies dependencies
 
 $(bundle): webpack.config.js
 	$(webpack)
@@ -41,8 +40,15 @@ paths:
 log: paths
 	./tools/watch_logs.py
 
-run: paths $(bundle) dependencies
-	$(SUPERVISORD) -c supervisord.conf
+run: paths dependencies
+	$(SUPERVISORD) -c conf/supervisord.conf
+
+debug:
+	$(SUPERVISORD) -c conf/supervisord_debug.conf
+
+# Attach to terminal of running webserver; useful to, e.g., use pdb
+attach:
+	supervisorctl -c conf/supervisord_common.conf fg flask
 
 clean:
 	rm $(bundle)

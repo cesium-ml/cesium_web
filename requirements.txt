@@ -1,5 +1,5 @@
 https://github.com/cesium-ml/cesium/archive/master.zip # >=0.4.0 once released
-flask
+flask>=0.11
 peewee
 psycopg2
 requests
