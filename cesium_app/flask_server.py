@@ -265,11 +265,7 @@ def Features(featureset_id=None):
         except:
             is_test = False
         # TODO: this is messy
-        return featurizationPage(
-            project_id=project_id, featureset_name=featureset_name,
-            dataset_id=dataset_id,
-            featlist=features_to_use, is_test=is_test,
-            custom_script_path=customscript_path)
+        return to_json({"status": "success"})
     elif request.method == 'GET':
         if featureset_id is not None:
             featureset_info = m.Featureset.get(m.Featureset.id == featureset_id)

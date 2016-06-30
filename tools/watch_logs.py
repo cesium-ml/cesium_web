@@ -95,7 +95,7 @@ with nostdout():
 watched.append(cfg['paths']['err_log_path'])
 watched.append('log/error.log')
 watched.append('log/nginx-error.log')
-watched.append('log/nging-access.log')
+watched.append('log/nginx-access.log')
 
 
 def tail_f(filename, interval=1.0):

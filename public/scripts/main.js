@@ -303,7 +303,21 @@ var MainContent = React.createClass({
   },
   handleNewFeaturesetSubmit: function(e) {
     e.preventDefault();
-    store.dispatch(Action.submitNewFeatureset(this.state.forms.featurize));
+    // store.dispatch(Action.submitNewFeatureset(this.state.forms.featurize));
+    $.ajax({
+      url: '/features',
+      dataType: 'json',
+      type: 'POST',
+      data: this.state.forms.featurize,
+      success: function(data) {
+        console.log(data);
+        alert(data);
+      },
+      error: function(xhr, status, err) {
+        console.error('/features', status, err.toString(),
+                      xhr.repsonseText);
+      }
+    });
   },
   handleInputChange: function(inputName, inputType, formName, e) {
     var form_state = this.state.forms;
