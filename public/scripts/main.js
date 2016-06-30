@@ -310,8 +310,7 @@ var MainContent = React.createClass({
       type: 'POST',
       data: this.state.forms.featurize,
       success: function(data) {
-        console.log(data);
-        alert(data);
+        console.log(data.status);
       },
       error: function(xhr, status, err) {
         console.error('/features', status, err.toString(),
