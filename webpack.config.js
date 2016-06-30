@@ -2,19 +2,19 @@ var webpack = require('webpack');
 var path = require('path');
 
 var config = {
-  entry: path.resolve(__dirname, 'public/scripts/main.jsx'),
+  entry: path.resolve(__dirname, 'public/scripts/main.js'),
   output: {
     path: path.resolve(__dirname, 'public/build'),
     filename: 'bundle.js'
   },
   module: {
     loaders: [
-      { test: /\.jsx?$/,
+      { test: /\.js?$/,
         exclude: /node_modules/,
         loader: 'babel',
         query:
         {
-          presets:['es2015', 'react'],
+          presets:['es2015', 'react', 'stage-2'],
           compact: false
         }
       },

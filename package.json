@@ -1,46 +1,49 @@
 {
-    "name": "Cesium",
-    "license": "BSD-3-Clause",
-    "scripts": {
-        "build": "webpack"
-    },
-    "dependencies": {
-        "react": "^15.1.0",
-        "react-addons": "latest",
-        "react-dom": "^15.1.0",
-        "react-modal": "latest",
-        "react-tabs": "latest",
-        "react-dropzone": "latest",
-        "react-file-input": "latest",
-        "react-addons-css-transition-group": "latest",
-        "jquery": "latest",
-        "jquery-form": "latest",
-        "bootstrap": "latest",
-        "bootstrap-css": "latest",
-        "underscore": "latest",
-        "filter-values": "latest",
-        "react-checkbox-group": "latest",
-        "redux": "latest",
-        "react-redux": "latest",
-        "redux-thunk": "latest",
-        "redux-logger": "latest",
-        "whatwg-fetch": "latest"
-    },
-    "devDependencies": {
-        "babel": "latest",
-        "babel-core": "latest",
-        "babel-loader": "latest",
-        "babel-preset-es2015": "latest",
-        "babel-preset-react": "latest",
-        "css-loader": "latest",
-        "style-loader": "latest",
-        "webpack": "latest",
-        "webpack-dev-server": "latest",
-        "imports-loader": "latest",
-        "exports-loader": "latest"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/cesium-ml/cesium_web.git"
-    }
+  "name": "Cesium",
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "build": "webpack"
+  },
+  "dependencies": {
+    "react": "^15.1.0",
+    "react-addons": "latest",
+    "react-dom": "^15.1.0",
+    "react-modal": "latest",
+    "react-tabs": "latest",
+    "react-dropzone": "latest",
+    "react-file-input": "latest",
+    "react-addons-css-transition-group": "latest",
+    "jquery": "latest",
+    "jquery-form": "latest",
+    "bootstrap": "latest",
+    "bootstrap-css": "latest",
+    "underscore": "latest",
+    "filter-values": "latest",
+    "react-checkbox-group": "latest",
+    "redux": "latest",
+    "react-redux": "latest",
+    "redux-thunk": "latest",
+    "redux-logger": "latest",
+    "whatwg-fetch": "latest"
+  },
+  "devDependencies": {
+    "babel": "latest",
+    "babel-core": "latest",
+    "babel-loader": "latest",
+    "babel-preset-stage-2": "latest",
+    "babel-preset-es2015": "latest",
+    "babel-preset-react": "latest",
+    "css-loader": "latest",
+    "eslint": "^2.13.1",
+    "eslint-plugin-react": "^5.2.2",
+    "exports-loader": "latest",
+    "imports-loader": "latest",
+    "style-loader": "latest",
+    "webpack": "latest",
+    "webpack-dev-server": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cesium-ml/cesium_web.git"
+  }
 }
