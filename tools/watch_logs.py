@@ -72,19 +72,23 @@ def nostdout():
     sys.stdout = save_stdout
 
 
+
+def logs_from_config(supervisor_conf):
+    watched = []
+
+    with open(supervisor_conf) as f:
+        for line in f:
+            if '_logfile=' in line:
+                _, logfile = line.strip().split('=')
+                watched.append(logfile)
+
+    return watched
+
+
 basedir = pjoin(os.path.dirname(__file__), '..')
 logdir = pjoin(basedir, 'log')
-supervisor_conf = pjoin(basedir, 'conf/supervisord.conf')
-
-
-watched = []
-
-
-with open(supervisor_conf) as f:
-    for line in f:
-        if '_logfile=' in line:
-            _, logfile = line.strip().split('=')
-            watched.append(logfile)
+watched = logs_from_config(pjoin(basedir, 'conf/supervisord_common.conf'))
+watched.extend(logs_from_config(pjoin(basedir, 'conf/supervisord.conf')))
 
 
 sys.path.insert(0, basedir)
