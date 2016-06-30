@@ -5,14 +5,14 @@ SUPERVISORD=supervisord
 
 bundle = ./public/build/bundle.js
 webpack = ./node_modules/.bin/webpack
-node = ./node_modules/redux
 
 
 dev_dependencies:
 	@./tools/install_deps.py requirements.dev.txt
 
-dependencies: $(node)
+dependencies:
 	@./tools/install_deps.py requirements.txt
+	@./tools/install_npm_deps.py package.json
 
 db_init:
 	-./tools/create_db.sh
@@ -28,9 +28,6 @@ bundle: $(bundle)
 
 bundle-watch:
 	$(webpack) -w
-
-$(node):
-	npm install
 
 paths:
 	mkdir -p log run tmp
