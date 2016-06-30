@@ -15,11 +15,13 @@ dependencies:
 	@./tools/install_npm_deps.py package.json
 
 db_init:
-	-./tools/create_db.sh
+	-./tools/db_create.sh
 
-db_init_force:
-	./cesium_launcher --db-init --force
+db_drop:
+	PYTHONPATH=. ./tools/db_drop.py
 
+db_test_data:
+	PYTHONPATH=. python ./cesium_app/models.py
 
 $(bundle): webpack.config.js
 	$(webpack)
