@@ -5,10 +5,68 @@ import Modal from 'react-modal'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 
 
+var ProjectsTab = React.createClass({
+  render: function() {
+    return (
+      <div>
+        <NewProjectForm
+          handleInputChange={this.props.handleInputChange}
+          formFields={this.props.formFields}
+          handleSubmit={this.props.handleNewProjectSubmit}
+        />
+        <ProjectList
+          projectsList={this.props.projectsList}
+          clickEditProject={this.props.handleClickEditProject}
+          deleteProject={this.props.handleDeleteProject}
+          projectDetails={this.props.projectDetails}
+          handleInputChange={this.props.handleInputChange}
+          updateProjectInfo={this.props.updateProjectInfo}
+        />
+      </div>
+    );
+  }
+});
+
+
+var NewProjectForm = React.createClass({
+  render: function() {
+    return (
+      <div className='formTableDiv' data-test-name='newProjectForm'>
+        <FormTitleRow formTitle='Create a new project'
+        />
+        <FormInputRow
+          inputName='Project Name'
+          inputTag='input'
+          inputType='text'
+          formName='newProject'
+          value={this.props.formFields['Project Name']}
+          handleInputChange={this.props.handleInputChange}
+        />
+        <FormInputRow
+          inputName='Description/notes'
+          inputTag='textarea'
+          formName='newProject'
+          value={this.props.formFields['Description/notes']}
+          handleInputChange={this.props.handleInputChange}
+        />
+        <div className='submitButtonDiv' style={{marginTop: 15}}>
+          <input
+            type='submit'
+            onClick={this.props.handleSubmit}
+            value='Submit'
+            className='submitButton'
+          />
+        </div>
+      </div>
+    );
+  }
+});
+
+
 var ProjectList = React.createClass({
   render: function() {
-    var projectNodes = this.props.projects.map(function(project) {
-      return (
+    console.log("this:", this);
+    let projectNodes = this.props.projects.map(project => (
         <ProjectListRow
           project={project}
           key={project.id}
@@ -18,8 +76,7 @@ var ProjectList = React.createClass({
           handleInputChange={this.props.handleInputChange}
           updateProjectInfo={this.props.updateProjectInfo}
         />
-      );
-    }.bind(this));
+    ));
     return (
       <div className="projectListDiv" style={{marginTop: 40}}>
         <h3>Existing Projects</h3>
@@ -166,4 +223,5 @@ var mapStateToProps = function(state) {
   return {projects: state.projects};
 }
 
-module.exports = connect(mapStateToProps)(ProjectList);
+ProjectList = connect(mapStateToProps)(ProjectList)
+module.exports = ProjectsTab;

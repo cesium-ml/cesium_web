@@ -102,6 +102,8 @@ def Project(project_id=None):
             ).where(m.Project.id == project_id)
         query.execute()
 
+        flow.push(get_username(), 'FETCH_PROJECTS')
+
     elif request.method == "DELETE":
         if project_id is None:
             return to_json(
@@ -116,6 +118,7 @@ def Project(project_id=None):
             raise UnauthorizedAccess("User not authorized for project.")
 
         flow.push(get_username(), 'FETCH_PROJECTS')
+
         return to_json({"status": "success"})
 
 

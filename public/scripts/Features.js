@@ -16,7 +16,7 @@ var TabPanel = ReactTabs.TabPanel;
 var FeaturesTab = React.createClass({
   render: function() {
     return (
-      <div className='featuresTabContent'>
+      <div>
         <FeaturizeForm
             handleInputChange={this.props.handleInputChange}
             formFields={this.props.formFields}
