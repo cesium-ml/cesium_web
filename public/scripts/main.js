@@ -248,11 +248,24 @@ var MainContent = React.createClass({
               sci_features: sci_features_dict
             }
           });
+        this.updateSeldFeatsList();
       }.bind(this),
       error: function(xhr, status, err) {
         console.error('/features_list', status, err.toString(),
                 xhr.repsonseText);
       }.bind(this)
+    });
+  },
+  updateSeldFeatsList: function() {
+    var seld_obs_feats = Object.keys(
+      filter(this.state.available_features['obs_features'], 'checked'));
+    var seld_sci_feats = Object.keys(
+      filter(this.state.available_features['sci_features'], 'checked'));
+    var all_seld_feats = seld_obs_feats.concat(seld_sci_feats);
+    this.setState({
+      forms: {...this.state.forms, featurize: {...this.state.forms.featurize,
+                                    "Selected Features": all_seld_feats}
+      }
     });
   },
   updateSeldObsFeats: function(sel_obs_feats) {
@@ -268,6 +281,7 @@ var MainContent = React.createClass({
           sci_features: this.state.available_features.sci_features
         }
       });
+    this.updateSeldFeatsList();
   },
   updateSeldSciFeats: function(sel_sci_feats) {
     var sci_feats_dict = this.state.available_features.sci_features;
@@ -281,10 +295,15 @@ var MainContent = React.createClass({
           obs_features: this.state.available_features.obs_features
         }
       });
+    this.updateSeldFeatsList();
   },
   testCustomFeatScript: function (e) {
     // TODO: DO STUFF HERE
     console.log('testCustomFeatScript called... Nothing here yet.');
+  },
+  handleNewFeaturesetSubmit: function(e) {
+    e.preventDefault();
+    store.dispatch(Action.submitNewFeatureset(this.state.forms.featurize));
   },
   handleInputChange: function(inputName, inputType, formName, e) {
     var form_state = this.state.forms;
@@ -343,7 +362,7 @@ var MainContent = React.createClass({
             <FeaturesTab
               getInitialState={this.getInitialState}
               loadState={this.loadState}
-              handleNewDatasetSubmit={this.handleNewDatasetSubmit}
+              handleSubmit={this.handleNewFeaturesetSubmit}
               handleInputChange={this.handleInputChange}
               formFields={this.state.forms.featurize}
               projects={this.props.projects}
