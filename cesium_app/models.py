@@ -205,4 +205,4 @@ if __name__ == "__main__":
                      file=test_file)
 
     print("Inserting dummy prediction...")
-    pr = Prediction.create(project=p, model=m, file=test_file)
+    pr = Prediction.create(project=p, model=m, file=test_file, dataset=d)
