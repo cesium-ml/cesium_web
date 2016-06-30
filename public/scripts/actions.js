@@ -88,6 +88,8 @@ function receiveFeaturesets(featuresets) {
 
 // POST new featureset form
 export function submitNewFeatureset(formdata) {
+  var data = new FormData();
+  data.append("json", JSON.stringify(formdata));
   return dispatch => (
     fetch('/features',
           {
@@ -96,15 +98,36 @@ export function submitNewFeatureset(formdata) {
               'Accept': 'application/json',
               'Content-Type': 'application/json'
             },
-            body: formdata
+            body: data
           }
     )
-      .then(response => response.json())
-      .then(json => {
-        dispatch(clearFeaturesForm())
-      }
-      ).catch(ex => console.log(ex))
+     .then(response => response.json())
+     .then(json => {
+       dispatch(clearFeaturesForm())
+     }
+     ).catch(ex => console.log(ex))
   )
+
+  /* return dispatch => (
+     $.ajax({
+     url: '/features',
+     dataType: 'json',
+     type: 'POST',
+     data: formdata,
+     success: function(data) {
+     console.log(data);
+     },
+     error: function(xhr, status, err) {
+     console.error('/features', status, err.toString(),
+     xhr.repsonseText);
+     }
+     })
+     .then(response => response.json())
+     .then(json => {
+     dispatch(clearFeaturesForm())
+     }
+     ).catch(ex => console.log(ex))
+   */)
 }
 
 // Clear features form after submit
