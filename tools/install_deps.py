@@ -28,6 +28,6 @@ with open(req_file) as f:
             print(("Development dependency '{}' unfulfilled. "
                    "Installing requirements.").format(dep))
             subprocess.call("pip install -r {}".format(req_file).split())
-            break
+            sys.exit(0)
 
 print('Dependencies from {} verified.'.format(req_file))
