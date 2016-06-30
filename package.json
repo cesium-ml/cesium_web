@@ -24,7 +24,6 @@
     "react-redux": "latest",
     "redux-thunk": "latest",
     "redux-logger": "latest",
-    "es6-promise": "latest",
     "whatwg-fetch": "latest"
   },
   "devDependencies": {

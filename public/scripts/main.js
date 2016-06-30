@@ -115,14 +115,7 @@ var MainContent = React.createClass({
     }
   },
   componentDidMount: function() {
-    this.loadState();
-  },
-  loadState: function() {
-    store.dispatch(Action.fetchProjects());
-    store.dispatch(Action.fetchDatasets());
-    store.dispatch(Action.fetchFeaturesets());
-    // store.dispatch(Action.fetchModels());
-    // store.dispatch(Action.fetchPredictions());
+    store.dispatch(Action.hydrate());
   },
   updateProjectList: function() {
     $.ajax({
@@ -313,6 +306,12 @@ var MainContent = React.createClass({
             <Tab>Features</Tab>
             <Tab>Models</Tab>
             <Tab>Predict</Tab>
+            <Tab>
+              <WebSocket url={'ws://' + this.props.root + 'websocket'}
+                         auth_url={location.protocol + '//' + this.props.root + 'socket_auth_token'}
+                         messageHandler={messageHandler}
+              />
+            </Tab>
           </TabList>
           <TabPanel>
             <ProjectsTabContent
@@ -362,6 +361,9 @@ var MainContent = React.createClass({
           </TabPanel>
           <TabPanel>
             Predictions...
+          </TabPanel>
+          <TabPanel>
+            <h3>System Status</h3>
           </TabPanel>
         </Tabs>
       </div>
@@ -438,7 +440,7 @@ MainContent = connect(mapStateToProps)(MainContent);
 
 ReactDOM.render(
   <Provider store={store}>
-  <MainContent />
+  <MainContent root={ location.host + location.pathname }/>
   </Provider>,
   document.getElementById('content')
 );
