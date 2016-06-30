@@ -78,7 +78,7 @@ class WebSocket(websocket.WebSocketHandler):
 
 
 if __name__ == "__main__":
-    PORT = 4567
+    PORT = 64000
     LOCAL_OUTPUT = 'ipc:///tmp/message_flow_out'
 
     import zmq
