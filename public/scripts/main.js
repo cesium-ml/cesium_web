@@ -17,21 +17,18 @@ import filter from 'filter-values'
 import 'bootstrap-css'
 import 'bootstrap'
 
-
 import { Provider } from 'react-redux'
+
 import configureStore from './configureStore'
+const store = configureStore()
 
 import * as Action from './actions';
-
-
-const store = configureStore()
 
 import WebSocket from './WebSocket'
 import MessageHandler from './MessageHandler'
 let messageHandler = (new MessageHandler(store.dispatch)).handle;
 
-
-import ProjectList from './ProjectList'
+import ProjectsTab from './Projects'
 import DatasetsTab from './Datasets'
 import FeaturesTab from './Features'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
@@ -121,26 +118,6 @@ var MainContent = React.createClass({
   componentDidMount: function() {
     store.dispatch(Action.hydrate());
   },
-  updateProjectList: function() {
-    $.ajax({
-      url: '/project',
-      dataType: 'json',
-      type: 'GET',
-      success: function(data) {
-        var form_state = this.state.forms;
-        form_state.newProject = this.getInitialState().forms.newProject;
-        this.setState(
-          {
-            projectsList: data.data,
-            forms: form_state
-          });
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error('/project', status, err.toString(),
-                xhr.repsonseText);
-      }.bind(this)
-    });
-  },
   handleNewProjectSubmit: function(e) {
     e.preventDefault();
     $.ajax({
@@ -149,7 +126,7 @@ var MainContent = React.createClass({
       type: 'POST',
       data: this.state.forms.newProject,
       success: function(data) {
-        this.updateProjectList();
+        //
       }.bind(this),
       error: function(xhr, status, err) {
         console.error('/project', status, err.toString(),
@@ -202,7 +179,7 @@ var MainContent = React.createClass({
       dataType: 'json',
       type: 'DELETE',
       success: function(data) {
-        this.updateProjectList();
+        //
       }.bind(this),
       error: function(xhr, status, err) {
         console.error('/project', status, err.toString(),
@@ -350,7 +327,7 @@ var MainContent = React.createClass({
             </Tab>
           </TabList>
           <TabPanel>
-            <ProjectsTabContent
+            <ProjectsTab
               getInitialState={this.getInitialState}
               handleNewProjectSubmit={this.handleNewProjectSubmit}
               handleClickEditProject={this.handleClickEditProject}
@@ -399,62 +376,6 @@ var MainContent = React.createClass({
             <h3>System Status</h3>
           </TabPanel>
         </Tabs>
-      </div>
-    );
-  }
-});
-
-var ProjectsTabContent = React.createClass({
-  render: function() {
-    return (
-      <div className='projectsTabContent'>
-        <NewProjectForm
-          handleInputChange={this.props.handleInputChange}
-          formFields={this.props.formFields}
-          handleSubmit={this.props.handleNewProjectSubmit}
-        />
-        <ProjectList
-          projectsList={this.props.projectsList}
-          clickEditProject={this.props.handleClickEditProject}
-          deleteProject={this.props.handleDeleteProject}
-          projectDetails={this.props.projectDetails}
-          handleInputChange={this.props.handleInputChange}
-          updateProjectInfo={this.props.updateProjectInfo}
-        />
-      </div>
-    );
-  }
-});
-
-var NewProjectForm = React.createClass({
-  render: function() {
-    return (
-      <div className='formTableDiv' data-test-name='newProjectForm'>
-        <FormTitleRow formTitle='Create a new project'
-        />
-        <FormInputRow
-          inputName='Project Name'
-          inputTag='input'
-          inputType='text'
-          formName='newProject'
-          value={this.props.formFields['Project Name']}
-          handleInputChange={this.props.handleInputChange}
-        />
-        <FormInputRow
-          inputName='Description/notes'
-          inputTag='textarea'
-          formName='newProject'
-          value={this.props.formFields['Description/notes']}
-          handleInputChange={this.props.handleInputChange}
-        />
-        <div className='submitButtonDiv' style={{marginTop: 15}}>
-          <input
-            type='submit'
-            onClick={this.props.handleSubmit}
-            value='Submit'
-            className='submitButton'
-          />
-        </div>
       </div>
     );
   }
