@@ -17,13 +17,13 @@ from cesium import obs_feature_tools as oft
 from cesium import science_feature_tools as sft
 from cesium import data_management
 from cesium import custom_exceptions
-from cesium import util as csutil
 
 from .json_util import to_json
 
 from . import models as m
 from .flow import Flow
 from .celery_tasks import featurize_task, build_model_task, predict_task
+from . import util
 
 # Flask initialization
 app = Flask(__name__, static_url_path='', static_folder='../public')
@@ -315,18 +315,18 @@ def Models(model_id=None):
                     params_to_optimize[param_name] = str(request.form[k])
                 else:
                     model_params[param_name] = str(request.form[k])
-        model_params = {k: csutil.robust_literal_eval(v)
+        model_params = {k: util.robust_literal_eval(v)
                         for k, v in model_params.items()}
-        params_to_optimize = {k: csutil.robust_literal_eval(v)
+        params_to_optimize = {k: util.robust_literal_eval(v)
                               for k, v in params_to_optimize.items()}
-        csutil.check_model_param_types(model_type, model_params)
-        csutil.check_model_param_types(model_type, params_to_optimize,
+        util.check_model_param_types(model_type, model_params)
+        util.check_model_param_types(model_type, params_to_optimize,
                                        all_as_lists=True)
         model_path = pjoin(cfg['paths']['models_folder'],
                            '{}_model.nc'.format(uuid.uuid4()))
-        model_file = m.Model.create(uri=model_path)
+        model_file = m.File.create(uri=model_path)
         model = m.Model(name=model_name, file=model_file, featureset=fset,
-                        project=featureset.project, params=model_params,
+                        project=fset.project, params=model_params,
                         type=model_type)
         build_model_task.delay(model_path, model_type, model_params,
                                fset.file.uri, params_to_optimize)
