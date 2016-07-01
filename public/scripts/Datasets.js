@@ -25,7 +25,7 @@ var DatasetsTab = React.createClass({
 var DatasetsForm = React.createClass({
   render: function() {
     return (
-      <div className='formTableDiv'>
+      <div>
         <form id='datasetForm' name='datasetForm'
               action='/uploadData' enctype='multipart/form-data'
               method='post'>

@@ -31,7 +31,7 @@ var ProjectsTab = React.createClass({
 var NewProjectForm = React.createClass({
   render: function() {
     return (
-      <div className='formTableDiv' data-test-name='newProjectForm'>
+      <div data-test-name='newProjectForm'>
         <FormTitleRow formTitle='Create a new project'
         />
         <FormInputRow
@@ -65,7 +65,6 @@ var NewProjectForm = React.createClass({
 
 var ProjectList = React.createClass({
   render: function() {
-    console.log("this:", this);
     let projectNodes = this.props.projects.map(project => (
         <ProjectListRow
           project={project}

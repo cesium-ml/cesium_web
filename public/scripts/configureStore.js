@@ -1,4 +1,4 @@
-import { createStore, applyMiddleware } from 'redux'
+import { createStore, applyMiddleware, compose } from 'redux'
 import thunk from 'redux-thunk'
 import createLogger from 'redux-logger'
 import rootReducer from './reducers'
@@ -9,6 +9,12 @@ export default function configureStore(preloadedState) {
   return createStore(
     rootReducer,
     preloadedState,
-    applyMiddleware(thunk, logger)
+    compose(
+      applyMiddleware(thunk, logger),
+
+      // Enable the Chrome developer plugin
+      // https://github.com/zalmoxisus/redux-devtools-extension
+      window.devToolsExtension ? window.devToolsExtension() : f => f,
+    )
   )
 }

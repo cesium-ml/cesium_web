@@ -10,6 +10,8 @@ export const RECEIVE_FEATURESETS = 'RECEIVE_FEATURESETS'
 export const RECEIVE_MODELS = 'RECEIVE_MODELS'
 export const RECEIVE_PREDICTIONS = 'RECEIVE_PREDICTIONS'
 export const CLEAR_FEATURES_FORM = 'CLEAR_FEATURES_FORM'
+export const CREATE_MODEL = 'CREATE_MODEL'
+
 
 export function hydrate() {
   return dispatch => {
@@ -137,3 +139,12 @@ function clearFeaturesForm() {
   }
 }
 
+
+export function createModel(form) {
+  console.log('Form data');
+  console.log(form);
+  return {
+    type: CREATE_MODEL,
+    payload: form
+  }
+}

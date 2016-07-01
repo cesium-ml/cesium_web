@@ -1,5 +1,5 @@
-
 import { combineReducers } from 'redux'
+import {reducer as formReducer} from 'redux-form'
 
 import {
   RECEIVE_PROJECTS,
@@ -7,7 +7,7 @@ import {
   RECEIVE_FEATURESETS,
   RECEIVE_MODELS,
   RECEIVE_PREDICTIONS,
-  CLEAR_FEATURES_FORM
+  CLEAR_FEATURES_FORM,
 } from './actions'
 
 
@@ -43,10 +43,20 @@ function featuresets(state = [], action) {
 }
 
 
+function models(state, action) {
+  switch (action.type) {
+  default:
+      return {formFields: {}}
+  }
+}
+
+
 const rootReducer = combineReducers({
   projects,
   datasets,
-  featuresets
+  featuresets,
+  models,
+  form: formReducer
 })
 
 export default rootReducer

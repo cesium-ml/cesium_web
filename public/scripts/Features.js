@@ -40,7 +40,7 @@ var FeaturesTab = React.createClass({
 var FeaturizeForm = React.createClass({
   render: function() {
     return (
-      <div className='formTableDiv'>
+      <div>
         <form id='featurizeForm' name='featurizeForm'
               action='/FeaturizeData' enctype='multipart/form-data'
               method='post'>

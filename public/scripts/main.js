@@ -31,6 +31,7 @@ let messageHandler = (new MessageHandler(store.dispatch)).handle;
 import ProjectsTab from './Projects'
 import DatasetsTab from './Datasets'
 import FeaturesTab from './Features'
+import ModelsTab from './Models'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 
 
@@ -367,7 +368,7 @@ var MainContent = React.createClass({
             />
           </TabPanel>
           <TabPanel>
-            Models...
+            <ModelsTab onSubmitModelClick={this.props.onSubmitModelClick}/>
           </TabPanel>
           <TabPanel>
             Predictions...
@@ -389,7 +390,15 @@ var mapStateToProps = function(state) {
   };
 }
 
-MainContent = connect(mapStateToProps)(MainContent);
+var mapDispatchToProps = (dispatch) => {
+  return {
+    onSubmitModelClick: (form) => {
+      dispatch(Action.createModel(form));
+    }
+  }
+}
+
+MainContent = connect(mapStateToProps, mapDispatchToProps)(MainContent);
 
 
 ReactDOM.render(
