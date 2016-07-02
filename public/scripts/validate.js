@@ -12,7 +12,6 @@ export function email(value) {
 
 export function required(value) {
   if (isEmpty(value)) {
-    console.log('Required');
     return 'Required';
   }
 }

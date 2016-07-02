@@ -22,11 +22,18 @@ export var Error = (props) => {
     return null;
   }
 }
+Error.propTypes = {
+  touched: PropTypes.bool.isRequired,
+  error: PropTypes.string
+}
 
 export var Form = (props) => {
   return (
     <form {...props} class="form-inline"/>
   )
+}
+Form.propTypes = {
+  onSubmit: PropTypes.func.isRequired
 }
 
 export var TextInput = (props) => {
@@ -44,6 +51,9 @@ export var TextInput = (props) => {
     </div>
   )
 }
+TextInput.propTypes = {
+  label: PropTypes.string
+}
 
 export var SelectInput = (props) => {
   let selectInputStyle = {
@@ -53,15 +63,27 @@ export var SelectInput = (props) => {
   return (
     <div className="form-group" style={selectInputStyle}>
       <label>{props.label}</label>
-      <select {...props} className="form-control">
-        {props.options.map(option => (
-           <option value={option.id} key={option.id}>
-             {option.name}
-          </option>
-        ))};
+      <select className="form-control"
+              value={props.value}
+              {...props}>
+        {props.options.map((option, idx) => (
+           <option value={option.id} key={option.id} >
+             {option.label}
+           </option>
+         ))}
       </select>
     </div>
   );
+}
+SelectInput.propTypes = {
+  label: PropTypes.string,
+  options: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.oneOfType([
+      PropTypes.number,
+      PropTypes.string]).isRequired,
+    label: PropTypes.string.isRequired
+  })),
+  value: PropTypes.any  // array of individual value
 }
 
 
@@ -77,6 +99,14 @@ export var SubmitButton = (props) => {
     </div>
   )
 }
+SubmitButton.propTypes = {
+  label: PropTypes.string
+}
+
+
+
+
+
 
 export var FormInputRow = React.createClass({
   render: function() {

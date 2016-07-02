@@ -3,6 +3,8 @@ import { connect } from "react-redux"
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import Modal from 'react-modal'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
+import { FormComponent, Form, SelectInput } from './Form'
+import {reduxForm} from 'redux-form'
 
 
 var ProjectsTab = React.createClass({
@@ -63,7 +65,45 @@ var NewProjectForm = React.createClass({
 });
 
 
-var ProjectList = React.createClass({
+class ProjectSelector extends FormComponent {
+  render() {
+    const {fields: {modelName, project, featureSet, modelType}, handleSubmit} = this.props;
+
+    let projects = this.props.projects.map(project => (
+      {id: project.id,
+       label: project.name}
+    ));
+    return (
+      <Form onSubmit={form => null}>
+      <SelectInput label="Choose Project"
+                   options={projects}
+                   onChange={this.props.onChange}
+                   {...project}/>
+      </Form>
+    );
+  }
+}
+
+let mapStateToProps = (state) => {
+  let projectZero = state.projects[0];
+  return {
+    projects: state.projects,
+    initialValues: {
+      project: projectZero ? projectZero.id.toString() : ""
+    }
+  };
+}
+
+ProjectSelector = reduxForm({
+  form: 'projectSelector',
+  fields: ['project'],
+}, mapStateToProps)(ProjectSelector)
+
+
+//ProjectSelector = connect(mapStateToProps)(ProjectSelector);
+
+
+export var ProjectList = React.createClass({
   render: function() {
     let projectNodes = this.props.projects.map(project => (
         <ProjectListRow
@@ -218,9 +258,11 @@ var EditProjectForm = React.createClass({
 });
 
 
-var mapStateToProps = function(state) {
-  return {projects: state.projects};
-}
+ProjectList = connect(state => {
+  return {
+    projects: state.projects
+  }
+})(ProjectList);
 
-ProjectList = connect(mapStateToProps)(ProjectList)
-module.exports = ProjectsTab;
+export default ProjectsTab;
+export { ProjectSelector };

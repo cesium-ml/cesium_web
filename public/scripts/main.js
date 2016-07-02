@@ -28,7 +28,7 @@ import WebSocket from './WebSocket'
 import MessageHandler from './MessageHandler'
 let messageHandler = (new MessageHandler(store.dispatch)).handle;
 
-import ProjectsTab from './Projects'
+import ProjectsTab, { ProjectSelector } from './Projects'
 import DatasetsTab from './Datasets'
 import FeaturesTab from './Features'
 import ModelsTab from './Models'
@@ -313,6 +313,7 @@ var MainContent = React.createClass({
   render: function() {
     return (
       <div className='mainContent'>
+        <ProjectSelector/>
         <Tabs classname='first'>
           <TabList>
             <Tab>Projects</Tab>
@@ -368,7 +369,7 @@ var MainContent = React.createClass({
             />
           </TabPanel>
           <TabPanel>
-            <ModelsTab onSubmitModelClick={this.props.onSubmitModelClick}/>
+            <ModelsTab onSubmitModelClick={this.props.handleSubmitModelClick}/>
           </TabPanel>
           <TabPanel>
             Predictions...
@@ -383,16 +384,27 @@ var MainContent = React.createClass({
 });
 
 var mapStateToProps = function(state) {
+  // This can be improved by using
+  // http://redux-form.com/6.0.0-alpha.13/docs/api/FormValueSelector.md/
+  let projectSelector = state.form.projectSelector;
+  let selectedProject = projectSelector ? projectSelector.project.value : "";
+  console.log({
+    projects: state.projects,
+    datasets: state.datasets,
+    featuresets: state.featuresets,
+    selectedProject: selectedProject
+  });
   return {
     projects: state.projects,
     datasets: state.datasets,
-    featuresets: state.featuresets
+    featuresets: state.featuresets,
+    selectedProject: selectedProject
   };
 }
 
 var mapDispatchToProps = (dispatch) => {
   return {
-    onSubmitModelClick: (form) => {
+    handleSubmitModelClick: (form) => {
       dispatch(Action.createModel(form));
     }
   }

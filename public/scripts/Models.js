@@ -11,6 +11,11 @@ const ModelsTab = (props) => (
   </div>
 );
 
+const models = [
+  {id: 'RandomForestClassifier', label: 'Random Forest Classifier'},
+  {id: 'LinearRegression', label: 'Linear Regression'}
+]
+
 class NewModelForm extends FormComponent {
   render() {
     const {fields: {modelName, project, featureSet, modelType}, handleSubmit} = this.props;
@@ -18,8 +23,7 @@ class NewModelForm extends FormComponent {
       <Form onSubmit={handleSubmit}>
         <TextInput label="Model Name" {...modelName}/>
         <SelectInput label="Model Type"
-                     options={[{id: 1, name: 'RandomForestClassifier'},
-                               {id: 2, name: 'Linear'}]}
+                     options={models}
                      {...modelType}/>
         <SubmitButton label="Create Model"/>
       </Form>
@@ -27,68 +31,15 @@ class NewModelForm extends FormComponent {
   }
 }
 
-//NewModelForm.propTypes = {
-//  fields: PropTypes.object.isRequired,
-//  handleSubmit: PropTypes.func.isRequired,
-//  resetForm: PropTypes.func.isRequired,
-//  submitting: PropTypes.bool.isRequired
-//}
-
 const validate = Validate.createValidator({
   modelName: [Validate.required],
 });
-
-NewModelForm = reduxForm({
-  form: 'newModel',
-  fields: ['modelName', 'project', 'featureSet', 'modelType'],
-  validate
-})(NewModelForm);
-
-
-/* var ModelForm = React.createClass({
- *   render: function() {
- *     return (
- *       <div>
- *       <form>
- *       <FormTitleRow formTitle='Create Model'/>
- *       <FormInputRow inputName='Name' inputTag='input' inputType='text'
- *                     handleInputChange={console.log}/>
- *       <FormSelectInput inputName='Model Type'
- *                        inputTag='select'
- *                        optionsList={[{id: 1, name: 'RandomForestClassifier'},
- *                                      {id: 2, name: 'Linear'}]}
- *                        handleInputChange={console.log}
- *       />
- *       <FormSelectInput inputName='Select Project'
- *                        inputTag='select'
- *                        optionsList={this.props.projects}
- *                        handleInputChange={console.log}
- *       />
- *       <FormSelectInput inputName='Select Feature Set'
- *                        inputTag='select'
- *                        optionsList={this.props.featureSets}
- *                        handleInputChange={console.log}
- *       />
- * 
- *       <input type='submit'
- *              onClick={x => console.log(x)}
- *              value='Create Model'
- *              className='submitButton'
- *       />
- * 
- *       </form>
- *       </div>
- *     )
- *   }
- * });
- * */
 
 const mapStateToProps = function(state) {
   return {...state.models,
           projects: state.projects,
           featureSets: state.featuresets};
 }
-
 
 const mapDispatchToProps = (dispatch) => {
   return {
@@ -98,6 +49,13 @@ const mapDispatchToProps = (dispatch) => {
   }
 }
 
-NewModelForm = connect(mapStateToProps, mapDispatchToProps)(NewModelForm);
+NewModelForm = reduxForm({
+  form: 'newModel',
+  fields: ['modelName', 'project', 'featureSet', 'modelType'],
+  initialValues: {
+    modelType: models[0].id
+  },
+  validate
+}, mapStateToProps, mapDispatchToProps)(NewModelForm);
 
 export default ModelsTab;
