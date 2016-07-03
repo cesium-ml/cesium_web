@@ -28,7 +28,7 @@ import WebSocket from './WebSocket'
 import MessageHandler from './MessageHandler'
 let messageHandler = (new MessageHandler(store.dispatch)).handle;
 
-import ProjectsTab, { ProjectSelector } from './Projects'
+import { ProjectSelector, AddProject, CurrentProject } from './Projects'
 import DatasetsTab from './Datasets'
 import FeaturesTab from './Features'
 import ModelsTab from './Models'
@@ -50,11 +50,6 @@ var MainContent = React.createClass({
   getInitialState: function() {
     return {
       forms: {
-        newProject:
-        {
-          'Project Name': '',
-          'Description/notes': ''
-        },
         newDataset:
         {
           'Select Project': '',
@@ -80,11 +75,6 @@ var MainContent = React.createClass({
         {
           'Select Project': ''
         },
-        selectedProjectToEdit:
-        {
-          'Description/notes': '',
-          'Project Name': ''
-        }
       },
       available_features:
       {
@@ -96,25 +86,25 @@ var MainContent = React.createClass({
     };
   },
   componentWillReceiveProps: function(nextProps) {
-    if (!this.state.forms.newDataset['Select Project']) {
-      var first_project_id = nextProps.projects[0].id;
-      var first_dataset_id = nextProps.datasets[0].id;
-      this.setState(
-        {forms: {...this.state.forms,
-                 newDataset: { ...this.state.forms.newDataset,
-                               'Select Project': first_project_id },
-                 featurize: { ...this.state.forms.featurize,
-                              'Select Dataset': first_dataset_id,
-                              'Select Project': first_project_id },
-                 model: { ...this.state.forms.model,
-                          'Select Dataset': first_dataset_id,
-                          'Select Project': first_project_id },
-                 predict: { ...this.state.forms.predict,
-                            'Select Dataset': first_dataset_id,
-                            'Select Project': first_project_id }
-        }}
-      );
-    }
+    /* if (!this.state.forms.newDataset['Select Project']) {
+     *   var first_project_id = nextProps.projects[0].id;
+     *   var first_dataset_id = nextProps.datasets[0].id;
+     *   this.setState(
+     *     {forms: {...this.state.forms,
+     *              newDataset: { ...this.state.forms.newDataset,
+     *                            'Select Project': first_project_id },
+     *              featurize: { ...this.state.forms.featurize,
+     *                           'Select Dataset': first_dataset_id,
+     *                           'Select Project': first_project_id },
+     *              model: { ...this.state.forms.model,
+     *                       'Select Dataset': first_dataset_id,
+     *                       'Select Project': first_project_id },
+     *              predict: { ...this.state.forms.predict,
+     *                         'Select Dataset': first_dataset_id,
+     *                         'Select Project': first_project_id }
+     *     }}
+     *   );
+     * }*/
   },
   componentDidMount: function() {
     store.dispatch(Action.hydrate());
@@ -311,12 +301,16 @@ var MainContent = React.createClass({
     this.setState({forms: form_state});
   },
   render: function() {
+    let style = {
+      width: 800
+    }
     return (
-      <div className='mainContent'>
-        <ProjectSelector/>
+      <div className='mainContent' style={style}>
+      <ProjectSelector/>
+
         <Tabs classname='first'>
           <TabList>
-            <Tab>Projects</Tab>
+            <Tab>Project</Tab>
             <Tab>Data</Tab>
             <Tab>Features</Tab>
             <Tab>Models</Tab>
@@ -329,28 +323,11 @@ var MainContent = React.createClass({
             </Tab>
           </TabList>
           <TabPanel>
-            <ProjectsTab
-              getInitialState={this.getInitialState}
-              handleNewProjectSubmit={this.handleNewProjectSubmit}
-              handleClickEditProject={this.handleClickEditProject}
-              handleDeleteProject={this.handleDeleteProject}
-              handleInputChange={this.handleInputChange}
-              formFields={this.state.forms.newProject}
-              projects={this.props.projects}
-              projectDetails={this.state.forms.selectedProjectToEdit}
-              updateProjectInfo={this.updateProjectInfo}
-            />
+            <AddProject/>
+            <CurrentProject selectedProject={this.props.selectedProject}/>
           </TabPanel>
           <TabPanel>
-            <DatasetsTab
-              getInitialState={this.getInitialState}
-              handleNewDatasetSubmit={this.handleNewDatasetSubmit}
-              handleInputChange={this.handleInputChange}
-              formFields={this.state.forms.newDataset}
-              formName='newDataset'
-              projects={this.props.projects}
-              datasets={this.props.datasets}
-            />
+            <DatasetsTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
           <TabPanel>
             <FeaturesTab
@@ -387,13 +364,14 @@ var mapStateToProps = function(state) {
   // This can be improved by using
   // http://redux-form.com/6.0.0-alpha.13/docs/api/FormValueSelector.md/
   let projectSelector = state.form.projectSelector;
-  let selectedProject = projectSelector ? projectSelector.project.value : "";
-  console.log({
-    projects: state.projects,
-    datasets: state.datasets,
-    featuresets: state.featuresets,
-    selectedProject: selectedProject
-  });
+  let selectedProjectId = projectSelector ? projectSelector.project.value : "";
+  let selectedProject = state.projects.filter(p => (p.id == selectedProjectId));
+  if (selectedProject.length > 0) {
+    selectedProject = selectedProject[0];
+  } else {
+    selectedProject = {'id': '', label: '', description: ''};
+  }
+
   return {
     projects: state.projects,
     datasets: state.datasets,

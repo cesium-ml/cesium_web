@@ -56,6 +56,12 @@ export function match(field) {
   };
 }
 
+export function oneFile(field) {
+  if (isEmpty(field) || (field.length != 1)) {
+    return 'Required';
+  }
+}
+
 export function createValidator(rules) {
   return (data = {}) => {
     const errors = {};

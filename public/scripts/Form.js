@@ -28,8 +28,13 @@ Error.propTypes = {
 }
 
 export var Form = (props) => {
+  let style = {
+    width: 400,
+  }
   return (
-    <form {...props} class="form-inline"/>
+    <div style={style}>
+      <form {...props} className="form-horizontal"/>
+    </div>
   )
 }
 Form.propTypes = {
@@ -38,7 +43,7 @@ Form.propTypes = {
 
 export var TextInput = (props) => {
  let textInputStyle = {
-    paddingTop: 10
+   paddingTop: 10,
   }
 
   return (
@@ -64,7 +69,7 @@ export var SelectInput = (props) => {
     <div className="form-group" style={selectInputStyle}>
       <label>{props.label}</label>
       <select className="form-control"
-              value={props.value}
+              value={props.value}  /* XXX TODO can this be removed? */
               {...props}>
         {props.options.map((option, idx) => (
            <option value={option.id} key={option.id} >
@@ -72,6 +77,7 @@ export var SelectInput = (props) => {
            </option>
          ))}
       </select>
+      <Error {...props}/>
     </div>
   );
 }
@@ -104,7 +110,18 @@ SubmitButton.propTypes = {
 }
 
 
+export var FileInput = (props) => {
+  let fileInputStyle = {
+  }
 
+  return (
+    <div className="form-group" style={fileInputStyle}>
+      <label>{props.label}</label>
+      <input type="file" {...props} value={null}/>
+      <Error {...props}/>
+    </div>
+  )
+}
 
 
 
@@ -120,10 +137,7 @@ export var FormInputRow = React.createClass({
           <this.props.inputTag
                  type={this.props.inputType}
                  value={this.props.value}
-                 onChange={this.props.handleInputChange.bind(
-                     null, this.props.inputName,
-                     this.props.inputType,
-                     this.props.formName)}
+                 onChange={this.props.handleInputChange}
           />
         </div>
       </div>
@@ -149,14 +163,8 @@ export var FormSelectInput = React.createClass({
            style={{marginLeft: 340, marginTop: 5}}>
           <select
             value={this.props.value}
-            onLoad={this.props.handleInputChange.bind(
-                null, this.props.inputName,
-                this.props.inputType,
-                this.props.formName)}
-            onChange={this.props.handleInputChange.bind(
-                null, this.props.inputName,
-                this.props.inputType,
-                this.props.formName)}>
+            onLoad={this.props.handleInputChange}
+            onChange={this.props.handleInputChange}>
             {selectOptions}
           </select>
         </div>

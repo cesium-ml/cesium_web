@@ -3,27 +3,18 @@ import { connect } from "react-redux"
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import Modal from 'react-modal'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
-import { FormComponent, Form, SelectInput } from './Form'
+
+import { FormComponent, Form, SelectInput, TextInput, SubmitButton } from './Form'
 import {reduxForm} from 'redux-form'
+import * as Validate from './validate'
+import {AddExpand} from './presentation'
 
 
 var ProjectsTab = React.createClass({
   render: function() {
     return (
       <div>
-        <NewProjectForm
-          handleInputChange={this.props.handleInputChange}
-          formFields={this.props.formFields}
-          handleSubmit={this.props.handleNewProjectSubmit}
-        />
-        <ProjectList
-          projectsList={this.props.projectsList}
-          clickEditProject={this.props.handleClickEditProject}
-          deleteProject={this.props.handleDeleteProject}
-          projectDetails={this.props.projectDetails}
-          handleInputChange={this.props.handleInputChange}
-          updateProjectInfo={this.props.updateProjectInfo}
-        />
+        {/* <Project/> */}
       </div>
     );
   }
@@ -41,14 +32,14 @@ var NewProjectForm = React.createClass({
           inputTag='input'
           inputType='text'
           formName='newProject'
-          value={this.props.formFields['Project Name']}
+          value=""
           handleInputChange={this.props.handleInputChange}
         />
         <FormInputRow
           inputName='Description/notes'
           inputTag='textarea'
           formName='newProject'
-          value={this.props.formFields['Description/notes']}
+          value=""
           handleInputChange={this.props.handleInputChange}
         />
         <div className='submitButtonDiv' style={{marginTop: 15}}>
@@ -65,6 +56,38 @@ var NewProjectForm = React.createClass({
 });
 
 
+class ProjectForm extends FormComponent {
+  render() {
+    const {fields: {projectName, projectDescription}, handleSubmit} = this.props;
+
+    return (
+      <Form onSubmit={handleSubmit}>
+        <TextInput label="Project Name" {...projectName}/>
+        <TextInput label="Project Description" {...projectDescription}/>
+        <SubmitButton label="Create Project"/>
+      </Form>
+    )
+  }
+}
+
+const validate = Validate.createValidator({
+  projectName: [Validate.required],
+});
+
+ProjectForm = reduxForm({
+  form: 'newProject',
+  fields: ['projectName', 'projectDescription'],
+  validate
+})(ProjectForm);
+
+
+export var AddProject = (props) => (
+  <AddExpand label="Add Project">
+    <ProjectForm onSubmit={(x) => {console.log(x)}}/>
+  </AddExpand>
+);
+
+
 class ProjectSelector extends FormComponent {
   render() {
     const {fields: {modelName, project, featureSet, modelType}, handleSubmit} = this.props;
@@ -73,13 +96,22 @@ class ProjectSelector extends FormComponent {
       {id: project.id,
        label: project.name}
     ));
+
+    let style = {
+      form: {
+        display: 'block-inline',
+      }
+    }
+
     return (
-      <Form onSubmit={form => null}>
-      <SelectInput label="Choose Project"
-                   options={projects}
-                   onChange={this.props.onChange}
-                   {...project}/>
-      </Form>
+      <div>
+        <Form onSubmit={form => null} style={style.form}>
+          <SelectInput label="Select Project"
+                       options={projects}
+                       onChange={this.props.onChange}
+                       {...project}/>
+        </Form>
+      </div>
     );
   }
 }
@@ -99,6 +131,22 @@ ProjectSelector = reduxForm({
   fields: ['project'],
 }, mapStateToProps)(ProjectSelector)
 
+
+export var CurrentProject = (props) => {
+  let style = {
+    marginBottom: '1em',
+    padding: '0.5em'
+  }
+
+  let project = props.selectedProject;
+  return (
+    <div style={style}>
+      <b>{project.name}</b><br/>
+      {project.description ? <span><em>{project.description}</em><br/></span> : ""}
+      <b>id:</b> {project.id}
+    </div>
+  );
+}
 
 //ProjectSelector = connect(mapStateToProps)(ProjectSelector);
 
@@ -160,19 +208,13 @@ var ProjectListRow = React.createClass({
             handleInputChange={this.props.handleInputChange}
             handleSubmit={this.props.updateProjectInfo}
           />
-            {/* Glyphicons don't work with npm bootstrap!
-            <span className="glyphicon glyphicon-edit"
-                title="Edit">
-            </span>
-            */}
-          <a href="#" onClick={this.props.deleteProject.bind(null, this.props.project.id)}>
+          <a href="#" onClick={(e) => (console.log(e))}>
             {/* Glyphicons don't work with npm bootstrap!
             <span style={{marginLeft: 10}}
                 className="glyphicon glyphicon-trash"
                 title="Delete">
             </span>
             */}
-            { " " }[Delete]
           </a>
         </div>
       </div>
@@ -233,7 +275,7 @@ var EditProjectForm = React.createClass({
                   inputTag="input"
                   inputType="text"
                   formName="selectedProjectToEdit"
-                  value={this.props.projectDetails["Project Name"]}
+                  value=""
                   handleInputChange={this.props.handleInputChange}
           />
           <FormInputRow inputName="Description/notes"

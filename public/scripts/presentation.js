@@ -17,6 +17,12 @@ export class AddExpand extends Component {
       sign: {
         fontSize: '200%',
         fontWeight: 'bold'
+      },
+      children: {
+        border: '1px solid lightgray',
+        paddingLeft: '2em',
+        marginTop: '0.5em',
+        marginBottom: '1em'
       }
     }
 
@@ -33,14 +39,14 @@ export class AddExpand extends Component {
       </span>);
 
     return (
-      <div>
+      <div style={style}>
 
         <a style={style.a} onClick={this.toggle}>
           { this.state.folded ? add : shrink }
         </a>
 
         <div style={{marginLeft: '2em'}}>
-          { this.state.folded ? null : this.props.children }
+          { this.state.folded ? null : <div style={style.children}>{this.props.children}</div> }
         </div>
 
       </div>
