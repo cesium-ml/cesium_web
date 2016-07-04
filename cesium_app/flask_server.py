@@ -58,10 +58,11 @@ def Project(project_id=None):
     """
     """
     if request.method == 'POST':
-        proj_name = str(request.form["Project Name"]).strip()
-        proj_description = str(request.form["Description/notes"]).strip()
+        data = request.get_json()
         try:
-            m.Project.add_by(proj_name, proj_description, get_username())
+            m.Project.add_by(data['projectName'],
+                             data.get('projectDescription', ''),
+                             get_username())
         except Exception as e:
             return to_json(
                 {
@@ -69,7 +70,7 @@ def Project(project_id=None):
                     "message": str(e)
                 })
 
-        flow.push(get_username(), 'FETCH_PROJECTS')
+        flow.push(get_username(), 'cesium/FETCH_PROJECTS')
 
         return to_json({"status": "success"})
 
@@ -102,7 +103,7 @@ def Project(project_id=None):
             ).where(m.Project.id == project_id)
         query.execute()
 
-        flow.push(get_username(), 'FETCH_PROJECTS')
+        flow.push(get_username(), 'cesium/FETCH_PROJECTS')
 
     elif request.method == "DELETE":
         if project_id is None:
@@ -117,7 +118,7 @@ def Project(project_id=None):
         else:
             raise UnauthorizedAccess("User not authorized for project.")
 
-        flow.push(get_username(), 'FETCH_PROJECTS')
+        flow.push(get_username(), 'cesium/FETCH_PROJECTS')
 
         return to_json({"status": "success"})
 

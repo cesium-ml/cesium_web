@@ -18,9 +18,10 @@ const models = [
 
 class NewModelForm extends FormComponent {
   render() {
-    const {fields: {modelName, project, featureSet, modelType}, handleSubmit} = this.props;
+    const {fields: {modelName, project, featureSet, modelType},
+           error, handleSubmit} = this.props;
     return (
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit} error={error}>
         <TextInput label="Model Name" {...modelName}/>
         <SelectInput label="Model Type"
                      options={models}

@@ -7,6 +7,7 @@ export class MessageHandler {
   }
 
   handle(message) {
+    console.log('Message received:', message);
     switch (message.action) {
       case Action.FETCH_PROJECTS:
         this.dispatch(Action.fetchProjects());

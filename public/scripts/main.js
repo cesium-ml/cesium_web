@@ -33,18 +33,8 @@ import DatasetsTab from './Datasets'
 import FeaturesTab from './Features'
 import ModelsTab from './Models'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
+import { Notifications } from './Notifications'
 
-
-function json_post(url, body) {
-  return fetch(url, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: body,
-  });
-}
 
 var MainContent = React.createClass({
   getInitialState: function() {
@@ -302,11 +292,16 @@ var MainContent = React.createClass({
   },
   render: function() {
     let style = {
-      width: 800
+      width: 800,
+      notifications: {
+        float: 'left',
+        background: 'teal'
+      }
     }
     return (
       <div className='mainContent' style={style}>
-      <ProjectSelector/>
+        <Notifications style={style.notifications}/>
+        <ProjectSelector/>
 
         <Tabs classname='first'>
           <TabList>

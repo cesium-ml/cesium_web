@@ -30,10 +30,21 @@ Error.propTypes = {
 export var Form = (props) => {
   let style = {
     width: 400,
+    error: {
+      color: 'DarkBlue',
+      background: 'Pink',
+      fontStyle: 'italic',
+      margin: '1em',
+      padding: '0.5em',
+      display: 'block-inline'
+    }
   }
   return (
     <div style={style}>
-      <form {...props} className="form-horizontal"/>
+      <form {...props} className="form-horizontal">
+        {props.children}
+      </form>
+      {props.error && <div style={style.error}>Error: {props.error}</div>}
     </div>
   )
 }
@@ -51,7 +62,7 @@ export var TextInput = (props) => {
       <label>{props.label}</label>
       <input className="form-control"
              type="text"
-      {...props}/>
+             value={props.value || ''} {...props}/>
       <Error {...props}/>
     </div>
   )
@@ -101,7 +112,10 @@ export var SubmitButton = (props) => {
   return (
     <div className="form-group" style={submitButtonStyle}>
       <button type="submit"
-              className="btn btn-primary">{props.label}</button>
+              className="btn btn-primary"
+              disabled={props.submitting}
+              onClick={props.resetFrom}>
+        {props.label}</button>
     </div>
   )
 }

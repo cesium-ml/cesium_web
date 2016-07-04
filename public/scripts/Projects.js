@@ -8,6 +8,7 @@ import { FormComponent, Form, SelectInput, TextInput, SubmitButton } from './For
 import {reduxForm} from 'redux-form'
 import * as Validate from './validate'
 import {AddExpand} from './presentation'
+import * as Action from './actions.js'
 
 
 var ProjectsTab = React.createClass({
@@ -58,13 +59,15 @@ var NewProjectForm = React.createClass({
 
 class ProjectForm extends FormComponent {
   render() {
-    const {fields: {projectName, projectDescription}, handleSubmit} = this.props;
+    const {fields: {projectName, projectDescription},
+           error, resetForm, submitting, handleSubmit} = this.props;
 
     return (
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit} error={error}>
         <TextInput label="Project Name" {...projectName}/>
         <TextInput label="Project Description" {...projectDescription}/>
-        <SubmitButton label="Create Project"/>
+        <SubmitButton label="Create Project"
+                      submitting={submitting} resetForm={resetForm}/>
       </Form>
     )
   }
@@ -83,9 +86,18 @@ ProjectForm = reduxForm({
 
 export var AddProject = (props) => (
   <AddExpand label="Add Project">
-    <ProjectForm onSubmit={(x) => {console.log(x)}}/>
+    <ProjectForm onSubmit={props.addProject}/>
   </AddExpand>
 );
+
+let mapDispatchToProps = (dispatch) => {
+  return (
+    {addProject: (form) => dispatch(Action.addProject(form)),
+    }
+  );
+}
+
+AddProject = connect(null, mapDispatchToProps)(AddProject)
 
 
 class ProjectSelector extends FormComponent {

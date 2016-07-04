@@ -8,6 +8,8 @@ import {
   RECEIVE_MODELS,
   RECEIVE_PREDICTIONS,
   CLEAR_FEATURES_FORM,
+  SHOW_NOTIFICATION,
+  HIDE_NOTIFICATION
 } from './actions'
 
 
@@ -50,12 +52,28 @@ function models(state, action) {
   }
 }
 
+function notifications(state={notes: []}, action) {
+  switch (action.type) {
+    case SHOW_NOTIFICATION:
+      return {
+        notes: state.notes.concat(action.payload)
+      }
+    case HIDE_NOTIFICATION:
+      return {
+        notes: state.notes.slice(1)
+      }
+    default:
+      return state
+  }
+}
+
 
 const rootReducer = combineReducers({
   projects,
   datasets,
   featuresets,
   models,
+  notifications,
   form: formReducer
 })
 
