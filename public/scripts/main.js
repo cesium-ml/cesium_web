@@ -28,7 +28,7 @@ import WebSocket from './WebSocket'
 import MessageHandler from './MessageHandler'
 let messageHandler = (new MessageHandler(store.dispatch)).handle;
 
-import { ProjectSelector, AddProject, CurrentProject } from './Projects'
+import { ProjectSelector, AddProject, DeleteProject, CurrentProject } from './Projects'
 import DatasetsTab from './Datasets'
 import FeaturesTab from './Features'
 import ModelsTab from './Models'
@@ -98,22 +98,6 @@ var MainContent = React.createClass({
   },
   componentDidMount: function() {
     store.dispatch(Action.hydrate());
-  },
-  handleNewProjectSubmit: function(e) {
-    e.preventDefault();
-    $.ajax({
-      url: '/project',
-      dataType: 'json',
-      type: 'POST',
-      data: this.state.forms.newProject,
-      success: function(data) {
-        //
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error('/project', status, err.toString(),
-                xhr.repsonseText);
-      }.bind(this)
-    });
   },
   handleClickEditProject: function(projectID, e) {
     $.ajax({
@@ -292,16 +276,13 @@ var MainContent = React.createClass({
   },
   render: function() {
     let style = {
-      width: 800,
-      notifications: {
-        float: 'left',
-        background: 'teal'
-      }
+      width: 800
     }
     return (
       <div className='mainContent' style={style}>
         <Notifications style={style.notifications}/>
         <ProjectSelector/>
+        <AddProject/>
 
         <Tabs classname='first'>
           <TabList>
@@ -318,8 +299,8 @@ var MainContent = React.createClass({
             </Tab>
           </TabList>
           <TabPanel>
-            <AddProject/>
             <CurrentProject selectedProject={this.props.selectedProject}/>
+            <DeleteProject projectId={this.props.selectedProject.id}/>
           </TabPanel>
           <TabPanel>
             <DatasetsTab selectedProject={this.props.selectedProject}/>
@@ -361,10 +342,13 @@ var mapStateToProps = function(state) {
   let projectSelector = state.form.projectSelector;
   let selectedProjectId = projectSelector ? projectSelector.project.value : "";
   let selectedProject = state.projects.filter(p => (p.id == selectedProjectId));
+
+  let firstProject = state.projects[0] || {'id': '', label: '', description: ''};
+
   if (selectedProject.length > 0) {
     selectedProject = selectedProject[0];
   } else {
-    selectedProject = {'id': '', label: '', description: ''};
+    selectedProject = firstProject;
   }
 
   return {

@@ -31,7 +31,7 @@ export var Form = (props) => {
   let style = {
     width: 400,
     error: {
-      color: 'DarkBlue',
+      color: 'Red',
       background: 'Pink',
       fontStyle: 'italic',
       margin: '1em',

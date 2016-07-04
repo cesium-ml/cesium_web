@@ -9,7 +9,8 @@ import {
   RECEIVE_PREDICTIONS,
   CLEAR_FEATURES_FORM,
   SHOW_NOTIFICATION,
-  HIDE_NOTIFICATION
+  HIDE_NOTIFICATION,
+  SELECT_PROJECT
 } from './actions'
 
 
@@ -17,6 +18,8 @@ function projects(state = [], action) {
   switch (action.type) {
     case RECEIVE_PROJECTS:
       return action.payload
+    case SELECT_PROJECT:
+      action.payload;
     default:
       return state
   }
@@ -68,13 +71,27 @@ function notifications(state={notes: []}, action) {
 }
 
 
+let myFormReducer = (theirFormReducer) => {
+  return function(state, action) {
+    var state = {...state};
+    switch (action.type) {
+      case SELECT_PROJECT:
+        const {id} = action.payload;
+        state.projectSelector.project.value = id.toString();
+    }
+    return theirFormReducer(state, action);
+  }
+}
+
+
+
 const rootReducer = combineReducers({
   projects,
   datasets,
   featuresets,
   models,
   notifications,
-  form: formReducer
+  form: myFormReducer(formReducer)
 })
 
 export default rootReducer

@@ -26,7 +26,7 @@ export var Notifications = (props) => {
       <div style={style}>
         <ul>
           {props.notifications.map((note, idx) => (
-            <li>{note}</li>
+            <li key={idx}>{note}</li>
           ))}
         </ul>
       </div>

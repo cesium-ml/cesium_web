@@ -14,6 +14,8 @@ export class AddExpand extends Component {
   render() {
     let style = {
       a: {textDecoration: 'none'},
+      display: this.props.folded ? 'inline-block' : 'inline',
+      paddingRight: '1em',
       sign: {
         fontSize: '200%',
         fontWeight: 'bold'

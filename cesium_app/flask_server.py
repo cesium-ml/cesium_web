@@ -60,9 +60,10 @@ def Project(project_id=None):
     if request.method == 'POST':
         data = request.get_json()
         try:
-            m.Project.add_by(data['projectName'],
-                             data.get('projectDescription', ''),
-                             get_username())
+            p = m.Project.add_by(data['projectName'],
+                                 data.get('projectDescription', ''),
+                                 get_username())
+            project_id = p.id
         except Exception as e:
             return to_json(
                 {
@@ -72,7 +73,10 @@ def Project(project_id=None):
 
         flow.push(get_username(), 'cesium/FETCH_PROJECTS')
 
-        return to_json({"status": "success"})
+        return to_json({"status": "success",
+                        "data": {
+                            "id": project_id}
+                       })
 
     elif request.method == "GET":
         if project_id is not None:
@@ -110,13 +114,20 @@ def Project(project_id=None):
             return to_json(
                 {
                     "status": "error",
-                    "message": "Invalid request - project ID not provided."
+                    "message": "No project ID provided"
                 })
+
         p = m.Project.get(m.Project.id == project_id)
-        if p.is_owned_by(get_username()):
-            p.delete_instance()
-        else:
-            raise UnauthorizedAccess("User not authorized for project.")
+        try:
+            if p.is_owned_by(get_username()):
+                p.delete_instance()
+            else:
+                raise UnauthorizedAccess("User not authorized")
+        except Exception as e:
+            return to_json({
+                "status": "error",
+                "message": str(e)
+            })
 
         flow.push(get_username(), 'cesium/FETCH_PROJECTS')
 
@@ -199,11 +210,18 @@ def Dataset(dataset_id=None):
                     "status": "error",
                     "message": "Invalid request - data set ID not provided."
                 })
-        d = m.Dataset.get(m.Dataset.id == dataset_id)
-        if d.is_owned_by(get_username()):
-            d.delete_instance()
-        else:
-            raise UnauthorizedAccess("User not authorized for project.")
+        try:
+            d = m.Dataset.get(m.Dataset.id == dataset_id)
+            if d.is_owned_by(get_username()):
+                d.delete_instance()
+            else:
+                raise UnauthorizedAccess("User not authorized for project.")
+        except Exception as e:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": str(e)
+                })
 
         return to_json({"status": "success"})
     elif request.method == "PUT":

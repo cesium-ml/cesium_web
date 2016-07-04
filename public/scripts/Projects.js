@@ -11,52 +11,6 @@ import {AddExpand} from './presentation'
 import * as Action from './actions.js'
 
 
-var ProjectsTab = React.createClass({
-  render: function() {
-    return (
-      <div>
-        {/* <Project/> */}
-      </div>
-    );
-  }
-});
-
-
-var NewProjectForm = React.createClass({
-  render: function() {
-    return (
-      <div data-test-name='newProjectForm'>
-        <FormTitleRow formTitle='Create a new project'
-        />
-        <FormInputRow
-          inputName='Project Name'
-          inputTag='input'
-          inputType='text'
-          formName='newProject'
-          value=""
-          handleInputChange={this.props.handleInputChange}
-        />
-        <FormInputRow
-          inputName='Description/notes'
-          inputTag='textarea'
-          formName='newProject'
-          value=""
-          handleInputChange={this.props.handleInputChange}
-        />
-        <div className='submitButtonDiv' style={{marginTop: 15}}>
-          <input
-            type='submit'
-            onClick={this.props.handleSubmit}
-            value='Submit'
-            className='submitButton'
-          />
-        </div>
-      </div>
-    );
-  }
-});
-
-
 class ProjectForm extends FormComponent {
   render() {
     const {fields: {projectName, projectDescription},
@@ -84,11 +38,17 @@ ProjectForm = reduxForm({
 })(ProjectForm);
 
 
-export var AddProject = (props) => (
-  <AddExpand label="Add Project">
-    <ProjectForm onSubmit={props.addProject}/>
-  </AddExpand>
-);
+export var AddProject = (props) => {
+  let style = {
+    width: 500,
+    background: 'red'
+  }
+  return (
+    <AddExpand label="Add Project">
+      <ProjectForm onSubmit={props.addProject}/>
+    </AddExpand>
+  );
+};
 
 let mapDispatchToProps = (dispatch) => {
   return (
@@ -100,7 +60,30 @@ let mapDispatchToProps = (dispatch) => {
 AddProject = connect(null, mapDispatchToProps)(AddProject)
 
 
-class ProjectSelector extends FormComponent {
+export var DeleteProject = (props) => {
+  let minusStyle = {
+    fontSize: '200%',
+    fontWeight: 'bold'
+  }
+
+  let style = {
+    display: 'inline-block'
+  }
+
+  return (
+    <a style={style} onClick={() => props.deleteProject(props.projectId)}><span style={minusStyle}>- </span>Delete Project</a>
+  )
+}
+
+mapDispatchToProps = (dispatch) => {
+  return (
+    {deleteProject: (id) => dispatch(Action.deleteProject(id))}
+  );
+}
+
+DeleteProject = connect(null, mapDispatchToProps)(DeleteProject);
+
+export class ProjectSelector extends FormComponent {
   render() {
     const {fields: {modelName, project, featureSet, modelType}, handleSubmit} = this.props;
 
@@ -110,13 +93,14 @@ class ProjectSelector extends FormComponent {
     ));
 
     let style = {
+      display: 'inline-block',
+      paddingRight: '2em',
       form: {
-        display: 'block-inline',
       }
     }
 
     return (
-      <div>
+      <div style={style}>
         <Form onSubmit={form => null} style={style.form}>
           <SelectInput label="Select Project"
                        options={projects}
@@ -130,10 +114,15 @@ class ProjectSelector extends FormComponent {
 
 let mapStateToProps = (state) => {
   let projectZero = state.projects[0];
+  let projectZeroId = projectZero ? projectZero.id.toString() : "";
+
+  let selectedProject = state.form.projectSelector;
+  let selectedId = selectedProject ? selectedProject.project.value : "";
+
   return {
     projects: state.projects,
     initialValues: {
-      project: projectZero ? projectZero.id.toString() : ""
+      project: selectedId || projectZeroId
     }
   };
 }
@@ -159,8 +148,6 @@ export var CurrentProject = (props) => {
     </div>
   );
 }
-
-//ProjectSelector = connect(mapStateToProps)(ProjectSelector);
 
 
 export var ProjectList = React.createClass({
@@ -195,39 +182,6 @@ export var ProjectList = React.createClass({
             transitionLeaveTimeout={200}>
             {projectNodes}
           </ReactCSSTransitionGroup>
-        </div>
-      </div>
-    );
-  }
-});
-
-
-var ProjectListRow = React.createClass({
-  render: function() {
-    return (
-      <div>
-        <div style={{width: 320, float: 'left'}}>
-          {this.props.project.name}
-        </div>
-        <div style={{marginLeft: 20, width: 320, float: 'left'}}>
-          {this.props.project.created}
-        </div>
-        <div style={{marginLeft: 710}}>
-          <EditProjectForm
-            clickEditProject={this.props.clickEditProject}
-            project={this.props.project}
-            projectDetails={this.props.projectDetails}
-            handleInputChange={this.props.handleInputChange}
-            handleSubmit={this.props.updateProjectInfo}
-          />
-          <a href="#" onClick={(e) => (console.log(e))}>
-            {/* Glyphicons don't work with npm bootstrap!
-            <span style={{marginLeft: 10}}
-                className="glyphicon glyphicon-trash"
-                title="Delete">
-            </span>
-            */}
-          </a>
         </div>
       </div>
     );
@@ -317,6 +271,3 @@ ProjectList = connect(state => {
     projects: state.projects
   }
 })(ProjectList);
-
-export default ProjectsTab;
-export { ProjectSelector };
