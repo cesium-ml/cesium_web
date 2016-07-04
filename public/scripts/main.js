@@ -28,7 +28,7 @@ import WebSocket from './WebSocket'
 import MessageHandler from './MessageHandler'
 let messageHandler = (new MessageHandler(store.dispatch)).handle;
 
-import { ProjectSelector, AddProject, DeleteProject, CurrentProject } from './Projects'
+import { ProjectSelector, AddProject, ProjectTab } from './Projects'
 import DatasetsTab from './Datasets'
 import FeaturesTab from './Features'
 import ModelsTab from './Models'
@@ -299,8 +299,7 @@ var MainContent = React.createClass({
             </Tab>
           </TabList>
           <TabPanel>
-            <CurrentProject selectedProject={this.props.selectedProject}/>
-            <DeleteProject projectId={this.props.selectedProject.id}/>
+            <ProjectTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
           <TabPanel>
             <DatasetsTab selectedProject={this.props.selectedProject}/>

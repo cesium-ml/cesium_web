@@ -20,7 +20,7 @@ class ProjectForm extends FormComponent {
       <Form onSubmit={handleSubmit} error={error}>
         <TextInput label="Project Name" {...projectName}/>
         <TextInput label="Project Description" {...projectDescription}/>
-        <SubmitButton label="Create Project"
+        <SubmitButton label={this.props.label}
                       submitting={submitting} resetForm={resetForm}/>
       </Form>
     )
@@ -31,11 +31,43 @@ const validate = Validate.createValidator({
   projectName: [Validate.required],
 });
 
-ProjectForm = reduxForm({
+let NewProjectForm = reduxForm({
   form: 'newProject',
   fields: ['projectName', 'projectDescription'],
   validate
 })(ProjectForm);
+
+let EditProjectForm = reduxForm({
+  form: 'editProject',
+  fields: ['projectName', 'projectDescription', 'projectId'],
+  validate
+})(ProjectForm)
+
+
+export var ProjectTab = (props) => {
+  let p = props.selectedProject;
+  return (
+    <div>
+    <EditProjectForm
+      label="Update"
+      onSubmit={props.updateProject}
+      initialValues={{projectName: p.name,
+                      projectDescription: p.description,
+                      projectId: p.id}}
+    />
+
+      <DeleteProject projectId={props.selectedProject.id}/>
+    </div>
+  )
+}
+
+let ptMapDispatchToProps = (dispatch) => {
+  return (
+    {updateProject: (form) => dispatch(Action.updateProject(form))}
+  )
+}
+
+ProjectTab = connect(null, ptMapDispatchToProps)(ProjectTab)
 
 
 export var AddProject = (props) => {
@@ -45,7 +77,7 @@ export var AddProject = (props) => {
   }
   return (
     <AddExpand label="Add Project">
-      <ProjectForm onSubmit={props.addProject}/>
+      <NewProjectForm label="Create Project" onSubmit={props.addProject}/>
     </AddExpand>
   );
 };
@@ -199,71 +231,6 @@ const modalStyles = {
     transform       : 'translate(-50%, -50%)'
   }
 };
-
-
-var EditProjectForm = React.createClass({
-  getInitialState: function() {
-    return {modalIsOpen: false};
-  },
-  clickEdit: function() {
-    this.props.clickEditProject(this.props.project.id);
-    this.openModal();
-  },
-  submit: function(e) {
-    this.props.handleSubmit(e);
-    this.closeModal();
-  },
-  openModal: function() {
-    this.setState({modalIsOpen: true});
-  },
-  afterOpenModal: function() {
-    // TODO
-  },
-  closeModal: function() {
-    this.setState({modalIsOpen: false});
-  },
-  render: function() {
-    return (
-      <span>
-        <a href="#"
-           onClick={this.clickEdit}>
-          [Edit]
-        </a>
-
-        <Modal
-          isOpen={this.state.modalIsOpen}
-          onAfterOpen={this.afterOpenModal}
-          onRequestClose={this.closeModal}
-          style={modalStyles} >
-
-          <FormTitleRow formTitle="Edit Project" />
-          <FormInputRow inputName="Project Name"
-                  inputTag="input"
-                  inputType="text"
-                  formName="selectedProjectToEdit"
-                  value=""
-                  handleInputChange={this.props.handleInputChange}
-          />
-          <FormInputRow inputName="Description/notes"
-                  inputTag="input"
-                  inputType="text"
-                  formName="selectedProjectToEdit"
-                  value={this.props.projectDetails["Description/notes"]}
-                  handleInputChange={this.props.handleInputChange}
-          />
-          <div className="submitButtonDiv" style={{marginTop: 15}}>
-            <input type="submit"
-                 onClick={this.submit}
-                 value="Submit"
-                 className="submitButton"
-            />
-          </div>
-
-        </Modal>
-      </span>
-    );
-  }
-});
 
 
 ProjectList = connect(state => {

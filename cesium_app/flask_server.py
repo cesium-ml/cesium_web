@@ -52,86 +52,80 @@ class UnauthorizedAccess(Exception):
     pass
 
 
+def error(message):
+    return to_json(
+        {
+            "status": "error",
+            "message": message
+        })
+
+def success(data, action=None, payload=None):
+    if action is not None:
+        flow.push(get_username(), action, payload or {})
+
+    return to_json(
+        {
+            "status": "success",
+            "data": data
+        })
+
 @app.route("/project", methods=["GET", "POST"])
 @app.route("/project/<project_id>", methods=["GET", "PUT", "DELETE"])
 def Project(project_id=None):
     """
     """
-    if request.method == 'POST':
-        data = request.get_json()
-        try:
+    try:
+        # First, make sure the user owns the project they are trying to
+        # manipulate
+        result = {}
+
+        if project_id is not None:
+            p = m.Project.get(m.Project.id == project_id)
+
+            if not p.is_owned_by(get_username()):
+                raise RuntimeError("User not authorized")
+
+        if request.method == 'POST':
+            data = request.get_json()
+
             p = m.Project.add_by(data['projectName'],
                                  data.get('projectDescription', ''),
                                  get_username())
-            project_id = p.id
-        except Exception as e:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": str(e)
-                })
 
-        flow.push(get_username(), 'cesium/FETCH_PROJECTS')
+            return success({"id": p.id}, 'cesium/FETCH_PROJECTS')
 
-        return to_json({"status": "success",
-                        "data": {
-                            "id": project_id}
-                       })
-
-    elif request.method == "GET":
-        if project_id is not None:
-            proj_info = m.Project.get(m.Project.id == project_id)
-        else:
-            proj_info = m.Project.all(get_username())
-
-        return to_json(
-            {
-                "status": "success",
-                "data": proj_info
-            })
-
-    elif request.method == "PUT":
-        if project_id is None:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": "Invalid request - project ID not provided."
-                })
-
-        proj_name = str(request.form["Project Name"]).strip()
-        proj_description = str(request.form["Description/notes"]).strip()
-
-        query = m.Project.update(
-            name=proj_name,
-            description=proj_description,
-            ).where(m.Project.id == project_id)
-        query.execute()
-
-        flow.push(get_username(), 'cesium/FETCH_PROJECTS')
-
-    elif request.method == "DELETE":
-        if project_id is None:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": "No project ID provided"
-                })
-
-        p = m.Project.get(m.Project.id == project_id)
-        try:
-            if p.is_owned_by(get_username()):
-                p.delete_instance()
+        elif request.method == "GET":
+            if project_id is not None:
+                proj_info = m.Project.get(m.Project.id == project_id)
             else:
-                raise UnauthorizedAccess("User not authorized")
-        except Exception as e:
-            return to_json({
-                "status": "error",
-                "message": str(e)
-            })
+                proj_info = m.Project.all(get_username())
 
-        flow.push(get_username(), 'cesium/FETCH_PROJECTS')
+            return success(proj_info)
 
-        return to_json({"status": "success"})
+        elif request.method == "PUT":
+            if project_id is None:
+                raise RuntimeError("No project ID provided")
+
+            data = request.get_json()
+            query = m.Project.update(
+                name=data['projectName'],
+                description=data.get('projectDescription', ''),
+                ).where(m.Project.id == project_id)
+            query.execute()
+
+            return success({}, 'cesium/FETCH_PROJECTS')
+
+        elif request.method == "DELETE":
+            if project_id is None:
+                raise RuntimeError("No project ID provided")
+
+            p = m.Project.get(m.Project.id == project_id)
+            p.delete_instance()
+
+            return success({}, 'cesium/FETCH_PROJECTS')
+
+    except Exception as e:
+        return error(str(e))
 
 
 @app.route('/get_state', methods=['GET'])

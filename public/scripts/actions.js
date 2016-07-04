@@ -4,8 +4,14 @@
 import {reset as resetForm} from 'redux-form';
 
 export const HYDRATE = 'cesium/HYDRATE'
+
 export const FETCH_PROJECTS = 'cesium/FETCH_PROJECTS'
 export const RECEIVE_PROJECTS = 'cesium/RECEIVE_PROJECTS'
+export const ADD_PROJECT = 'cesium/ADD_PROJECT'
+export const DELETE_PROJECT = 'cesium/DELETE_PROJECT'
+export const SELECT_PROJECT = 'cesium/SELECT_PROJECT'
+export const UPDATE_PROJECT = 'cesium/UPDATE_PROJECT'
+
 export const FETCH_DATASETS = 'cesium/FETCH_DATASETS'
 export const RECEIVE_DATASETS = 'cesium/RECEIVE_DATASETS'
 export const RECEIVE_FEATURESETS = 'cesium/RECEIVE_FEATURESETS'
@@ -13,11 +19,8 @@ export const RECEIVE_MODELS = 'cesium/RECEIVE_MODELS'
 export const RECEIVE_PREDICTIONS = 'cesium/RECEIVE_PREDICTIONS'
 export const CLEAR_FEATURES_FORM = 'cesium/CLEAR_FEATURES_FORM'
 export const CREATE_MODEL = 'cesium/CREATE_MODEL'
-export const ADD_PROJECT = 'cesium/ADD_PROJECT'
-export const DELETE_PROJECT = 'cesium/DELETE_PROJECT'
 export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION'
 export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION'
-export const SELECT_PROJECT = 'cesium/SELECT_PROJECT'
 
 
 // Refactor this into a utility function
@@ -94,6 +97,32 @@ export function addProject(form) {
             dispatch(resetForm('newProject'));
             dispatch(showNotification('Successfully added new project'))
             dispatch(selectProject(json.data.id));
+          } else {
+            return Promise.reject({_error: json.message});
+          }
+        })
+  )
+}
+
+
+// Update an existing project
+export function updateProject(form) {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      UPDATE_PROJECT,
+
+      fetch('/project/{}'.format(form.projectId),
+            {method: 'PUT',
+             body: JSON.stringify(form),
+             headers: new Headers({
+               'Content-Type': 'application/json'
+             })})
+        .then(response => response.json())
+        .then(json => {
+          if (json.status == 'success') {
+            dispatch(resetForm('newProject'));
+            dispatch(showNotification('Successfully updated project'))
           } else {
             return Promise.reject({_error: json.message});
           }
