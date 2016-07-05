@@ -52,74 +52,80 @@ class UnauthorizedAccess(Exception):
     pass
 
 
+def error(message):
+    return to_json(
+        {
+            "status": "error",
+            "message": message
+        })
+
+def success(data, action=None, payload=None):
+    if action is not None:
+        flow.push(get_username(), action, payload or {})
+
+    return to_json(
+        {
+            "status": "success",
+            "data": data
+        })
+
 @app.route("/project", methods=["GET", "POST"])
 @app.route("/project/<project_id>", methods=["GET", "PUT", "DELETE"])
 def Project(project_id=None):
     """
     """
-    if request.method == 'POST':
-        proj_name = str(request.form["Project Name"]).strip()
-        proj_description = str(request.form["Description/notes"]).strip()
-        try:
-            m.Project.add_by(proj_name, proj_description, get_username())
-        except Exception as e:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": str(e)
-                })
+    try:
+        # First, make sure the user owns the project they are trying to
+        # manipulate
+        result = {}
 
-        flow.push(get_username(), 'FETCH_PROJECTS')
-
-        return to_json({"status": "success"})
-
-    elif request.method == "GET":
         if project_id is not None:
-            proj_info = m.Project.get(m.Project.id == project_id)
-        else:
-            proj_info = m.Project.all(get_username())
+            p = m.Project.get(m.Project.id == project_id)
 
-        return to_json(
-            {
-                "status": "success",
-                "data": proj_info
-            })
+            if not p.is_owned_by(get_username()):
+                raise RuntimeError("User not authorized")
 
-    elif request.method == "PUT":
-        if project_id is None:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": "Invalid request - project ID not provided."
-                })
+        if request.method == 'POST':
+            data = request.get_json()
 
-        proj_name = str(request.form["Project Name"]).strip()
-        proj_description = str(request.form["Description/notes"]).strip()
+            p = m.Project.add_by(data['projectName'],
+                                 data.get('projectDescription', ''),
+                                 get_username())
 
-        query = m.Project.update(
-            name=proj_name,
-            description=proj_description,
-            ).where(m.Project.id == project_id)
-        query.execute()
+            return success({"id": p.id}, 'cesium/FETCH_PROJECTS')
 
-        flow.push(get_username(), 'FETCH_PROJECTS')
+        elif request.method == "GET":
+            if project_id is not None:
+                proj_info = m.Project.get(m.Project.id == project_id)
+            else:
+                proj_info = m.Project.all(get_username())
 
-    elif request.method == "DELETE":
-        if project_id is None:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": "Invalid request - project ID not provided."
-                })
-        p = m.Project.get(m.Project.id == project_id)
-        if p.is_owned_by(get_username()):
+            return success(proj_info)
+
+        elif request.method == "PUT":
+            if project_id is None:
+                raise RuntimeError("No project ID provided")
+
+            data = request.get_json()
+            query = m.Project.update(
+                name=data['projectName'],
+                description=data.get('projectDescription', ''),
+                ).where(m.Project.id == project_id)
+            query.execute()
+
+            return success({}, 'cesium/FETCH_PROJECTS')
+
+        elif request.method == "DELETE":
+            if project_id is None:
+                raise RuntimeError("No project ID provided")
+
+            p = m.Project.get(m.Project.id == project_id)
             p.delete_instance()
-        else:
-            raise UnauthorizedAccess("User not authorized for project.")
 
-        flow.push(get_username(), 'FETCH_PROJECTS')
+            return success({}, 'cesium/FETCH_PROJECTS')
 
-        return to_json({"status": "success"})
+    except Exception as e:
+        return error(str(e))
 
 
 @app.route('/get_state', methods=['GET'])
@@ -198,11 +204,18 @@ def Dataset(dataset_id=None):
                     "status": "error",
                     "message": "Invalid request - data set ID not provided."
                 })
-        d = m.Dataset.get(m.Dataset.id == dataset_id)
-        if d.is_owned_by(get_username()):
-            d.delete_instance()
-        else:
-            raise UnauthorizedAccess("User not authorized for project.")
+        try:
+            d = m.Dataset.get(m.Dataset.id == dataset_id)
+            if d.is_owned_by(get_username()):
+                d.delete_instance()
+            else:
+                raise UnauthorizedAccess("User not authorized for project.")
+        except Exception as e:
+            return to_json(
+                {
+                    "status": "error",
+                    "message": str(e)
+                })
 
         return to_json({"status": "success"})
     elif request.method == "PUT":

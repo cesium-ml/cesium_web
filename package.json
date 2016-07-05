@@ -24,7 +24,8 @@
     "react-redux": "latest",
     "redux-thunk": "latest",
     "redux-logger": "latest",
-    "whatwg-fetch": "latest"
+    "whatwg-fetch": "latest",
+    "redux-form": "latest"
   },
   "devDependencies": {
     "babel": "latest",

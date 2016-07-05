@@ -28,32 +28,18 @@ import WebSocket from './WebSocket'
 import MessageHandler from './MessageHandler'
 let messageHandler = (new MessageHandler(store.dispatch)).handle;
 
-import ProjectsTab from './Projects'
+import { ProjectSelector, AddProject, ProjectTab } from './Projects'
 import DatasetsTab from './Datasets'
 import FeaturesTab from './Features'
+import ModelsTab from './Models'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
+import { Notifications } from './Notifications'
 
-
-function json_post(url, body) {
-  return fetch(url, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: body,
-  });
-}
 
 var MainContent = React.createClass({
   getInitialState: function() {
     return {
       forms: {
-        newProject:
-        {
-          'Project Name': '',
-          'Description/notes': ''
-        },
         newDataset:
         {
           'Select Project': '',
@@ -71,19 +57,6 @@ var MainContent = React.createClass({
           'Selected Features': [],
           'Custom Features List': []
         },
-        model:
-        {
-          'Select Project': ''
-        },
-        predict:
-        {
-          'Select Project': ''
-        },
-        selectedProjectToEdit:
-        {
-          'Description/notes': '',
-          'Project Name': ''
-        }
       },
       available_features:
       {
@@ -94,98 +67,8 @@ var MainContent = React.createClass({
       datasetsList: []
     };
   },
-  componentWillReceiveProps: function(nextProps) {
-    if (!this.state.forms.newDataset['Select Project']) {
-      var first_project_id = nextProps.projects[0].id;
-      var first_dataset_id = nextProps.datasets[0].id;
-      this.setState(
-        {forms: {...this.state.forms,
-                 newDataset: { ...this.state.forms.newDataset,
-                               'Select Project': first_project_id },
-                 featurize: { ...this.state.forms.featurize,
-                              'Select Dataset': first_dataset_id,
-                              'Select Project': first_project_id },
-                 model: { ...this.state.forms.model,
-                          'Select Dataset': first_dataset_id,
-                          'Select Project': first_project_id },
-                 predict: { ...this.state.forms.predict,
-                            'Select Dataset': first_dataset_id,
-                            'Select Project': first_project_id }
-        }}
-      );
-    }
-  },
   componentDidMount: function() {
     store.dispatch(Action.hydrate());
-  },
-  handleNewProjectSubmit: function(e) {
-    e.preventDefault();
-    $.ajax({
-      url: '/project',
-      dataType: 'json',
-      type: 'POST',
-      data: this.state.forms.newProject,
-      success: function(data) {
-        //
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error('/project', status, err.toString(),
-                xhr.repsonseText);
-      }.bind(this)
-    });
-  },
-  handleClickEditProject: function(projectID, e) {
-    $.ajax({
-      url: '/project/' + projectID,
-      dataType: 'json',
-      cache: false,
-      type: 'GET',
-      success: function(data) {
-        var projData = {};
-        projData['Project Name'] = data.data['name'];
-        projData['Description/notes'] = data.data['description'];
-        projData['project_id'] = projectID;
-        var form_state = this.state.forms;
-        form_state['selectedProjectToEdit'] = projData;
-        this.setState({forms: form_state});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error('/project', status, err.toString(),
-                xhr.repsonseText);
-      }.bind(this)
-    });
-  },
-  updateProjectInfo: function(e) {
-    e.preventDefault();
-    $.ajax({
-      url: '/project',
-      dataType: 'json',
-      type: 'POST',
-      data: this.state.forms.selectedProjectToEdit,
-      success: function(data) {
-        var form_state = this.state.forms;
-        form_state.selectedProjectToEdit = this.getInitialState().forms.selectedProjectToEdit;
-        this.setState({projectsList: data, forms: form_state});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error('/project', status, err.toString(),
-                xhr.repsonseText);
-      }.bind(this)
-    });
-  },
-  handleDeleteProject: function(projectID, e) {
-    $.ajax({
-      url: '/project/' + projectID,
-      dataType: 'json',
-      type: 'DELETE',
-      success: function(data) {
-        //
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error('/project', status, err.toString(),
-                xhr.repsonseText);
-      }.bind(this)
-    });
   },
   handleNewDatasetSubmit: function(e){
     e.preventDefault();
@@ -310,11 +193,26 @@ var MainContent = React.createClass({
     this.setState({forms: form_state});
   },
   render: function() {
+    let style = {
+      width: 800,
+      selectors: {
+        marginLeft: '0em',
+        paddingLeft: '2em',
+        marginBottom: '1em',
+        borderLeft: '20px solid MediumVioletRed'
+      }
+    }
     return (
-      <div className='mainContent'>
+      <div className='mainContent' style={style}>
+        <Notifications style={style.notifications}/>
+        <div style={style.selectors}>
+          <ProjectSelector/>
+          <AddProject id='newProjectExpander'/>
+        </div>
+
         <Tabs classname='first'>
           <TabList>
-            <Tab>Projects</Tab>
+            <Tab>Project</Tab>
             <Tab>Data</Tab>
             <Tab>Features</Tab>
             <Tab>Models</Tab>
@@ -327,28 +225,10 @@ var MainContent = React.createClass({
             </Tab>
           </TabList>
           <TabPanel>
-            <ProjectsTab
-              getInitialState={this.getInitialState}
-              handleNewProjectSubmit={this.handleNewProjectSubmit}
-              handleClickEditProject={this.handleClickEditProject}
-              handleDeleteProject={this.handleDeleteProject}
-              handleInputChange={this.handleInputChange}
-              formFields={this.state.forms.newProject}
-              projects={this.props.projects}
-              projectDetails={this.state.forms.selectedProjectToEdit}
-              updateProjectInfo={this.updateProjectInfo}
-            />
+            <ProjectTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
           <TabPanel>
-            <DatasetsTab
-              getInitialState={this.getInitialState}
-              handleNewDatasetSubmit={this.handleNewDatasetSubmit}
-              handleInputChange={this.handleInputChange}
-              formFields={this.state.forms.newDataset}
-              formName='newDataset'
-              projects={this.props.projects}
-              datasets={this.props.datasets}
-            />
+            <DatasetsTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
           <TabPanel>
             <FeaturesTab
@@ -367,7 +247,7 @@ var MainContent = React.createClass({
             />
           </TabPanel>
           <TabPanel>
-            Models...
+            <ModelsTab onSubmitModelClick={this.props.handleSubmitModelClick}/>
           </TabPanel>
           <TabPanel>
             Predictions...
@@ -382,14 +262,39 @@ var MainContent = React.createClass({
 });
 
 var mapStateToProps = function(state) {
+  // This can be improved by using
+  // http://redux-form.com/6.0.0-alpha.13/docs/api/FormValueSelector.md/
+  let projectSelector = state.form.projectSelector;
+  let selectedProjectId = projectSelector ? projectSelector.project.value : "";
+  let selectedProject = state.projects.projectList.filter(
+    p => (p.id == selectedProjectId)
+  );
+
+  let firstProject = state.projects[0] || {'id': '', label: '', description: ''};
+
+  if (selectedProject.length > 0) {
+    selectedProject = selectedProject[0];
+  } else {
+    selectedProject = firstProject;
+  }
+
   return {
-    projects: state.projects,
+    projects: state.projects.projectList,
     datasets: state.datasets,
-    featuresets: state.featuresets
+    featuresets: state.featuresets,
+    selectedProject: selectedProject,
   };
 }
 
-MainContent = connect(mapStateToProps)(MainContent);
+var mapDispatchToProps = (dispatch) => {
+  return {
+    handleSubmitModelClick: (form) => {
+      dispatch(Action.createModel(form));
+    }
+  }
+}
+
+MainContent = connect(mapStateToProps, mapDispatchToProps)(MainContent);
 
 
 ReactDOM.render(
