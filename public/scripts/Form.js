@@ -113,8 +113,7 @@ export var SubmitButton = (props) => {
     <div className="form-group" style={submitButtonStyle}>
       <button type="submit"
               className="btn btn-primary"
-              disabled={props.submitting}
-              onClick={props.resetFrom}>
+              disabled={props.submitting}>
         {props.label}</button>
     </div>
   )

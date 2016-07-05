@@ -282,7 +282,7 @@ var MainContent = React.createClass({
       <div className='mainContent' style={style}>
         <Notifications style={style.notifications}/>
         <ProjectSelector/>
-        <AddProject/>
+        <AddProject folded={true} id='newProjectExpander'/>
 
         <Tabs classname='first'>
           <TabList>
@@ -340,7 +340,9 @@ var mapStateToProps = function(state) {
   // http://redux-form.com/6.0.0-alpha.13/docs/api/FormValueSelector.md/
   let projectSelector = state.form.projectSelector;
   let selectedProjectId = projectSelector ? projectSelector.project.value : "";
-  let selectedProject = state.projects.filter(p => (p.id == selectedProjectId));
+  let selectedProject = state.projects.projectList.filter(
+    p => (p.id == selectedProjectId)
+  );
 
   let firstProject = state.projects[0] || {'id': '', label: '', description: ''};
 
@@ -351,10 +353,10 @@ var mapStateToProps = function(state) {
   }
 
   return {
-    projects: state.projects,
+    projects: state.projects.projectList,
     datasets: state.datasets,
     featuresets: state.featuresets,
-    selectedProject: selectedProject
+    selectedProject: selectedProject,
   };
 }
 

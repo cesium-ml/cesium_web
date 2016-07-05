@@ -75,8 +75,9 @@ export var AddProject = (props) => {
     width: 500,
     background: 'red'
   }
+
   return (
-    <AddExpand label="Add Project">
+    <AddExpand id={props.id} label="Add Project">
       <NewProjectForm label="Create Project" onSubmit={props.addProject}/>
     </AddExpand>
   );
@@ -145,14 +146,14 @@ export class ProjectSelector extends FormComponent {
 }
 
 let mapStateToProps = (state) => {
-  let projectZero = state.projects[0];
+  let projectZero = state.projects.projectList[0];
   let projectZeroId = projectZero ? projectZero.id.toString() : "";
 
   let selectedProject = state.form.projectSelector;
   let selectedId = selectedProject ? selectedProject.project.value : "";
 
   return {
-    projects: state.projects,
+    projects: state.projects.projectList,
     initialValues: {
       project: selectedId || projectZeroId
     }
@@ -180,61 +181,3 @@ export var CurrentProject = (props) => {
     </div>
   );
 }
-
-
-export var ProjectList = React.createClass({
-  render: function() {
-    let projectNodes = this.props.projects.map(project => (
-        <ProjectListRow
-          project={project}
-          key={project.id}
-          clickEditProject={this.props.clickEditProject}
-          deleteProject={this.props.deleteProject}
-          projectDetails={this.props.projectDetails}
-          handleInputChange={this.props.handleInputChange}
-          updateProjectInfo={this.props.updateProjectInfo}
-        />
-    ));
-    return (
-      <div className="projectListDiv" style={{marginTop: 40}}>
-        <h3>Existing Projects</h3>
-        <div style={{width: 320, float: 'left'}}>
-          <b>Name</b>
-        </div>
-        <div style={{marginLeft: 20, width: 320, float: 'left'}}>
-          <b>Date Created</b>
-        </div>
-        <div style={{marginLeft: 710}}>
-          <b>Edit/Delete Project</b>
-        </div>
-        <div>
-          <ReactCSSTransitionGroup
-            transitionName="projectsListItems"
-            transitionEnterTimeout={200}
-            transitionLeaveTimeout={200}>
-            {projectNodes}
-          </ReactCSSTransitionGroup>
-        </div>
-      </div>
-    );
-  }
-});
-
-
-const modalStyles = {
-  content : {
-    top           : '50%',
-    left          : '50%',
-    right         : 'auto',
-    bottom        : 'auto',
-    marginRight       : '-50%',
-    transform       : 'translate(-50%, -50%)'
-  }
-};
-
-
-ProjectList = connect(state => {
-  return {
-    projects: state.projects
-  }
-})(ProjectList);

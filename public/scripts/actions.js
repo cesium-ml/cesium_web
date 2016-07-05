@@ -11,16 +11,25 @@ export const ADD_PROJECT = 'cesium/ADD_PROJECT'
 export const DELETE_PROJECT = 'cesium/DELETE_PROJECT'
 export const SELECT_PROJECT = 'cesium/SELECT_PROJECT'
 export const UPDATE_PROJECT = 'cesium/UPDATE_PROJECT'
+export const HIDE_NEWPROJECT_FORM = 'cesium/HIDE_NEWPROJECT_FORM'
 
 export const FETCH_DATASETS = 'cesium/FETCH_DATASETS'
 export const RECEIVE_DATASETS = 'cesium/RECEIVE_DATASETS'
+
 export const RECEIVE_FEATURESETS = 'cesium/RECEIVE_FEATURESETS'
-export const RECEIVE_MODELS = 'cesium/RECEIVE_MODELS'
-export const RECEIVE_PREDICTIONS = 'cesium/RECEIVE_PREDICTIONS'
 export const CLEAR_FEATURES_FORM = 'cesium/CLEAR_FEATURES_FORM'
+
+export const RECEIVE_MODELS = 'cesium/RECEIVE_MODELS'
 export const CREATE_MODEL = 'cesium/CREATE_MODEL'
+
+export const RECEIVE_PREDICTIONS = 'cesium/RECEIVE_PREDICTIONS'
+
 export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION'
 export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION'
+
+export const TOGGLE_EXPANDER = 'cesium/TOGGLE_EXPANDER'
+export const HIDE_EXPANDER = 'cesium/HIDE_EXPANDER'
+export const SHOW_EXPANDER = 'cesium/SHOW_EXPANDER'
 
 
 // Refactor this into a utility function
@@ -73,6 +82,7 @@ export function fetchProjects() {
                 'Error downloading projects ({})'.format(json.message)
               ));
           }
+          return json;
         }
         ).catch(ex => console.log('fetchProjects exception:', ex))
       )
@@ -100,6 +110,7 @@ export function addProject(form) {
           } else {
             return Promise.reject({_error: json.message});
           }
+          return json;
         })
   )
 }
@@ -126,6 +137,7 @@ export function updateProject(form) {
           } else {
             return Promise.reject({_error: json.message});
           }
+          return json;
         })
   )
 }
@@ -173,7 +185,7 @@ export function fetchDatasets() {
       fetch('/dataset')
         .then(response => response.json())
         .then(json => {
-          dispatch(receiveDatasets(json.data))
+          return dispatch(receiveDatasets(json.data))
         }
         ).catch(ex => console.log('fetchDatasets', ex))
     )
@@ -198,7 +210,7 @@ export function fetchFeaturesets() {
       fetch('/features')
         .then(response => response.json())
         .then(json => {
-          dispatch(receiveFeaturesets(json.data))
+          return dispatch(receiveFeaturesets(json.data))
         }
         ).catch(ex => console.log('fetchFeaturesets', ex))
   )
@@ -229,6 +241,7 @@ export function submitNewFeatureset(formdata) {
     ).then(response => response.json())
      .then(json => {
        console.log('Added new feature set');
+       return json;
      }
      ).catch(ex => console.log('submitNewFeatureset', ex))
   )
@@ -265,11 +278,41 @@ export function hideNotification() {
   }
 }
 
+export function hideExpander(id) {
+  return {
+    type: HIDE_EXPANDER,
+    payload: {
+      id: id
+    }
+  }
+}
+
+export function showExpander(id) {
+  return {
+    type: SHOW_EXPANDER,
+    payload: {
+      id: id
+    }
+  }
+}
+
+export function toggleExpander(id) {
+  return {
+    type: TOGGLE_EXPANDER,
+    payload: {
+      id: id
+    }
+  }
+}
 
 // Currently, used upon creation of a new project to switch to that project
 export function selectProject(id) {
-  return {
-    type: SELECT_PROJECT,
-    payload: {id}
+  return dispatch => {
+    dispatch(hideExpander('newProjectExpander'));
+
+    return dispatch({
+      type: SELECT_PROJECT,
+      payload: {id}
+    })
   }
 }

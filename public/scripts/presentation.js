@@ -1,20 +1,13 @@
 import React, { Component, PropTypes } from 'react'
+import { connect } from 'react-redux'
+import {toggleExpander} from './actions'
+
 
 export class AddExpand extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {folded: true};
-    this.toggle = this.toggle.bind(this);
-  }
-
-  toggle() {
-    this.setState({folded: !this.state.folded});
-  }
-
   render() {
     let style = {
       a: {textDecoration: 'none'},
-      display: this.props.folded ? 'inline-block' : 'inline',
+      display: this.props.opened ? 'inline' : 'inline-block',
       paddingRight: '1em',
       sign: {
         fontSize: '200%',
@@ -43,15 +36,32 @@ export class AddExpand extends Component {
     return (
       <div style={style}>
 
-        <a style={style.a} onClick={this.toggle}>
-          { this.state.folded ? add : shrink }
+        <a style={style.a} onClick={this.props.toggle}>
+          { this.props.opened ? shrink : add }
         </a>
 
-        <div style={{marginLeft: '2em'}}>
-          { this.state.folded ? null : <div style={style.children}>{this.props.children}</div> }
-        </div>
+        {(this.props.opened) &&
+
+          <div style={style.children}>
+            {this.props.opened ? this.props.children : null}
+          </div>
+        }
 
       </div>
     )
   }
 }
+
+let mapStateToProps = (state, ownProps) => {
+  return {
+    opened: state.expander.opened[ownProps.id]
+  }
+}
+
+let mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    toggle: () => {dispatch(toggleExpander(ownProps.id))}
+  }
+}
+
+AddExpand = connect(mapStateToProps, mapDispatchToProps)(AddExpand)

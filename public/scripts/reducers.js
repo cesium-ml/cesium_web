@@ -1,25 +1,13 @@
 import { combineReducers } from 'redux'
 import {reducer as formReducer} from 'redux-form'
 
-import {
-  RECEIVE_PROJECTS,
-  RECEIVE_DATASETS,
-  RECEIVE_FEATURESETS,
-  RECEIVE_MODELS,
-  RECEIVE_PREDICTIONS,
-  CLEAR_FEATURES_FORM,
-  SHOW_NOTIFICATION,
-  HIDE_NOTIFICATION,
-  SELECT_PROJECT
-} from './actions'
+import * as Action from './actions'
 
 
-function projects(state = [], action) {
+function projects(state={projectList: []}, action) {
   switch (action.type) {
-    case RECEIVE_PROJECTS:
-      return action.payload
-    case SELECT_PROJECT:
-      action.payload;
+    case Action.RECEIVE_PROJECTS:
+      return {...state, projectList: action.payload}
     default:
       return state
   }
@@ -28,7 +16,7 @@ function projects(state = [], action) {
 
 function datasets(state = [], action) {
   switch (action.type) {
-    case RECEIVE_DATASETS:
+    case Action.RECEIVE_DATASETS:
       return action.payload
     default:
       return state
@@ -38,7 +26,7 @@ function datasets(state = [], action) {
 
 function featuresets(state = [], action) {
   switch (action.type) {
-    case RECEIVE_FEATURESETS:
+    case Action.RECEIVE_FEATURESETS:
       return action.payload
     // case CLEAR_FEATURES_FORM:
     //  return {
@@ -57,11 +45,11 @@ function models(state, action) {
 
 function notifications(state={notes: []}, action) {
   switch (action.type) {
-    case SHOW_NOTIFICATION:
+    case Action.SHOW_NOTIFICATION:
       return {
         notes: state.notes.concat(action.payload)
       }
-    case HIDE_NOTIFICATION:
+    case Action.HIDE_NOTIFICATION:
       return {
         notes: state.notes.slice(1)
       }
@@ -75,7 +63,7 @@ let myFormReducer = (theirFormReducer) => {
   return function(state, action) {
     var state = {...state};
     switch (action.type) {
-      case SELECT_PROJECT:
+      case Action.SELECT_PROJECT:
         const {id} = action.payload;
         state.projectSelector.project.value = id.toString();
     }
@@ -84,6 +72,25 @@ let myFormReducer = (theirFormReducer) => {
 }
 
 
+function expander(state={opened: {}}, action) {
+  let id = action.payload ? action.payload.id : null;
+  let newState = {...state};
+
+  switch (action.type) {
+    case Action.TOGGLE_EXPANDER:
+      newState.opened[id] = !state.opened[id];
+      return newState;
+    case Action.HIDE_EXPANDER:
+      newState.opened[id] = false;
+      return newState;
+    case Action.SHOW_EXPANDER:
+      newState.opened[id] = true;
+      return newState;
+    default:
+      return state
+  }
+}
+
 
 const rootReducer = combineReducers({
   projects,
@@ -91,6 +98,7 @@ const rootReducer = combineReducers({
   featuresets,
   models,
   notifications,
+  expander,
   form: myFormReducer(formReducer)
 })
 
