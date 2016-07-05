@@ -46,15 +46,21 @@ let EditProjectForm = reduxForm({
 
 export var ProjectTab = (props) => {
   let p = props.selectedProject;
+  let style = {
+    marginLeft: '0em',
+    paddingLeft: '2em',
+    borderLeft: '20px solid LightSkyBlue'
+  }
+
   return (
-    <div>
-    <EditProjectForm
-      label="Update"
-      onSubmit={props.updateProject}
-      initialValues={{projectName: p.name,
-                      projectDescription: p.description,
-                      projectId: p.id}}
-    />
+    <div style={style}>
+      <EditProjectForm
+        label="Update"
+        onSubmit={props.updateProject}
+        initialValues={{projectName: p.name,
+                        projectDescription: p.description,
+                        projectId: p.id}}
+      />
 
       <DeleteProject projectId={props.selectedProject.id}/>
     </div>

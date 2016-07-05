@@ -194,13 +194,21 @@ var MainContent = React.createClass({
   },
   render: function() {
     let style = {
-      width: 800
+      width: 800,
+      selectors: {
+        marginLeft: '0em',
+        paddingLeft: '2em',
+        marginBottom: '1em',
+        borderLeft: '20px solid MediumVioletRed'
+      }
     }
     return (
       <div className='mainContent' style={style}>
         <Notifications style={style.notifications}/>
-        <ProjectSelector/>
-        <AddProject folded={true} id='newProjectExpander'/>
+        <div style={style.selectors}>
+          <ProjectSelector/>
+          <AddProject id='newProjectExpander'/>
+        </div>
 
         <Tabs classname='first'>
           <TabList>
