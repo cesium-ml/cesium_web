@@ -57,14 +57,6 @@ var MainContent = React.createClass({
           'Selected Features': [],
           'Custom Features List': []
         },
-        model:
-        {
-          'Select Project': ''
-        },
-        predict:
-        {
-          'Select Project': ''
-        },
       },
       available_features:
       {
@@ -75,82 +67,8 @@ var MainContent = React.createClass({
       datasetsList: []
     };
   },
-  componentWillReceiveProps: function(nextProps) {
-    /* if (!this.state.forms.newDataset['Select Project']) {
-     *   var first_project_id = nextProps.projects[0].id;
-     *   var first_dataset_id = nextProps.datasets[0].id;
-     *   this.setState(
-     *     {forms: {...this.state.forms,
-     *              newDataset: { ...this.state.forms.newDataset,
-     *                            'Select Project': first_project_id },
-     *              featurize: { ...this.state.forms.featurize,
-     *                           'Select Dataset': first_dataset_id,
-     *                           'Select Project': first_project_id },
-     *              model: { ...this.state.forms.model,
-     *                       'Select Dataset': first_dataset_id,
-     *                       'Select Project': first_project_id },
-     *              predict: { ...this.state.forms.predict,
-     *                         'Select Dataset': first_dataset_id,
-     *                         'Select Project': first_project_id }
-     *     }}
-     *   );
-     * }*/
-  },
   componentDidMount: function() {
     store.dispatch(Action.hydrate());
-  },
-  handleClickEditProject: function(projectID, e) {
-    $.ajax({
-      url: '/project/' + projectID,
-      dataType: 'json',
-      cache: false,
-      type: 'GET',
-      success: function(data) {
-        var projData = {};
-        projData['Project Name'] = data.data['name'];
-        projData['Description/notes'] = data.data['description'];
-        projData['project_id'] = projectID;
-        var form_state = this.state.forms;
-        form_state['selectedProjectToEdit'] = projData;
-        this.setState({forms: form_state});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error('/project', status, err.toString(),
-                xhr.repsonseText);
-      }.bind(this)
-    });
-  },
-  updateProjectInfo: function(e) {
-    e.preventDefault();
-    $.ajax({
-      url: '/project',
-      dataType: 'json',
-      type: 'POST',
-      data: this.state.forms.selectedProjectToEdit,
-      success: function(data) {
-        var form_state = this.state.forms;
-        form_state.selectedProjectToEdit = this.getInitialState().forms.selectedProjectToEdit;
-        this.setState({projectsList: data, forms: form_state});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error('/project', status, err.toString(),
-                xhr.repsonseText);
-      }.bind(this)
-    });
-  },
-  handleDeleteProject: function(projectID, e) {
-    $.ajax({
-      url: '/project/' + projectID,
-      dataType: 'json',
-      type: 'DELETE',
-      success: function(data) {
-        //
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error('/project', status, err.toString(),
-                xhr.repsonseText);
-      }.bind(this)
-    });
   },
   handleNewDatasetSubmit: function(e){
     e.preventDefault();
