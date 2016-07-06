@@ -247,16 +247,13 @@ def Features(featureset_id=None):
         if request.method == 'POST':
             data = request.get_json()
             featureset_name = data.get('featuresetName', '')
-            datasetID = data['datasetID']
-            print('datasetID:', datasetID)
+            datasetID = int(data['datasetID'])
             features_to_use = [k[4:] for (k, v) in data.items()
                                if v and k[:4] in ('obs_', 'sci_')]
+            # TODO: Custom features script handling
+            custom_script_path = None
 
-            # dataset = m.Dataset.get(m.Dataset.id == request.form["Select Dataset"])
-            # features_to_use = request.form.getlist("Selected Features[]")
-            # custom_script_tested = (
-            #     request.form["Custom Features Script Tested"].strip() == "true")
-            # if custom_script_tested:
+            # if request.form["Custom Features Script Tested"] == "true":
             #     custom_script = request.files["Custom Features File"]
             #     custom_script_fname = str(secure_filename(custom_script.filename))
             #     custom_script_path = pjoin(
@@ -268,14 +265,18 @@ def Features(featureset_id=None):
             # else:
             #     custom_script_path = None
             # is_test = bool(request.form.get("is_test"))
-            # fset_path = pjoin(cfg['paths']['features_folder'],
-            #                   '{}_featureset.nc'.format(uuid.uuid4()))
-            # fset = m.Featureset.create(name=featureset_name,
-            #                            file=m.File.create(uri=fset_path),
-            #                            project=dataset.project,
-            #                            custom_features_script=custom_script_path)
+
+            fset_path = pjoin(cfg['paths']['features_folder'],
+                              '{}_featureset.nc'.format(uuid.uuid4()))
+
+            dataset = m.Dataset.get(m.Dataset.id == datasetID)
+
+            fset = m.Featureset.create(name=featureset_name,
+                                       file=m.File.create(uri=fset_path),
+                                       project=dataset.project,
+                                       custom_features_script=custom_script_path)
             res = featurize_task.delay(dataset.uris, fset_path, features_to_use,
-                                       custom_script_path, is_test)
+                                       custom_script_path)
 
             return success({'featureset': 'some_info_here'},
                            'cesium/FETCH_FEATURESETS')
