@@ -39,23 +39,35 @@ class FeaturizeForm extends FormComponent {
                        key={this.props.selectedProject.id}
                        options={datasets}
                        {...datasetID}/>
-          <b>Observation Features</b>
-          <ul>
-            {this.props.features.obs_features.map(feature => (
-            <CheckBoxInput key={'obs_' + feature} label={feature}
-                           {...fields['obs_' + feature]}/>
-             ))
-            }
-          </ul>
-
-          <b>Science Features</b>
-          <ul>
-            {this.props.features.sci_features.map(feature => (
-               <CheckBoxInput key={'sci_' + feature} label={feature}
-                              {...fields['sci_' + feature]}/>
-             ))
-            }
-          </ul>
+          <b>Select Features to Compute</b>
+          <Tabs>
+            <TabList>
+              <Tab>Obs Features</Tab>
+              <Tab>Science Features</Tab>
+              <Tab>Custom Features</Tab>
+            </TabList>
+            <TabPanel>
+              <ul>
+                {this.props.features.obs_features.map(feature => (
+                   <CheckBoxInput key={'obs_' + feature} label={feature}
+                                  {...fields['obs_' + feature]}/>
+                 ))
+                }
+              </ul>
+            </TabPanel>
+            <TabPanel>
+              <ul>
+                {this.props.features.sci_features.map(feature => (
+                   <CheckBoxInput key={'sci_' + feature} label={feature}
+                                  {...fields['sci_' + feature]}/>
+                 ))
+                }
+              </ul>
+            </TabPanel>
+            <TabPanel>
+              <textarea/>
+            </TabPanel>
+          </Tabs>
         </Form>
       </div>
     )
