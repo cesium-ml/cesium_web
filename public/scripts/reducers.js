@@ -67,7 +67,7 @@ let myFormReducer = (theirFormReducer) => {
     switch (action.type) {
       case Action.SELECT_PROJECT:
         const {id} = action.payload;
-        state.projectSelector.project.value = id.toString();
+        state.projectSelector.project.value = id ? id.toString() : "";
     }
     return theirFormReducer(state, action);
   }

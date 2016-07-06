@@ -143,7 +143,6 @@ export class ProjectSelector extends FormComponent {
         <Form onSubmit={form => null} style={style.form}>
           <SelectInput label="Select Project"
                        options={projects}
-                       onChange={this.props.onChange}
                        {...project}/>
         </Form>
       </div>
@@ -151,7 +150,7 @@ export class ProjectSelector extends FormComponent {
   }
 }
 
-let mapStateToProps = (state) => {
+let psMapStateToProps = (state) => {
   let projectZero = state.projects.projectList[0];
   let projectZeroId = projectZero ? projectZero.id.toString() : "";
 
@@ -169,7 +168,7 @@ let mapStateToProps = (state) => {
 ProjectSelector = reduxForm({
   form: 'projectSelector',
   fields: ['project'],
-}, mapStateToProps)(ProjectSelector)
+}, psMapStateToProps)(ProjectSelector)
 
 
 export var CurrentProject = (props) => {
