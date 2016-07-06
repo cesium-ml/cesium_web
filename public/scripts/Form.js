@@ -93,7 +93,6 @@ export var SelectInput = (props) => {
     <div className="form-group" style={selectInputStyle}>
       <label>{props.label}</label>
       <select className="form-control"
-              value={props.value}  /* XXX TODO can this be removed? */
               {...props}>
         {props.options.map((option, idx) => (
            <option value={option.id} key={option.id} >

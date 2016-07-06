@@ -72,14 +72,17 @@ let mapStateToProps = (state, ownProps) => {
   obs_fields.map((f, idx) => initialValues[f] = true)
   sci_fields.map((f, idx) => initialValues[f] = true)
 
+  let filteredDatasets = state.datasets.filter(dataset =>
+    (dataset.project == ownProps.selectedProject.id))
+  let zerothDataset = filteredDatasets[0]
+
   return {
     features: state.featuresets.features,
-    datasets: state.datasets.filter(dataset =>
-      (dataset.project == ownProps.selectedProject.id)
-    ),
+    datasets: filteredDatasets,
     fields: obs_fields.concat(sci_fields).concat(['datasetID', 'featuresetName',
                                                   'customFeatsFile', 'isTest']),
-    initialValues
+    initialValues: {...initialValues,
+                    datasetID: zerothDataset ? zerothDataset.id.toString() : ""}
   }
 }
 

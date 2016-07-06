@@ -246,8 +246,12 @@ def Features(featureset_id=None):
     try:
         if request.method == 'POST':
             data = request.get_json()
+            featureset_name = data.get('featuresetName', '')
+            datasetID = data['datasetID']
+            print('datasetID:', datasetID)
+            features_to_use = [k[4:] for (k, v) in data.items()
+                               if v and k[:4] in ('obs_', 'sci_')]
 
-            # featureset_name = request.form["Feature Set Title"].strip()
             # dataset = m.Dataset.get(m.Dataset.id == request.form["Select Dataset"])
             # features_to_use = request.form.getlist("Selected Features[]")
             # custom_script_tested = (
