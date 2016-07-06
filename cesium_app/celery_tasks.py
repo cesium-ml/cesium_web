@@ -1,3 +1,4 @@
+import xarray as xr
 from cesium import featurize, build_model, predict
 from .celery_app import app
 from . import models as m
