@@ -158,6 +158,7 @@ export function deleteProject(id) {
         .then(json => {
           if (json.status == 'success') {
             dispatch(showNotification('Project successfully deleted'));
+            dispatch(selectProject());
           } else {
             dispatch(
               showNotification(
@@ -310,7 +311,7 @@ export function toggleExpander(id) {
 }
 
 // Currently, used upon creation of a new project to switch to that project
-export function selectProject(id) {
+export function selectProject(id=null) {
   return dispatch => {
     dispatch(hideExpander('newProjectExpander'));
 

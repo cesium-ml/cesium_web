@@ -143,7 +143,6 @@ export class ProjectSelector extends FormComponent {
         <Form onSubmit={form => null} style={style.form}>
           <SelectInput label="Select Project"
                        options={projects}
-                       onChange={this.props.onChange}
                        {...project}/>
         </Form>
       </div>
