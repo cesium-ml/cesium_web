@@ -16,8 +16,11 @@ export const HIDE_NEWPROJECT_FORM = 'cesium/HIDE_NEWPROJECT_FORM'
 export const FETCH_DATASETS = 'cesium/FETCH_DATASETS'
 export const RECEIVE_DATASETS = 'cesium/RECEIVE_DATASETS'
 
+export const FETCH_FEATURES = 'cesium/FETCH_FEATURES'
+export const FETCH_FEATURESETS = 'cesium/FETCH_FEATURESETS'
+export const RECEIVE_FEATURES = 'cesium/RECEIVE_FEATURES'
 export const RECEIVE_FEATURESETS = 'cesium/RECEIVE_FEATURESETS'
-export const CLEAR_FEATURES_FORM = 'cesium/CLEAR_FEATURES_FORM'
+export const COMPUTE_FEATURES = 'cesium/COMPUTE_FEATURES'
 
 export const RECEIVE_MODELS = 'cesium/RECEIVE_MODELS'
 export const CREATE_MODEL = 'cesium/CREATE_MODEL'
@@ -47,6 +50,7 @@ export function hydrate() {
       .then(proj => {
         dispatch(fetchDatasets());
         dispatch(fetchFeaturesets());
+        dispatch(fetchFeatures());
       })
 //  dispatch(fetchModels());
 //  dispatch(fetchPredictions());
@@ -205,7 +209,7 @@ export function fetchFeaturesets() {
   return dispatch =>
     promiseAction(
       dispatch,
-      FETCH_DATASETS,
+      FETCH_FEATURESETS,
 
       fetch('/features')
         .then(response => response.json())
@@ -315,4 +319,62 @@ export function selectProject(id) {
       payload: {id}
     })
   }
+}
+
+
+export function fetchFeatures() {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      FETCH_FEATURES,
+
+      fetch('/features_list')
+        .then(response => response.json())
+        .then(json => {
+          if (json.status == 'success') {
+            dispatch(receiveFeatures(json.data))
+          } else {
+            dispatch(
+              showNotification(
+                'Error downloading features ({})'.format(json.message)
+              ));
+          }
+          return json;
+        }
+        ).catch(ex => console.log('fetchFeatures exception:', ex))
+    )
+}
+
+// Receive list of featuresets
+function receiveFeatures(features) {
+  return {
+    type: RECEIVE_FEATURES,
+    payload: features,
+  }
+}
+
+
+export function computeFeatures(form) {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      COMPUTE_FEATURES,
+
+      fetch('/features',
+            {method: 'POST',
+             body: JSON.stringify(form),
+             headers: new Headers({
+               'Content-Type': 'application/json'
+             })}
+      ).then(response => response.json()
+      ).then(json => {
+        if (json.status == 'success') {
+          dispatch(resetForm('featurize'));
+          dispatch(showNotification('Successfully computed feature set'))
+        } else {
+          return Promise.reject({_error: json.message});
+        }
+        return json;
+      })
+    )
 }
