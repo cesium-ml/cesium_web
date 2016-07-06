@@ -343,7 +343,7 @@ def Models(model_id=None):
         if model_id is not None:
             model_info = m.Model.get(m.Model.id == model_id)
         else:
-            model_info = [model for p in m.Project.all(USERNAME)
+            model_info = [model for p in m.Project.all(get_username())
                           for model in p.models]
         return to_json(
             {
@@ -358,7 +358,7 @@ def Models(model_id=None):
                     "message": "Invalid request - model set ID not provided."
                 })
         f = m.Model.get(m.Model.id == model_id)
-        if f.is_owned_by(USERNAME):
+        if f.is_owned_by(get_username()):
             f.delete_instance()
         else:
             raise UnauthorizedAccess("User not authorized for project.")
@@ -401,7 +401,7 @@ def Predictions(prediction_id=None):
         if prediction_id is not None:
             prediction_info = m.Prediction.get(m.Prediction.id == prediction_id)
         else:
-            prediction_info = [prediction for p in m.Project.all(USERNAME)
+            prediction_info = [prediction for p in m.Project.all(get_username())
                           for prediction in p.predictions]
         return to_json(
             {
@@ -416,7 +416,7 @@ def Predictions(prediction_id=None):
                     "message": "Invalid request - prediction set ID not provided."
                 })
         f = m.Prediction.get(m.Prediction.id == prediction_id)
-        if f.is_owned_by(USERNAME):
+        if f.is_owned_by(get_username()):
             f.delete_instance()
         else:
             raise UnauthorizedAccess("User not authorized for project.")
