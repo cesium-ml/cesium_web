@@ -37,160 +37,8 @@ import { Notifications } from './Notifications'
 
 
 var MainContent = React.createClass({
-  getInitialState: function() {
-    return {
-      forms: {
-        newDataset:
-        {
-          'Select Project': '',
-          'Dataset Name': '',
-          'Header File': '',
-          'Tarball Containing Data': ''
-        },
-        featurize:
-        {
-          'Select Project': '',
-          'Select Dataset': '',
-          'Feature Set Title': '',
-          'Custom Features File': '',
-          'Custom Features Script Tested': false,
-          'Selected Features': [],
-          'Custom Features List': []
-        },
-      },
-      available_features:
-      {
-        obs_features: {'feat1': 'checked'},
-        sci_features: {'feat1': 'checked'}
-      },
-      projectsList: [],
-      datasetsList: []
-    };
-  },
   componentDidMount: function() {
     store.dispatch(Action.hydrate());
-  },
-  handleNewDatasetSubmit: function(e){
-    e.preventDefault();
-    var formData = new FormData();
-    for (var key in this.state.forms.newDataset) {
-      formData.append(key, this.state.forms.newDataset[key]);
-    }
-    $.ajax({
-      url: '/dataset',
-      dataType: 'json',
-      type: 'POST',
-      contentType: false,
-      processData: false,
-      data: formData,
-      success: function(data) {
-        store.dispatch(Action.hydrate())
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error('/dataset', status, err.toString(),
-                xhr.repsonseText);
-      }.bind(this)
-    });
-  },
-  onFeaturesDialogMount: function() {
-    $.ajax({
-      url: '/features_list',
-      dataType: 'json',
-      cache: false,
-      success: function(data) {
-        var obs_features_dict = _.object(
-          _.map(data.data['obs_features'], function(feat) {
-            return [feat, 'checked']; }));
-        var sci_features_dict = _.object(
-          _.map(data.data['sci_features'], function(feat) {
-            return [feat, 'checked']; }));
-        this.setState(
-          {
-            available_features:
-            {
-              obs_features: obs_features_dict,
-              sci_features: sci_features_dict
-            }
-          });
-        this.updateSeldFeatsList();
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error('/features_list', status, err.toString(),
-                xhr.repsonseText);
-      }.bind(this)
-    });
-  },
-  updateSeldFeatsList: function() {
-    var seld_obs_feats = Object.keys(
-      filter(this.state.available_features['obs_features'], 'checked'));
-    var seld_sci_feats = Object.keys(
-      filter(this.state.available_features['sci_features'], 'checked'));
-    var all_seld_feats = seld_obs_feats.concat(seld_sci_feats);
-    this.setState({
-      forms: {...this.state.forms, featurize: {...this.state.forms.featurize,
-                                    "Selected Features": all_seld_feats}
-      }
-    });
-  },
-  updateSeldObsFeats: function(sel_obs_feats) {
-    var obs_feats_dict = this.state.available_features.obs_features;
-    for (var k in this.state.available_features.obs_features) {
-      obs_feats_dict[k] = (sel_obs_feats.indexOf(k) == -1) ? 'unchkd' : 'checked';
-    }
-    this.setState(
-      {
-        available_features:
-        {
-          obs_features: obs_feats_dict,
-          sci_features: this.state.available_features.sci_features
-        }
-      });
-    this.updateSeldFeatsList();
-  },
-  updateSeldSciFeats: function(sel_sci_feats) {
-    var sci_feats_dict = this.state.available_features.sci_features;
-    for (var k in this.state.available_features.sci_features) {
-      sci_feats_dict[k] = (sel_sci_feats.indexOf(k) == -1) ? 'unchkd' : 'checked';
-    }
-    this.setState(
-      {
-        available_features: {
-          sci_features: sci_feats_dict,
-          obs_features: this.state.available_features.obs_features
-        }
-      });
-    this.updateSeldFeatsList();
-  },
-  testCustomFeatScript: function (e) {
-    // TODO: DO STUFF HERE
-    console.log('testCustomFeatScript called... Nothing here yet.');
-  },
-  handleNewFeaturesetSubmit: function(e) {
-    e.preventDefault();
-    // store.dispatch(Action.submitNewFeatureset(this.state.forms.featurize));
-    $.ajax({
-      url: '/features',
-      dataType: 'json',
-      type: 'POST',
-      data: this.state.forms.featurize,
-      success: function(data) {
-        console.log(data.status);
-      },
-      error: function(xhr, status, err) {
-        console.error('/features', status, err.toString(),
-                      xhr.repsonseText);
-      }
-    });
-  },
-  handleInputChange: function(inputName, inputType, formName, e) {
-    var form_state = this.state.forms;
-    if (inputType == 'file') {
-      var newValue = e.target.files[0];
-    } else {
-      var newValue = e.target.value;
-    }
-    form_state[formName][inputName] = newValue;
-    this.setState({forms: form_state});
   },
   render: function() {
     let style = {
@@ -231,23 +79,10 @@ var MainContent = React.createClass({
             <DatasetsTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
           <TabPanel>
-            <FeaturesTab
-              getInitialState={this.getInitialState}
-              handleSubmit={this.handleNewFeaturesetSubmit}
-              handleInputChange={this.handleInputChange}
-              formFields={this.state.forms.featurize}
-              projects={this.props.projects}
-              datasets={this.props.datasets}
-              featuresets={this.props.featuresets}
-              available_features={this.state.available_features}
-              updateSeldObsFeats={this.updateSeldObsFeats}
-              updateSeldSciFeats={this.updateSeldSciFeats}
-              onFeaturesDialogMount={this.onFeaturesDialogMount}
-              testCustomFeatScript={this.testCustomFeatScript}
-            />
+            <FeaturesTab selectedProject={this.props.selectedProject} />
           </TabPanel>
           <TabPanel>
-            <ModelsTab onSubmitModelClick={this.props.handleSubmitModelClick}/>
+            <ModelsTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
           <TabPanel>
             Predictions...

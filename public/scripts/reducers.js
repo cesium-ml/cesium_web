@@ -24,12 +24,14 @@ function datasets(state = [], action) {
 }
 
 
-function featuresets(state = [], action) {
+function featuresets(state={featuresetList: [],
+                            featuresList: []}, action) {
   switch (action.type) {
     case Action.RECEIVE_FEATURESETS:
-      return action.payload
-    // case CLEAR_FEATURES_FORM:
-    //  return {
+      // {obs_features, sci_features}
+      return {...state, featuresetList: action.payload}
+    case Action.RECEIVE_FEATURES:
+      return {...state, features: action.payload}
     default:
       return state
   }

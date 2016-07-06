@@ -41,10 +41,10 @@ export var Form = (props) => {
   }
   return (
     <div style={style}>
+      {props.error && <div style={style.error}>Error: {props.error}</div>}
       <form {...props} className="form-horizontal">
         {props.children}
       </form>
-      {props.error && <div style={style.error}>Error: {props.error}</div>}
     </div>
   )
 }
@@ -68,6 +68,20 @@ export var TextInput = (props) => {
   )
 }
 TextInput.propTypes = {
+  label: PropTypes.string
+}
+
+export var CheckBoxInput = (props) => {
+  let style = {
+  }
+
+  return (
+    <div className="checkbox">
+      <input type="checkbox" {...props}/> {props.label}
+    </div>
+  )
+}
+CheckBoxInput.propTypes = {
   label: PropTypes.string
 }
 

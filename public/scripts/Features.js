@@ -1,11 +1,16 @@
 import React from 'react'
 import { connect } from "react-redux"
-import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
-import FileInput from 'react-file-input'
+import {reduxForm} from 'redux-form'
+import { FormInputRow, FormSelectInput, FormTitleRow, FormComponent, Form,
+         TextInput, FileInput, SubmitButton, CheckBoxInput } from './Form'
+//import FileInput from 'react-file-input'
 import ReactTabs from 'react-tabs'
 import CheckboxGroup from 'react-checkbox-group'
 import _ from 'underscore'
 import filter from 'filter-values'
+import * as Validate from './validate'
+import {AddExpand} from './presentation'
+import * as Action from './actions'
 
 var Tab = ReactTabs.Tab;
 var Tabs = ReactTabs.Tabs;
@@ -13,83 +18,169 @@ var TabList = ReactTabs.TabList;
 var TabPanel = ReactTabs.TabPanel;
 
 
-var FeaturesTab = React.createClass({
-  render: function() {
+class FeaturizeForm extends FormComponent {
+  render() {
+    const {fields, handleSubmit, submitting, resetForm, error} = this.props;
     return (
       <div>
-        <FeaturizeForm
-            handleInputChange={this.props.handleInputChange}
-            formFields={this.props.formFields}
-            handleSubmit={this.props.handleSubmit}
-            datasets={this.props.datasets}
-            featuresets={this.props.featuresets}
-            projects={this.props.projects}
-            formName={this.props.formName}
-            available_features={this.props.available_features}
-            updateSeldObsFeats={this.props.updateSeldObsFeats}
-            updateSeldSciFeats={this.props.updateSeldSciFeats}
-            onFeaturesDialogMount={this.props.onFeaturesDialogMount}
-            testCustomFeatScript={this.props.testCustomFeatScript}
-        />
+        <Form onSubmit={handleSubmit} error={error}>
+          <SubmitButton label="Compute Selected Features"
+                        submiting={submitting}
+                        resetForm={resetForm}/>
+          <b>Observation Features</b>
+          <ul>
+            {this.props.features.obs_features.map(feature => (
+            <CheckBoxInput key={'obs_' + feature} label={feature}
+                           {...this.props.fields['obs_' + feature]}/>
+             ))
+            }
+          </ul>
+
+          <b>Science Features</b>
+          <ul>
+            {this.props.features.sci_features.map(feature => (
+               <CheckBoxInput key={'sci_' + feature} label={feature}
+                              {...this.props.fields['sci_' + feature]}/>
+             ))
+            }
+          </ul>
+        </Form>
       </div>
-    );
+    )
   }
-});
+}
 
+let mapStateToProps = (state) => {
+  let obs_features = state.featuresets.features.obs_features;
+  let sci_features = state.featuresets.features.sci_features;
+  let obs_fields = obs_features.map(f => 'obs_' + f)
+  let sci_fields = sci_features.map(f => 'sci_' + f)
 
-var FeaturizeForm = React.createClass({
-  render: function() {
+  let initialValues = {}
+  obs_fields.map((f, idx) => initialValues[f] = true)
+  sci_fields.map((f, idx) => initialValues[f] = true)
+
+  return {
+    features: state.featuresets.features,
+    fields: obs_fields.concat(sci_fields),
+    initialValues
+  }
+}
+
+FeaturizeForm = reduxForm({
+  form: 'featurize',
+  fields: ['']
+}, mapStateToProps)(FeaturizeForm);
+
+var FeaturesTab = (props) => {
     return (
       <div>
-        <form id='featurizeForm' name='featurizeForm'
-              action='/FeaturizeData' enctype='multipart/form-data'
-              method='post'>
-          <FormTitleRow formTitle='Featurize Data'/>
-          <FormSelectInput inputName='Select Project'
-                           inputTag='select'
-                           formName='featurize'
-                           optionsList={this.props.projects}
-                           value={this.props.formFields['Select Project']}
-                           handleInputChange={this.props.handleInputChange}
-          />
-          <FormSelectInput inputName='Select Dataset'
-                           inputTag='select'
-                           formName='featurize'
-                           optionsList={this.props.datasets}
-                           value={this.props.formFields['Select Dataset']}
-                           handleInputChange={this.props.handleInputChange}
-          />
-          <FormInputRow inputName='Feature Set Title'
-                        inputTag='input'
-                        inputType='text'
-                        formName='featurize'
-                        value={this.props.formFields['Dataset Name']}
-                        handleInputChange={this.props.handleInputChange}
-          />
+        <div>
+          <AddExpand label="Compute New Features">
+            <FeaturizeForm onSubmit={props.computeFeatures}/>
+          </AddExpand>
+        </div>
 
-          <div className='submitButtonDiv' style={{marginTop: 15}}>
-            <input type='submit'
-                   onClick={this.props.handleSubmit}
-                   value='Submit'
-                   className='submitButton'
-            />
-          </div>
-        </form>
-        <h4>Select Features to Compute (TODO: Make this a pop-up dialog)</h4>
-        <FeatureSelectionDialog
-            available_features={this.props.available_features}
-            updateSeldObsFeats={this.props.updateSeldObsFeats}
-            updateSeldSciFeats={this.props.updateSeldSciFeats}
-            onFeaturesDialogMount={this.props.onFeaturesDialogMount}
-            handleInputChange={this.props.handleInputChange}
-            testCustomFeatScript={this.props.testCustomFeatScript}
-        />
+        <FeatureTable selectedProject={props.selectedProject}/>
 
       </div>
     );
-  }
-});
+};
 
+let ftMapDispatchToProps = (dispatch) => {
+  return {
+    computeFeatures: (form) => dispatch(Action.computeFeatures(form))
+  }
+}
+
+FeaturesTab = connect(null, ftMapDispatchToProps)(FeaturesTab)
+
+export var FeatureTable = (props) => {
+  return (
+    <table className="table">
+      <thead>
+        <tr>
+          <th>Name</th><th>Created</th><th>Debug (TODO remove)</th>
+        </tr>
+
+        {props.featuresets.map(featureset => (
+           <tr key={featureset.id}>
+             <td>{featureset.name}</td>
+             <td>{featureset.created}</td>
+             <td>Project: {featureset.project}</td>
+           </tr>
+         ))}
+
+      </thead>
+    </table>
+  );
+}
+
+let ftMapStateToProps = (state) => {
+  return {
+    featuresets: state.featuresets.featuresetList
+  }
+}
+
+FeatureTable = connect(ftMapStateToProps)(FeatureTable)
+
+
+
+
+/* 
+   class _FeaturizeForm extends FormComponent {
+   render() {
+   const {fields: {datasetID, featuresetName, features, customFeatsFile},
+   handleSubmit} = this.props;
+   return (
+   <div>
+   <form onSubmit={handleSubmit}>
+   <FormTitleRow formTitle='Featurize Data'/>
+   <FormSelectInput inputName='Select Project'
+   inputTag='select'
+   formName='featurize'
+   optionsList={this.props.projects}
+   value={this.props.formFields['Select Project']}
+   handleInputChange={this.props.handleInputChange}
+   />
+   <FormSelectInput inputName='Select Dataset'
+   inputTag='select'
+   formName='featurize'
+   optionsList={this.props.datasets}
+   value={this.props.formFields['Select Dataset']}
+   handleInputChange={this.props.handleInputChange}
+   />
+   <FormInputRow inputName='Feature Set Title'
+   inputTag='input'
+   inputType='text'
+   formName='featurize'
+   value={this.props.formFields['Dataset Name']}
+   handleInputChange={this.props.handleInputChange}
+   />
+
+   <div className='submitButtonDiv' style={{marginTop: 15}}>
+   <input type='submit'
+   onClick={this.props.handleSubmit}
+   value='Submit'
+   className='submitButton'
+   />
+   </div>
+   </form>
+   <h4>Select Features to Compute (TODO: Make this a pop-up dialog)</h4>
+   <FeatureSelectionDialog
+   available_features={this.props.available_features}
+   updateSeldObsFeats={this.props.updateSeldObsFeats}
+   updateSeldSciFeats={this.props.updateSeldSciFeats}
+   onFeaturesDialogMount={this.props.onFeaturesDialogMount}
+   handleInputChange={this.props.handleInputChange}
+   testCustomFeatScript={this.props.testCustomFeatScript}
+   />
+
+   </div>
+   );
+   }
+   });
+ */
 
 var FeatureSelectionDialog = React.createClass({
   componentDidMount: function () {

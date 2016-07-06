@@ -240,72 +240,67 @@ def Features(featureset_id=None):
     """
     """
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
-    if request.method == 'POST':
-        featureset_name = request.form["Feature Set Title"].strip()
-        dataset = m.Dataset.get(m.Dataset.id == request.form["Select Dataset"])
-        features_to_use = request.form.getlist("Selected Features[]")
-        custom_script_tested = (
-            request.form["Custom Features Script Tested"].strip() == "true")
-        if custom_script_tested:
-            custom_script = request.files["Custom Features File"]
-            custom_script_fname = str(secure_filename(custom_script.filename))
-            custom_script_path = pjoin(
-                    cfg['paths']['upload_folder'], "custom_feature_scripts",
-                    str(uuid.uuid4()) + "_" + str(custom_script_fname))
-            custom_script.save(custom_script_path)
-            custom_features = request.form.getlist("Custom Features List")
-            features_to_use += custom_features
-        else:
-            custom_script_path = None
-        is_test = bool(request.form.get("is_test"))
-        fset_path = pjoin(cfg['paths']['features_folder'],
-                          '{}_featureset.nc'.format(uuid.uuid4()))
-        fset = m.Featureset.create(name=featureset_name,
-                                   file=m.File.create(uri=fset_path),
-                                   project=dataset.project,
-                                   custom_features_script=custom_script_path)
-        res = featurize_task.delay(dataset.uris, fset_path, features_to_use,
-                                   custom_script_path, is_test)
-        return to_json({"status": "success"})
-    elif request.method == 'GET':
-        if featureset_id is not None:
-            featureset_info = m.Featureset.get(m.Featureset.id == featureset_id)
-        else:
-            featureset_info = [f for p in m.Project.all(get_username())
-                               for f in p.featuresets]
-        return to_json(
-            {
-                "status": "success",
-                "data": featureset_info
-            })
-    elif request.method == 'DELETE':
-        if featureset_id is None:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": "Invalid request - feature set ID not provided."
-                })
-        f = m.Featureset.get(m.Featureset.id == featureset_id)
-        if f.is_owned_by(get_username()):
-            f.delete_instance()
-        else:
-            raise UnauthorizedAccess("User not authorized for project.")
+    try:
+        if request.method == 'POST':
+            data = request.get_json()
 
-        return to_json({"status": "success"})
-    elif request.method == 'PUT':
-        if featureset_id is None:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": "Invalid request - feature set ID not provided."
-                })
-        # TODO!
-        return to_json(
-            {
-                "status": "error",
-                "message": "Functionality for this endpoint is not yet implemented."
-            })
+            # featureset_name = request.form["Feature Set Title"].strip()
+            # dataset = m.Dataset.get(m.Dataset.id == request.form["Select Dataset"])
+            # features_to_use = request.form.getlist("Selected Features[]")
+            # custom_script_tested = (
+            #     request.form["Custom Features Script Tested"].strip() == "true")
+            # if custom_script_tested:
+            #     custom_script = request.files["Custom Features File"]
+            #     custom_script_fname = str(secure_filename(custom_script.filename))
+            #     custom_script_path = pjoin(
+            #             cfg['paths']['upload_folder'], "custom_feature_scripts",
+            #             str(uuid.uuid4()) + "_" + str(custom_script_fname))
+            #     custom_script.save(custom_script_path)
+            #     custom_features = request.form.getlist("Custom Features List")
+            #     features_to_use += custom_features
+            # else:
+            #     custom_script_path = None
+            # is_test = bool(request.form.get("is_test"))
+            # fset_path = pjoin(cfg['paths']['features_folder'],
+            #                   '{}_featureset.nc'.format(uuid.uuid4()))
+            # fset = m.Featureset.create(name=featureset_name,
+            #                            file=m.File.create(uri=fset_path),
+            #                            project=dataset.project,
+            #                            custom_features_script=custom_script_path)
+            res = featurize_task.delay(dataset.uris, fset_path, features_to_use,
+                                       custom_script_path, is_test)
 
+            return success({'featureset': 'some_info_here'},
+                           'cesium/FETCH_FEATURESETS')
+
+        elif request.method == 'GET':
+            if featureset_id is not None:
+                featureset_info = m.Featureset.get(m.Featureset.id == featureset_id)
+            else:
+                featureset_info = [f for p in m.Project.all(get_username())
+                                   for f in p.featuresets]
+            return success(featureset_info)
+
+        elif request.method == 'DELETE':
+            if featureset_id is None:
+                return error("Invalid request - feature set ID not provided.")
+
+            f = m.Featureset.get(m.Featureset.id == featureset_id)
+            if f.is_owned_by(get_username()):
+                f.delete_instance()
+            else:
+                raise UnauthorizedAccess("User not authorized for project.")
+
+            return to_json({"status": "success"})
+        elif request.method == 'PUT':
+            if featureset_id is None:
+                return error("Invalid request - feature set ID not provided.")
+
+            # TODO!
+            return error("Functionality for this endpoint is not yet implemented.")
+
+    except Exception as e:
+        return error(str(e))
 
 @app.route('/models', methods=['POST', 'GET'])
 @app.route('/models/<model_id>', methods=['GET', 'PUT', 'DELETE'])

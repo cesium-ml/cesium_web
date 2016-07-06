@@ -68,9 +68,9 @@ export var ProjectTab = (props) => {
 }
 
 let ptMapDispatchToProps = (dispatch) => {
-  return (
-    {updateProject: (form) => dispatch(Action.updateProject(form))}
-  )
+  return {
+    updateProject: (form) => dispatch(Action.updateProject(form))
+  }
 }
 
 ProjectTab = connect(null, ptMapDispatchToProps)(ProjectTab)
