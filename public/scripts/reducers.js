@@ -93,6 +93,15 @@ function expander(state={opened: {}}, action) {
   }
 }
 
+function sklearnModels(state={}, action) {
+  switch (action.type) {
+    case Action.RECEIVE_SKLEARN_MODELS:
+      return {...(action.payload)}
+    default:
+      return state
+  }
+}
+
 
 const rootReducer = combineReducers({
   projects,
@@ -101,6 +110,7 @@ const rootReducer = combineReducers({
   models,
   notifications,
   expander,
+  sklearnModels,
   form: myFormReducer(formReducer)
 })
 

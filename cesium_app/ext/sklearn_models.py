@@ -1,6 +1,3 @@
-import numpy as np
-
-
 model_descriptions = [
     {"name": "RandomForestClassifier",
      "params": [
