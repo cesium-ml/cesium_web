@@ -150,7 +150,7 @@ export class ProjectSelector extends FormComponent {
   }
 }
 
-let mapStateToProps = (state) => {
+let psMapStateToProps = (state) => {
   let projectZero = state.projects.projectList[0];
   let projectZeroId = projectZero ? projectZero.id.toString() : "";
 
@@ -168,7 +168,7 @@ let mapStateToProps = (state) => {
 ProjectSelector = reduxForm({
   form: 'projectSelector',
   fields: ['project'],
-}, mapStateToProps)(ProjectSelector)
+}, psMapStateToProps)(ProjectSelector)
 
 
 export var CurrentProject = (props) => {

@@ -1,8 +1,9 @@
 import React from 'react'
 import { connect } from "react-redux"
 import {reduxForm} from 'redux-form'
-import { FormInputRow, FormSelectInput, FormTitleRow, FormComponent, Form,
-         TextInput, FileInput, SubmitButton, CheckBoxInput } from './Form'
+import { FormInputRow, FormSelectInput, SelectInput, FormTitleRow,
+         FormComponent, Form, TextInput, FileInput, SubmitButton,
+         CheckBoxInput } from './Form'
 //import FileInput from 'react-file-input'
 import ReactTabs from 'react-tabs'
 import CheckboxGroup from 'react-checkbox-group'
@@ -20,18 +21,29 @@ var TabPanel = ReactTabs.TabPanel;
 
 class FeaturizeForm extends FormComponent {
   render() {
-    const {fields, handleSubmit, submitting, resetForm, error} = this.props;
+    const {fields, fields: {datasetID, featuresetName, customFeatsFile, isTest},
+           handleSubmit, submitting, resetForm, error} = this.props;
+    let datasets = this.props.datasets.map(ds => (
+      {id: ds.id,
+       label: ds.name}
+    ));
+
     return (
       <div>
         <Form onSubmit={handleSubmit} error={error}>
           <SubmitButton label="Compute Selected Features"
                         submiting={submitting}
                         resetForm={resetForm}/>
+          <TextInput label="Feature Set Name" {...featuresetName}/>
+          <SelectInput label="Select Dataset to Featurize"
+                       key={this.props.selectedProject.id}
+                       options={datasets}
+                       {...datasetID}/>
           <b>Observation Features</b>
           <ul>
             {this.props.features.obs_features.map(feature => (
             <CheckBoxInput key={'obs_' + feature} label={feature}
-                           {...this.props.fields['obs_' + feature]}/>
+                           {...fields['obs_' + feature]}/>
              ))
             }
           </ul>
@@ -40,7 +52,7 @@ class FeaturizeForm extends FormComponent {
           <ul>
             {this.props.features.sci_features.map(feature => (
                <CheckBoxInput key={'sci_' + feature} label={feature}
-                              {...this.props.fields['sci_' + feature]}/>
+                              {...fields['sci_' + feature]}/>
              ))
             }
           </ul>
@@ -50,7 +62,7 @@ class FeaturizeForm extends FormComponent {
   }
 }
 
-let mapStateToProps = (state) => {
+let mapStateToProps = (state, ownProps) => {
   let obs_features = state.featuresets.features.obs_features;
   let sci_features = state.featuresets.features.sci_features;
   let obs_fields = obs_features.map(f => 'obs_' + f)
@@ -62,7 +74,11 @@ let mapStateToProps = (state) => {
 
   return {
     features: state.featuresets.features,
-    fields: obs_fields.concat(sci_fields),
+    datasets: state.datasets.filter(dataset =>
+      (dataset.project == ownProps.selectedProject.id)
+    ),
+    fields: obs_fields.concat(sci_fields).concat(['datasetID', 'featuresetName',
+                                                  'customFeatsFile', 'isTest']),
     initialValues
   }
 }
@@ -77,7 +93,8 @@ var FeaturesTab = (props) => {
       <div>
         <div>
           <AddExpand label="Compute New Features">
-            <FeaturizeForm onSubmit={props.computeFeatures}/>
+            <FeaturizeForm onSubmit={props.computeFeatures}
+                           selectedProject={props.selectedProject}/>
           </AddExpand>
         </div>
 
