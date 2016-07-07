@@ -7,6 +7,7 @@ import { FormComponent, TextInput, CheckBoxInput, SelectInput, SubmitButton,
 import * as Validate from './validate'
 import {AddExpand} from './presentation'
 import * as Action from './actions'
+import {plot_example} from './example_plot'
 
 
 class PredictForm extends FormComponent {
@@ -75,16 +76,27 @@ PredictForm = reduxForm({
 }, mapStateToProps)(PredictForm);
 
 
-var PredictTab = (props) => {
-  return (
-    <div>
-      <AddExpand label="Predict Targets" id="predictFormExpander">
-        <PredictForm onSubmit={props.doPrediction}
-                     selectedProject={props.selectedProject}/>
-      </AddExpand>
-    </div>
-  );
+class PredictTab extends Component {
+  render() {
+    let props = this.props;
+
+    return (
+      <div>
+        <AddExpand label="Predict Targets" id="predictFormExpander">
+          <PredictForm onSubmit={props.doPrediction}
+                       selectedProject={props.selectedProject}/>
+        </AddExpand>
+        <div id='plotly-div'></div>
+      </div>
+    );
+  }
+
+  componentDidMount() {
+    plot_example();
+  }
 }
+
+
 
 
 let mapDispatchToProps = (dispatch) => {

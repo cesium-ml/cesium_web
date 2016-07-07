@@ -10,22 +10,19 @@
     "react-dom": "^15.1.0",
     "react-modal": "latest",
     "react-tabs": "latest",
-    "react-dropzone": "latest",
-    "react-file-input": "latest",
     "react-addons-css-transition-group": "latest",
     "jquery": "latest",
     "jquery-form": "latest",
     "bootstrap": "latest",
     "bootstrap-css": "latest",
-    "underscore": "latest",
     "filter-values": "latest",
-    "react-checkbox-group": "latest",
     "redux": "latest",
     "react-redux": "latest",
     "redux-thunk": "latest",
     "redux-logger": "latest",
     "whatwg-fetch": "latest",
-    "redux-form": "latest"
+    "redux-form": "latest",
+    "plotly.js": "latest"
   },
   "devDependencies": {
     "babel": "latest",
@@ -41,7 +38,16 @@
     "imports-loader": "latest",
     "style-loader": "latest",
     "webpack": "latest",
-    "webpack-dev-server": "latest"
+    "webpack-dev-server": "latest",
+    "ify-loader": "latest",
+    "glslify": "latest",
+    "cwise": "latest"
+  },
+  "browserify": {
+    "transform": [
+      "glslify",
+      "cwise"
+    ]
   },
   "repository": {
     "type": "git",
