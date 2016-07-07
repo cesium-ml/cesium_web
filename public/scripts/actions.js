@@ -56,6 +56,7 @@ export function hydrate() {
         dispatch(fetchDatasets());
         dispatch(fetchFeaturesets());
         dispatch(fetchFeatures());
+        dispatch(fetchModels());
       })
     dispatch(fetchSklearnModels());
   }
@@ -468,4 +469,56 @@ function receiveSklearnModels(sklearn_models) {
     type: RECEIVE_SKLEARN_MODELS,
     payload: sklearn_models
   }
+}
+
+
+// Download models
+export function fetchModels() {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      FETCH_MODELS,
+
+      fetch('/models')
+        .then(response => response.json())
+        .then(json => {
+          return dispatch(receiveModels(json.data))
+        }
+        ).catch(ex => console.log('fetchModels', ex))
+    )
+}
+
+// Receive list of models
+function receiveModels(models) {
+  return {
+    type: RECEIVE_MODELS,
+    payload: models
+  }
+}
+
+
+export function doPrediction(form) {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      DO_PREDICTION,
+
+      fetch('/predictions',
+            {method: 'POST',
+             body: JSON.stringify(form),
+             headers: new Headers({
+               'Content-Type': 'application/json'
+             })}
+      ).then(response => response.json()
+      ).then(json => {
+        if (json.status == 'success') {
+          dispatch(resetForm('predict'));
+          dispatch(showNotification('Successfully computed model predictions'));
+          dispatch(hideExpander('predictFormExpander'));
+        } else {
+          return Promise.reject({_error: json.message});
+        }
+        return json;
+      })
+    )
 }

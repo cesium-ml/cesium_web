@@ -38,12 +38,15 @@ function featuresets(state={featuresetList: [],
 }
 
 
-function models(state, action) {
+function models(state = [], action) {
   switch (action.type) {
-  default:
-      return {formFields: {}}
+    case Action.RECEIVE_MODELS:
+      return action.payload
+    default:
+      return state
   }
 }
+
 
 function notifications(state={notes: []}, action) {
   switch (action.type) {
