@@ -15,6 +15,7 @@ export const HIDE_NEWPROJECT_FORM = 'cesium/HIDE_NEWPROJECT_FORM'
 
 export const FETCH_DATASETS = 'cesium/FETCH_DATASETS'
 export const RECEIVE_DATASETS = 'cesium/RECEIVE_DATASETS'
+export const UPLOAD_DATASET = 'cesium/UPLOAD_DATASET'
 
 export const FETCH_FEATURES = 'cesium/FETCH_FEATURES'
 export const FETCH_FEATURESETS = 'cesium/FETCH_FEATURESETS'
@@ -182,6 +183,40 @@ function receiveProjects(projects) {
   }
 }
 
+let objectType = (obj) => (
+  Object.prototype.toString.call(obj).slice(8, -1)
+)
+
+export function uploadDataset(form) {
+  let formData = new FormData();
+
+  for (let key in form) {
+    if (objectType(form[key][0]) === 'File') {
+      formData.append(key, form[key][0])
+    } else {
+      formData.append(key, form[key])
+    }
+  }
+
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      UPLOAD_DATASET,
+
+      fetch('/dataset', {method: 'POST', body: formData})
+        .then(response => response.json())
+        .then(json => {
+          if (json.status == 'success') {
+            dispatch(showNotification('Successfully uploaded new dataset'))
+            dispatch(hideExpander('newDatasetExpander'));
+            dispatch(resetForm('newDataset'));
+          } else {
+            return Promise.reject({_error: json.message});
+          }
+          return json;
+        })
+  )
+}
 
 // Download datasets
 export function fetchDatasets() {
@@ -235,8 +270,6 @@ function receiveFeaturesets(featuresets) {
 
 // POST new featureset form
 export function submitNewFeatureset(formdata) {
-  var data = new FormData();
-  data.append("json", JSON.stringify(formdata));
   return dispatch => (
     fetch('/features',
           {
@@ -244,7 +277,7 @@ export function submitNewFeatureset(formdata) {
             headers: new Headers({
               'Content-Type': 'application/json'
             }),
-            body: JSON.stringify(data)
+            body: JSON.stringify(formdata)
           }
     ).then(response => response.json())
      .then(json => {
