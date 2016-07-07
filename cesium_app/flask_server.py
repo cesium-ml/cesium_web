@@ -321,11 +321,11 @@ def Models(model_id=None):
         data = request.get_json()
 
         model_name = data.pop('modelName')
-        model_id = data.pop('featureSet')
+        featureset_id = data.pop('featureSet')
         model_type = sklearn_model_descriptions[data.pop('modelType')]['name']
         project_id = data.pop('project')
 
-        fset = m.Featureset.get(m.Featureset.id == model_id)
+        fset = m.Featureset.get(m.Featureset.id == featureset_id)
 
         model_params = data
 

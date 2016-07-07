@@ -57,6 +57,9 @@ database:
 docker:
     enabled: 0
 
+server:
+    url: http://localhost:5000
+
 ## testing:
 ##    ## Disable authentication
 ##    disable_auth: 1
