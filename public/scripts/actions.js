@@ -21,6 +21,7 @@ export const FETCH_FEATURESETS = 'cesium/FETCH_FEATURESETS'
 export const RECEIVE_FEATURES = 'cesium/RECEIVE_FEATURES'
 export const RECEIVE_FEATURESETS = 'cesium/RECEIVE_FEATURESETS'
 export const COMPUTE_FEATURES = 'cesium/COMPUTE_FEATURES'
+export const DELETE_FEATURESET = 'cesium/DELETE_FEATURESET'
 
 export const RECEIVE_MODELS = 'cesium/RECEIVE_MODELS'
 export const CREATE_MODEL = 'cesium/CREATE_MODEL'
@@ -381,6 +382,28 @@ export function computeFeatures(form) {
         return json;
       })
     )
+}
+
+
+export function deleteFeatureset(id) {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      DELETE_FEATURESET,
+
+      fetch('/features/' + id, {method: 'DELETE'})
+        .then(response => response.json())
+        .then(json => {
+          if (json.status == 'success') {
+            dispatch(showNotification('Feature set successfully deleted'));
+          } else {
+            dispatch(
+              showNotification(
+                'Error deleting feature set ({})'.format(json.message)
+              ));
+          }
+        })
+  )
 }
 
 
