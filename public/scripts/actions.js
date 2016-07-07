@@ -373,7 +373,8 @@ export function computeFeatures(form) {
       ).then(json => {
         if (json.status == 'success') {
           dispatch(resetForm('featurize'));
-          dispatch(showNotification('Successfully computed feature set'))
+          dispatch(showNotification('Successfully computed feature set'));
+          dispatch(hideExpander('featsetFormExpander'));
         } else {
           return Promise.reject({_error: json.message});
         }

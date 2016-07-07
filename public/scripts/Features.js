@@ -95,7 +95,8 @@ let mapStateToProps = (state, ownProps) => {
     fields: obs_fields.concat(sci_fields).concat(['datasetID', 'featuresetName',
                                                   'customFeatsCode', 'isTest']),
     initialValues: {...initialValues,
-                    datasetID: zerothDataset ? zerothDataset.id.toString() : ""}
+                    datasetID: zerothDataset ? zerothDataset.id.toString() : "",
+                    customFeatsCode: ""}
   }
 }
 
@@ -108,7 +109,7 @@ var FeaturesTab = (props) => {
     return (
       <div>
         <div>
-          <AddExpand label="Compute New Features">
+          <AddExpand label="Compute New Features" id="featsetFormExpander">
             <FeaturizeForm onSubmit={props.computeFeatures}
                            selectedProject={props.selectedProject}/>
           </AddExpand>
