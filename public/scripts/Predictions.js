@@ -78,7 +78,7 @@ PredictForm = reduxForm({
 
 export var PredictionsTable = (props) => {
   return (
-    <table classname="table">
+    <table className="table">
       <thead>
         <tr>
           <th>Name</th><th>Created</th><th>Debug</th><th>Actions</th>
