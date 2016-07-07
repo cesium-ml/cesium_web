@@ -76,6 +76,59 @@ PredictForm = reduxForm({
 }, mapStateToProps)(PredictForm);
 
 
+
+export var PredictionsTable = (props) => {
+  return (
+    <table classname="table">
+      <thead>
+        <tr>
+          <th>Name</th><th>Created</th><th>Debug</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {props.predictions.map(prediction => (
+           <tr key={prediction.id}>
+             <td>{prediction.name}</td>
+             <td>{prediction.created}</td>
+             <td>Project: {prediction.project}</td>
+             <td><DeletePrediction predictionID={prediction.id}/></td>
+           </tr>
+         ))}
+
+      </tbody>
+    </table>
+  )
+}
+
+
+let ptMapStateToProps = (state, ownProps) => {
+  let filteredPredictions = state.predictions.filter(pred =>
+    (pred.project == ownProps.selectedProject.id));
+  return {
+    predictions: filteredPredictions
+  }
+}
+
+
+export var DeletePrediction = (props) => {
+  let style = {
+    display: 'inline-block'
+  }
+  return (
+    <a style={style} onClick={() => props.deletePrediction(props.predictionID)}>Delete</a>
+  )
+}
+
+let dpMapDispatchToProps = (dispatch) => {
+  return (
+    {deletePrediction: (id) => dispatch(Action.deletePrediction(id))}
+  );
+}
+
+DeletePrediction = connect(null, dpMapDispatchToProps)(DeletePrediction);
+
+
 class PredictTab extends Component {
   render() {
     let props = this.props;
@@ -86,17 +139,15 @@ class PredictTab extends Component {
           <PredictForm onSubmit={props.doPrediction}
                        selectedProject={props.selectedProject}/>
         </AddExpand>
+        <PredictionsTable selectedProject={props.selectedProject}/>
         <div id='plotly-div'></div>
       </div>
     );
   }
-
   componentDidMount() {
     plot_example();
   }
 }
-
-
 
 
 let mapDispatchToProps = (dispatch) => {

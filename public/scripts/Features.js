@@ -142,6 +142,8 @@ export var FeatureTable = (props) => {
         <tr>
           <th>Name</th><th>Created</th><th>Debug</th><th>Actions</th>
         </tr>
+      </thead>
+      <tbody>
 
         {props.featuresets.map(featureset => (
            <tr key={featureset.id}>
@@ -152,7 +154,7 @@ export var FeatureTable = (props) => {
            </tr>
          ))}
 
-      </thead>
+      </tbody>
     </table>
   );
 }
