@@ -28,6 +28,7 @@ export const RECEIVE_MODELS = 'cesium/RECEIVE_MODELS'
 export const CREATE_MODEL = 'cesium/CREATE_MODEL'
 
 export const RECEIVE_PREDICTIONS = 'cesium/RECEIVE_PREDICTIONS'
+export const DO_PREDICTION = 'cesium/DO_PREDICTION'
 
 export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION'
 export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION'
