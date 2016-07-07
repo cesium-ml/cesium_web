@@ -32,6 +32,7 @@ import { ProjectSelector, AddProject, ProjectTab } from './Projects'
 import DatasetsTab from './Datasets'
 import FeaturesTab from './Features'
 import ModelsTab from './Models'
+import PredictTab from './Predictions'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 import { Notifications } from './Notifications'
 
@@ -85,7 +86,7 @@ var MainContent = React.createClass({
             <ModelsTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
           <TabPanel>
-            Predictions...
+            <PredictTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
           <TabPanel>
             <h3>System Status</h3>
