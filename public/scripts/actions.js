@@ -512,7 +512,11 @@ export function fetchModels() {
       fetch('/models')
         .then(response => response.json())
         .then(json => {
-          return dispatch(receiveModels(json.data))
+          if (json.status == 'success') {
+            return dispatch(receiveModels(json.data))
+          } else {
+            return dispatch(showNotification(json.message));
+          }
         }
         ).catch(ex => console.log('fetchModels', ex))
     )
@@ -586,7 +590,11 @@ export function fetchPredictions() {
       fetch('/predictions')
         .then(response => response.json())
         .then(json => {
-          return dispatch(receivePredictions(json.data))
+          if (json.status == 'success') {
+            return dispatch(receivePredictions(json.data))
+          } else {
+            return dispatch(showNotification(json.message));
+          }
         }
         ).catch(ex => console.log('fetchPredictions', ex))
     )
