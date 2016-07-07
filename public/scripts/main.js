@@ -58,7 +58,7 @@ var MainContent = React.createClass({
           <AddProject id='newProjectExpander'/>
         </div>
 
-        <Tabs classname='first'>
+        <Tabs>
           <TabList>
             <Tab>Project</Tab>
             <Tab>Data</Tab>

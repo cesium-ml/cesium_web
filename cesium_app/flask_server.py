@@ -250,21 +250,20 @@ def Features(featureset_id=None):
             datasetID = int(data['datasetID'])
             features_to_use = [k[4:] for (k, v) in data.items()
                                if v and k[:4] in ('obs_', 'sci_')]
-            # TODO: Custom features script handling
-            custom_script_path = None
+            custom_feats_code = data['customFeatsCode'].strip()
 
-            # if request.form["Custom Features Script Tested"] == "true":
-            #     custom_script = request.files["Custom Features File"]
-            #     custom_script_fname = str(secure_filename(custom_script.filename))
-            #     custom_script_path = pjoin(
-            #             cfg['paths']['upload_folder'], "custom_feature_scripts",
-            #             str(uuid.uuid4()) + "_" + str(custom_script_fname))
-            #     custom_script.save(custom_script_path)
-            #     custom_features = request.form.getlist("Custom Features List")
-            #     features_to_use += custom_features
-            # else:
-            #     custom_script_path = None
-            # is_test = bool(request.form.get("is_test"))
+            # Not working yet:
+            if custom_feats_code and 0:
+                custom_script_path = pjoin(
+                    cfg['paths']['upload_folder'], "custom_feature_scripts",
+                    str(uuid.uuid4()) + ".py")
+                with open(custom_script_path, 'w') as f:
+                    f.write(custom_feats_code)
+                # TODO: Extract list of custom features from code
+                custom_features = [] # request.form.getlist("Custom Features List")
+                features_to_use += custom_features
+            else:
+                custom_script_path = None
 
             fset_path = pjoin(cfg['paths']['features_folder'],
                               '{}_featureset.nc'.format(uuid.uuid4()))

@@ -28,7 +28,7 @@ Error.propTypes = {
 
 export var Form = (props) => {
   let style = {
-    width: 400,
+    width: 450,
     error: {
       color: 'Red',
       background: 'Pink',
@@ -67,6 +67,25 @@ export var TextInput = (props) => {
   )
 }
 TextInput.propTypes = {
+  label: PropTypes.string
+}
+
+export var TextareaInput = (props) => {
+ let textareaInputStyle = {
+   paddingTop: 10,
+  }
+
+  return (
+    <div className="form-group" style={textareaInputStyle}>
+      <label>{props.label}</label>
+      <textarea className="form-control"
+                value={props.value || ''} {...props}
+                rows="10" cols="50"/>
+      <Error {...props}/>
+    </div>
+  )
+}
+TextareaInput.propTypes = {
   label: PropTypes.string
 }
 
