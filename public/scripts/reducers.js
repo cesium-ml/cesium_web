@@ -38,12 +38,25 @@ function featuresets(state={featuresetList: [],
 }
 
 
-function models(state, action) {
+function models(state = [], action) {
   switch (action.type) {
-  default:
-      return {formFields: {}}
+    case Action.RECEIVE_MODELS:
+      return action.payload
+    default:
+      return state
   }
 }
+
+
+function predictions(state = [], action) {
+  switch (action.type) {
+    case Action.RECEIVE_PREDICTIONS:
+      return action.payload
+    default:
+      return state
+  }
+}
+
 
 function notifications(state={notes: []}, action) {
   switch (action.type) {
@@ -108,6 +121,7 @@ const rootReducer = combineReducers({
   datasets,
   featuresets,
   models,
+  predictions,
   notifications,
   expander,
   sklearnModels,

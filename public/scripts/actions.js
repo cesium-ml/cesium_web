@@ -27,7 +27,9 @@ export const DELETE_FEATURESET = 'cesium/DELETE_FEATURESET'
 export const RECEIVE_MODELS = 'cesium/RECEIVE_MODELS'
 export const CREATE_MODEL = 'cesium/CREATE_MODEL'
 
+export const FETCH_PREDICTIONS = 'cesium/FETCH_PREDICTIONS'
 export const RECEIVE_PREDICTIONS = 'cesium/RECEIVE_PREDICTIONS'
+export const DO_PREDICTION = 'cesium/DO_PREDICTION'
 
 export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION'
 export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION'
@@ -56,6 +58,7 @@ export function hydrate() {
         dispatch(fetchDatasets());
         dispatch(fetchFeaturesets());
         dispatch(fetchFeatures());
+        dispatch(fetchModels());
       })
     dispatch(fetchSklearnModels());
   }
@@ -467,5 +470,82 @@ function receiveSklearnModels(sklearn_models) {
   return {
     type: RECEIVE_SKLEARN_MODELS,
     payload: sklearn_models
+  }
+}
+
+
+// Download models
+export function fetchModels() {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      FETCH_MODELS,
+
+      fetch('/models')
+        .then(response => response.json())
+        .then(json => {
+          return dispatch(receiveModels(json.data))
+        }
+        ).catch(ex => console.log('fetchModels', ex))
+    )
+}
+
+// Receive list of models
+function receiveModels(models) {
+  return {
+    type: RECEIVE_MODELS,
+    payload: models
+  }
+}
+
+
+export function doPrediction(form) {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      DO_PREDICTION,
+
+      fetch('/predictions',
+            {method: 'POST',
+             body: JSON.stringify(form),
+             headers: new Headers({
+               'Content-Type': 'application/json'
+             })}
+      ).then(response => response.json()
+      ).then(json => {
+        if (json.status == 'success') {
+          dispatch(resetForm('predict'));
+          dispatch(showNotification('Successfully computed model predictions'));
+          dispatch(hideExpander('predictFormExpander'));
+        } else {
+          return Promise.reject({_error: json.message});
+        }
+        return json;
+      })
+    )
+}
+
+
+// Download predictions
+export function fetchPredictions() {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      FETCH_PREDICTIONS,
+
+      fetch('/predictions')
+        .then(response => response.json())
+        .then(json => {
+          return dispatch(receivePredictions(json.data))
+        }
+        ).catch(ex => console.log('fetchPredictions', ex))
+    )
+}
+
+// Receive list of predictions
+function receivePredictions(preds) {
+  return {
+    type: RECEIVE_PREDICTIONS,
+    payload: preds
   }
 }

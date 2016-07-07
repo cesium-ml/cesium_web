@@ -368,8 +368,9 @@ def Predictions(prediction_id=None):
     """
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
     if request.method == 'POST':
-        dataset = m.Dataset.get(m.Dataset.id == int(request.form["Select Dataset"]))
-        model = m.Model.get(m.Model.id == request.form["Select Model"])
+        data = request.get_json()
+        dataset = m.Dataset.get(m.Dataset.id == int(data["datasetID"]))
+        model = m.Model.get(m.Model.id == data["modelID"])
         fset = model.featureset
         prediction_path = pjoin(cfg['paths']['predictions_folder'],
                                 '{}_prediction.nc'.format(uuid.uuid4()))
