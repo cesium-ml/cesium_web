@@ -158,9 +158,11 @@ export var FeatureTable = (props) => {
 }
 
 
-let ftMapStateToProps = (state) => {
+let ftMapStateToProps = (state, ownProps) => {
   return {
-    featuresets: state.featuresets.featuresetList
+    featuresets: state.featuresets.featuresetList.filter(
+      fs => (fs.project == ownProps.selectedProject.id)
+    )
   }
 }
 

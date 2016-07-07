@@ -42,6 +42,7 @@ export const SHOW_EXPANDER = 'cesium/SHOW_EXPANDER'
 export const FETCH_SKLEARN_MODELS = 'cesium/FETCH_SKLEARN_MODELS'
 export const RECEIVE_SKLEARN_MODELS = 'cesium/RECEIVE_SKLEARN_MODELS'
 
+export const SPIN_LOGO = 'cesium/SPIN_LOGO'
 
 // Refactor this into a utility function
 String.prototype.format = function () {
@@ -56,14 +57,19 @@ export function hydrate() {
   return dispatch => {
     dispatch(fetchProjects())
       .then(proj => {
-        dispatch(fetchDatasets());
-        dispatch(fetchFeaturesets());
-        dispatch(fetchFeatures());
-        dispatch(fetchModels());
+        Promise.all([
+          dispatch(fetchDatasets()),
+          dispatch(fetchFeaturesets()),
+          dispatch(fetchFeatures()),
+          dispatch(fetchModels())
+        ]).then(() => {
+          dispatch(spinLogo());
+        });
       })
     dispatch(fetchSklearnModels());
   }
 }
+
 
 function promiseAction(dispatch, action_type, promise) {
   dispatch({
@@ -563,9 +569,16 @@ export function fetchPredictions() {
 }
 
 // Receive list of predictions
-function receivePredictions(preds) {
+export function receivePredictions(preds) {
   return {
     type: RECEIVE_PREDICTIONS,
     payload: preds
+  }
+}
+
+
+export function spinLogo() {
+  return {
+    type: SPIN_LOGO
   }
 }

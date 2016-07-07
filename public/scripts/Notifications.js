@@ -3,32 +3,35 @@ import {connect} from 'react-redux'
 
 export var Notifications = (props) => {
   let style = {
-    background: 'MediumSeaGreen',
-    color: 'white',
-    fontWeight: 'bold',
-    paddingTop: '0.8em',
-    paddingBottom: '0.2em',
-
     position: 'fixed',
     zIndex: 3,
     top: 10,
-    width: 750,
-    textAlign: 'center',
-    lineHeight: props.notifications.length,
+    width: 300,
+    left: 500,
     overflow: 'hidden',
-    WebkitBoxShadow: '0 0 5px black',
-    MozBoxShadow: '0 0 5px black',
-    boxShadow: '0 0 5px black'
+
+    note: {
+      color: 'white',
+      fontWeight: 'bold',
+      paddingTop: '0.8em',
+      paddingBottom: '0.8em',
+      paddingLeft: '1em',
+      marginBottom: 5,
+      background: 'MediumSeaGreen',
+      width: '100%',
+      display: 'inline-block',
+      WebkitBoxShadow: '0 0 5px black',
+      MozBoxShadow: '0 0 5px black',
+      boxShadow: '0 0 5px black'
+    }
   }
 
   return (
     (props.notifications.length > 0) &&
       <div style={style}>
-        <ul>
-          {props.notifications.map((note, idx) => (
-            <li key={idx}>{note}</li>
-          ))}
-        </ul>
+        {props.notifications.map((note, idx) => (
+          <div key={idx} style={style.note}>{note}</div>
+        ))}
       </div>
   );
 }

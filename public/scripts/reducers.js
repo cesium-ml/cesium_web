@@ -120,6 +120,19 @@ function sklearnModels(state={}, action) {
 }
 
 
+function misc(state={logoSpinAngle: 0}, action) {
+  switch (action.type) {
+    case Action.SPIN_LOGO:
+      return {
+        ...state,
+        logoSpinAngle: (state.logoSpinAngle + 360) % 720
+      }
+    default:
+      return state
+  }
+}
+
+
 const rootReducer = combineReducers({
   projects,
   datasets,
@@ -129,7 +142,8 @@ const rootReducer = combineReducers({
   notifications,
   expander,
   sklearnModels,
-  form: myFormReducer(formReducer)
+  form: myFormReducer(formReducer),
+  misc
 })
 
 export default rootReducer
