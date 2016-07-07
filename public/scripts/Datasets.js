@@ -8,35 +8,42 @@ import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 import {FormComponent, Form, TextInput, FileInput, SubmitButton } from './Form'
 import * as Validate from './validate'
 import {AddExpand} from './presentation'
+import * as Action from './actions'
 
-var DatasetsTab = React.createClass({
-  render: function() {
-    return (
-      <div className='datasetsTab'>
 
-      <AddExpand label="Upload new dataset">
-        <DatasetForm onSubmit={(x) => {console.log(x)}}/>
+var DatasetsTab = (props) => {
+  return (
+    <div className='datasetsTab'>
+
+      <AddExpand label="Upload new dataset" id='newDatasetExpander'>
+        <DatasetForm/>
       </AddExpand>
 
-      <DatasetTable selectedProject={this.props.selectedProject}/>
+      <DatasetTable selectedProject={props.selectedProject}/>
 
-      </div>
-    );
-  }
-});
+    </div>
+  )
+}
 
 class DatasetForm extends FormComponent {
   render() {
-    const {fields: {datasetName, headerFile, tarFile}, handleSubmit} = this.props;
+    const {fields: {datasetName, headerFile, tarFile},
+           error, handleSubmit} = this.props;
 
     return (
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit} error={error}>
         <TextInput label="Dataset Name" {...datasetName}/>
         <FileInput label="Header File" {...headerFile}/>
         <FileInput label="Data Tarball" {...tarFile}/>
         <SubmitButton label="Upload Dataset"/>
       </Form>
     )
+  }
+}
+
+let dsMapDispatchToProps = (dispatch) => {
+  return {
+    onSubmit: form => dispatch(Action.uploadDataset(form))
   }
 }
 
@@ -50,7 +57,7 @@ DatasetForm = reduxForm({
   form: 'newDataset',
   fields: ['datasetName', 'headerFile', 'tarFile'],
   validate
-})(DatasetForm);
+}, null, dsMapDispatchToProps)(DatasetForm);
 
 
 export var DatasetTable = (props) => {
@@ -87,53 +94,5 @@ function mapStateToProps(state, ownProps) {
 }
 
 DatasetTable = connect(mapStateToProps)(DatasetTable);
-
-
-/* var DatasetsForm = React.createClass({
- *   render: function() {
- *     return (
- *       <div>
- *         <form id='datasetForm' name='datasetForm'
- *               action='/uploadData' enctype='multipart/form-data'
- *               method='post'>
- *           <FormTitleRow formTitle='Upload new time series data'/>
- *           <FormSelectInput
- *               inputName='Select Project'
- *               inputTag='select'
- *               formName='newDataset'
- *               optionsList={this.props.projects}
- *               value={this.props.formFields['Select Project']}
- *               handleInputChange={this.props.handleInputChange}
- *           />
- *           <FormInputRow inputName='Dataset Name'
- *                         inputTag='input'
- *                         inputType='text'
- *                         formName='newDataset'
- *                         value={this.props.formFields['Dataset Name']}
- *                         handleInputChange={this.props.handleInputChange}
- *           />
- *           <FileInput name='Header File'
- *                      placeholder='Select Header File'
- *                      onChange={this.props.handleInputChange.bind(
- *                          null, 'Header File', 'file', 'newDataset')}
- *           />
- *           <FileInput name='Tarball Containing Data'
- *                      placeholder='Select Data Tarball'
- *                      onChange={this.props.handleInputChange.bind(
- *                          null, 'Tarball Containing Data', 'file', 'newDataset')}
- *           />
- *           <div className='submitButtonDiv' style={{marginTop: 15}}>
- *             <input type='submit'
- *                    onClick={this.props.handleSubmit}
- *                    value='Submit'
- *                    className='submitButton'
- *             />
- *           </div>
- *         </form>
- *       </div>
- *     );
- *   }
- * });
- * */
 
 module.exports = DatasetsTab;

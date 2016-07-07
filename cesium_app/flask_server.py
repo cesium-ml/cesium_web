@@ -153,88 +153,81 @@ def Dataset(dataset_id=None):
     """
     """
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
-    if request.method == 'POST':
-        dataset_name = str(request.form["Dataset Name"]).strip()
-        headerfile = request.files["Header File"]
-        zipfile = request.files["Tarball Containing Data"]
+    try:
+        if request.method == 'POST':
+            data = request.get_json()
+            print('data received for new dataset', data)
 
-        if dataset_name == "":
-            return to_json(
-                {
-                    "message": ("Dataset Title must contain non-whitespace "
-                                "characters. Please try a different title."),
-                    "type": "error"
-                })
 
-        project_id = request.form["Select Project"]
+            # Create unique file names
+            # headerfile_name = (str(uuid.uuid4()) + "_" +
+            #                    str(secure_filename(headerfile.filename)))
+            # zipfile_name = (str(uuid.uuid4()) + "_" +
+            #                 str(secure_filename(zipfile.filename)))
+            # headerfile_path = pjoin(cfg['paths']['upload_folder'], headerfile_name)
+            # zipfile_path = pjoin(cfg['paths']['upload_folder'], zipfile_name)
+            # headerfile.save(headerfile_path)
+            # zipfile.save(zipfile_path)
+            # print("Saved", headerfile_name, "and", zipfile_name)
 
-        # Create unique file names
-        headerfile_name = (str(uuid.uuid4()) + "_" +
-                           str(secure_filename(headerfile.filename)))
-        zipfile_name = (str(uuid.uuid4()) + "_" +
-                        str(secure_filename(zipfile.filename)))
-        headerfile_path = pjoin(cfg['paths']['upload_folder'], headerfile_name)
-        zipfile_path = pjoin(cfg['paths']['upload_folder'], zipfile_name)
-        headerfile.save(headerfile_path)
-        zipfile.save(zipfile_path)
-        print("Saved", headerfile_name, "and", zipfile_name)
+            # p = m.Project.get(m.Project.id == project_id)
+            # time_series = data_management.parse_and_store_ts_data(
+            #     zipfile_path,
+            #     cfg['paths']['ts_data_folder'],
+            #     headerfile_path)
+            # ts_paths = [ts.path for ts in time_series]
+            # d = m.Dataset.add(name=dataset_name, project=p, file_uris=ts_paths)
+            return success({})
 
-        p = m.Project.get(m.Project.id == project_id)
-        time_series = data_management.parse_and_store_ts_data(
-            zipfile_path,
-            cfg['paths']['ts_data_folder'],
-            headerfile_path)
-        ts_paths = [ts.path for ts in time_series]
-        d = m.Dataset.add(name=dataset_name, project=p, file_uris=ts_paths)
-
-        return to_json({"status": "success"})
-    elif request.method == "GET":
-        if dataset_id is not None:
-            dataset_info = m.Dataset.get(m.Dataset.id == dataset_id)
-        else:
-            dataset_info = [d for p in m.Project.all(get_username())
-                            for d in p.datasets]
-
-        return to_json(
-            {
-                "status": "success",
-                "data": dataset_info
-            })
-    elif request.method == "DELETE":
-        if dataset_id is None:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": "Invalid request - data set ID not provided."
-                })
-        try:
-            d = m.Dataset.get(m.Dataset.id == dataset_id)
-            if d.is_owned_by(get_username()):
-                d.delete_instance()
+        elif request.method == "GET":
+            if dataset_id is not None:
+                dataset_info = m.Dataset.get(m.Dataset.id == dataset_id)
             else:
-                raise UnauthorizedAccess("User not authorized for project.")
-        except Exception as e:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": str(e)
-                })
+                dataset_info = [d for p in m.Project.all(get_username())
+                                for d in p.datasets]
 
-        return to_json({"status": "success"})
-    elif request.method == "PUT":
-        if dataset_id is None:
+            return to_json(
+                {
+                    "status": "success",
+                    "data": dataset_info
+                })
+        elif request.method == "DELETE":
+            if dataset_id is None:
+                return to_json(
+                    {
+                        "status": "error",
+                        "message": "Invalid request - data set ID not provided."
+                    })
+            try:
+                d = m.Dataset.get(m.Dataset.id == dataset_id)
+                if d.is_owned_by(get_username()):
+                    d.delete_instance()
+                else:
+                    raise UnauthorizedAccess("User not authorized for project.")
+            except Exception as e:
+                return to_json(
+                    {
+                        "status": "error",
+                        "message": str(e)
+                    })
+
+            return to_json({"status": "success"})
+        elif request.method == "PUT":
+            if dataset_id is None:
+                return to_json(
+                    {
+                        "status": "error",
+                        "message": "Invalid request - data set ID not provided."
+                    })
+            # TODO!
             return to_json(
                 {
                     "status": "error",
-                    "message": "Invalid request - data set ID not provided."
+                    "message": "Functionality for this endpoint is not "
+                               "yet implemented."
                 })
-        # TODO!
-        return to_json(
-            {
-                "status": "error",
-                "message": "Functionality for this endpoint is not "
-                           "yet implemented."
-            })
+    except Exception as e:
+        return error(str(e))
 
 
 @app.route('/features', methods=['POST', 'GET'])

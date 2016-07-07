@@ -15,6 +15,7 @@ export const HIDE_NEWPROJECT_FORM = 'cesium/HIDE_NEWPROJECT_FORM'
 
 export const FETCH_DATASETS = 'cesium/FETCH_DATASETS'
 export const RECEIVE_DATASETS = 'cesium/RECEIVE_DATASETS'
+export const UPLOAD_DATASET = 'cesium/UPLOAD_DATASET'
 
 export const FETCH_FEATURES = 'cesium/FETCH_FEATURES'
 export const FETCH_FEATURESETS = 'cesium/FETCH_FEATURESETS'
@@ -181,6 +182,31 @@ function receiveProjects(projects) {
   }
 }
 
+export function uploadDataset(form) {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      UPLOAD_DATASET,
+
+      fetch('/dataset',
+            {method: 'POST',
+             body: JSON.stringify(form),
+             headers: new Headers({
+               'Content-Type': 'application/json'
+             })})
+        .then(response => response.json())
+        .then(json => {
+          if (json.status == 'success') {
+            dispatch(showNotification('Successfully uploaded new dataset'))
+            dispatch(hideExpander('newDatasetExpander'));
+            dispatch(resetForm('newDataset'));
+          } else {
+            return Promise.reject({_error: json.message});
+          }
+          return json;
+        })
+  )
+}
 
 // Download datasets
 export function fetchDatasets() {
