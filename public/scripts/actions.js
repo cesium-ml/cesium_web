@@ -27,6 +27,7 @@ export const DELETE_FEATURESET = 'cesium/DELETE_FEATURESET'
 export const RECEIVE_MODELS = 'cesium/RECEIVE_MODELS'
 export const CREATE_MODEL = 'cesium/CREATE_MODEL'
 
+export const FETCH_PREDICTIONS = 'cesium/FETCH_PREDICTIONS'
 export const RECEIVE_PREDICTIONS = 'cesium/RECEIVE_PREDICTIONS'
 export const DO_PREDICTION = 'cesium/DO_PREDICTION'
 
@@ -522,4 +523,29 @@ export function doPrediction(form) {
         return json;
       })
     )
+}
+
+
+// Download predictions
+export function fetchPredictions() {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      FETCH_PREDICTIONS,
+
+      fetch('/predictions')
+        .then(response => response.json())
+        .then(json => {
+          return dispatch(receivePredictions(json.data))
+        }
+        ).catch(ex => console.log('fetchPredictions', ex))
+    )
+}
+
+// Receive list of predictions
+function receivePredictions(preds) {
+  return {
+    type: RECEIVE_PREDICTIONS,
+    payload: preds
+  }
 }

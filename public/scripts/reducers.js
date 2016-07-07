@@ -48,6 +48,17 @@ function models(state = [], action) {
 }
 
 
+
+function predictions(state = [], action) {
+  switch (action.type) {
+    case Action.RECEIVE_PREDICTIONS:
+      return action.payload
+    default:
+      return state
+  }
+}
+
+
 function notifications(state={notes: []}, action) {
   switch (action.type) {
     case Action.SHOW_NOTIFICATION:
@@ -111,6 +122,7 @@ const rootReducer = combineReducers({
   datasets,
   featuresets,
   models,
+  predictions,
   notifications,
   expander,
   sklearnModels,
