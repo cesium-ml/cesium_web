@@ -134,7 +134,7 @@ export var FeatureTable = (props) => {
     <table className="table">
       <thead>
         <tr>
-          <th>Name</th><th>Created</th><th>Debug (TODO remove)</th>
+          <th>Name</th><th>Created</th><th>Debug</th><th>Actions</th>
         </tr>
 
         {props.featuresets.map(featureset => (
@@ -142,6 +142,7 @@ export var FeatureTable = (props) => {
              <td>{featureset.name}</td>
              <td>{featureset.created}</td>
              <td>Project: {featureset.project}</td>
+             <td><DeleteFeatureset featuresetID={featureset.id}/></td>
            </tr>
          ))}
 
@@ -155,6 +156,27 @@ let ftMapStateToProps = (state) => {
     featuresets: state.featuresets.featuresetList
   }
 }
+
+export var DeleteFeatureset = (props) => {
+  let style = {
+    display: 'inline-block'
+  }
+  return (
+    <a style={style} onClick={() => props.deleteFeatureset(props.featuresetID)}>Delete</a>
+  )
+}
+
+let dfMapDispatchToProps = (dispatch) => {
+  return (
+    {deleteFeatureset: (id) => dispatch(Action.deleteFeatureset(id))}
+  );
+}
+
+let dfMapStateToProps = (state, ownProps) => {
+  return {featuresetID: ownProps.featuresetID};
+}
+
+DeleteFeatureset = connect(dfMapStateToProps, dfMapDispatchToProps)(DeleteFeatureset);
 
 FeatureTable = connect(ftMapStateToProps)(FeatureTable)
 

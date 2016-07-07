@@ -277,8 +277,7 @@ def Features(featureset_id=None):
             res = featurize_task.delay(dataset.uris, fset_path, features_to_use,
                                        custom_script_path)
 
-            return success({'featureset': 'some_info_here'},
-                           'cesium/FETCH_FEATURESETS')
+            return success(fset, 'cesium/FETCH_FEATURESETS')
 
         elif request.method == 'GET':
             if featureset_id is not None:
@@ -298,7 +297,7 @@ def Features(featureset_id=None):
             else:
                 raise UnauthorizedAccess("User not authorized for project.")
 
-            return to_json({"status": "success"})
+            return success({}, 'cesium/FETCH_FEATURESETS')
         elif request.method == 'PUT':
             if featureset_id is None:
                 return error("Invalid request - feature set ID not provided.")
