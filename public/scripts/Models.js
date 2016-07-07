@@ -3,12 +3,14 @@ import { connect } from 'react-redux'
 import {reduxForm} from 'redux-form'
 
 import { FormComponent, TextInput, CheckBoxInput, SelectInput, SubmitButton, Form, Button } from './Form'
-import * as Validate from './validate';
+import * as Validate from './validate'
+import * as Action from './actions'
+import {AddExpand} from './presentation'
 
 
 const ModelsTab = (props) => (
   <div>
-    <NewModelForm/>
+    <NewModelForm selectedProject={props.selectedProject}/>
   </div>
 );
 
@@ -19,12 +21,10 @@ class NewModelForm extends FormComponent {
            fields: {modelName, project, featureSet, modelType},
            error, handleSubmit} = this.props;
 
-    console.log(this.props);
-
     let skModels = this.props.models;
     let selectModels = []
 
-    for (var key in skModels) {
+    for (let key in skModels) {
       if (skModels.hasOwnProperty(key)) {
         let model = skModels[key];
         selectModels.push({
@@ -34,15 +34,27 @@ class NewModelForm extends FormComponent {
       }
     }
 
+    let featureSets = this.props.featureSets.map(fs => (
+      {
+        id: fs.id,
+        label: fs.name
+      }));
+
     let chosenModel = this.props.models[modelType.value];
 
     return (
       <Form onSubmit={handleSubmit} error={error}>
-        <TextInput label="Model name (choose your own)" {...modelName}/>
-        <SelectInput label="Model Type"
-                     options={selectModels} {...modelType}/>
+      <TextInput label="Model name (choose your own)" {...modelName}/>
 
+      <SelectInput label="Feature Set"
+                   options={featureSets} {...featureSet}/>
+
+      <SelectInput label="Model Type"
+                   options={selectModels} {...modelType}/>
+
+      <AddExpand label="Choose Model Parameters">
           <Model model={chosenModel} {...fields}/>
+      </AddExpand>
 
         <SubmitButton label="Create Model"/>
       </Form>
@@ -50,11 +62,7 @@ class NewModelForm extends FormComponent {
   }
 }
 
-const validate = Validate.createValidator({
-  modelName: [Validate.required],
-});
-
-const mapStateToProps = function(state) {
+const mapStateToProps = function(state, ownProps) {
   let formState = state.form.newModel;
   let currentModelId = formState ? state.form.newModel.modelType.value : 0;
   let currentModel = state.sklearnModels[currentModelId];
@@ -68,13 +76,18 @@ const mapStateToProps = function(state) {
     paramDefaults[param.name] = (param.default === null) ? "None" : param.default;
   })
 
+  let firstFeatureSet = state.featuresets.featuresetList[0];
+  let firstFeatureSetID = firstFeatureSet ? firstFeatureSet.id : "";
+
   return {
     models: state.sklearnModels,
     projects: state.projects,
-    featureSets: state.featuresets,
+    featureSets: state.featuresets.featuresetList,
     fields: fields,
     initialValues: {
       modelType: currentModelId,
+      project: ownProps.selectedProject.id,
+      featureSet: firstFeatureSetID,
       ...paramDefaults
     }
   };
@@ -82,15 +95,18 @@ const mapStateToProps = function(state) {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onSubmit: (form) => {
-      console.log('submitted', form);
-    }
+    onSubmit: (form) => dispatch(Action.createModel(form))
   }
 }
+
+const validate = Validate.createValidator({
+  modelName: [Validate.required],
+});
 
 NewModelForm = reduxForm({
   form: 'newModel',
   fields: [],
+  validate
 }, mapStateToProps, mapDispatchToProps)(NewModelForm);
 
 

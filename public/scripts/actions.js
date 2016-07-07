@@ -300,10 +300,28 @@ function clearFeaturesForm() {
 
 
 export function createModel(form) {
-  return {
-    type: CREATE_MODEL,
-    payload: form
-  }
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      CREATE_MODEL,
+
+      fetch('/models',
+            {method: 'POST',
+             body: JSON.stringify(form),
+             headers: new Headers({
+               'Content-Type': 'application/json'
+             })})
+        .then(response => response.json())
+        .then(json => {
+          if (json.status == 'success') {
+            dispatch(resetForm('newModel'));
+            dispatch(showNotification('Successfully added new model'));
+          } else {
+            return Promise.reject({_error: json.message});
+          }
+          return json;
+        })
+  )
 }
 
 export function showNotification(text) {

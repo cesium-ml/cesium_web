@@ -303,36 +303,37 @@ def Models(model_id=None):
     """
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
     if request.method == 'POST':
-        model_name = request.form["Model Title"].strip()
-        fset = m.Featureset.get(m.Featureset.id ==
-                                request.form["Select Featureset"])
-        model_type = str(request.form['model_type_select'])
-        params_to_optimize_list = request.form.getlist("optimize_checkbox")
-        model_params = {}
-        params_to_optimize = {}
-        for k in request.form:
-            if k.startswith(model_type + "_"):
-                param_name = k.replace(model_type + "_", "")
-                if param_name in params_to_optimize_list:
-                    params_to_optimize[param_name] = str(request.form[k])
-                else:
-                    model_params[param_name] = str(request.form[k])
+        data = request.get_json()
+
+ # {'min_weight_fraction_leaf': 0, 'criterion': 'gini', 'min_samples_leaf': 1, 'max_depth': 'None', 'max_leaf_nodes': 'None', 'min_samples_split': 2, 'n_estimators': 10, 'random_state': 'None', 'max_features': 'auto', 'oob_score': False, 'modelType': 0, 'bootstrap': True, 'class_weight': 'None'}
+
+        model_name = data.pop('modelName')
+        model_id = data.pop('featureSet')
+        model_type = sklearn_model_descriptions[data.pop('modelType')]['name']
+        project_id = data.pop('project')
+
+        fset = m.Featureset.get(m.Featureset.id == model_id)
+
+        model_params = data
+
         model_params = {k: util.robust_literal_eval(v)
                         for k, v in model_params.items()}
-        params_to_optimize = {k: util.robust_literal_eval(v)
-                              for k, v in params_to_optimize.items()}
+
         util.check_model_param_types(model_type, model_params)
-        util.check_model_param_types(model_type, params_to_optimize,
-                                       all_as_lists=True)
+
         model_path = pjoin(cfg['paths']['models_folder'],
                            '{}_model.nc'.format(uuid.uuid4()))
+
         model_file = m.File.create(uri=model_path)
         model = m.Model(name=model_name, file=model_file, featureset=fset,
                         project=fset.project, params=model_params,
                         type=model_type)
-        build_model_task.delay(model_path, model_type, model_params,
-                               fset.file.uri, params_to_optimize)
-        return to_json({"status": "success"})
+
+        model = build_model_task.delay(model_path, model_type, model_params,
+                                       fset.file.uri)
+
+        return success(model)
+
     elif request.method == 'GET':
         if model_id is not None:
             model_info = m.Model.get(m.Model.id == model_id)
