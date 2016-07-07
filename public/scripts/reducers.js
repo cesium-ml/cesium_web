@@ -48,7 +48,6 @@ function models(state = [], action) {
 }
 
 
-
 function predictions(state = [], action) {
   switch (action.type) {
     case Action.RECEIVE_PREDICTIONS:
