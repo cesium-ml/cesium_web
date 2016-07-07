@@ -5,10 +5,12 @@ import { reduxForm } from 'redux-form'
 import { FormComponent, TextInput, CheckBoxInput, SelectInput, SubmitButton,
          Form, Button } from './Form'
 import * as Validate from './validate'
+import {AddExpand} from './presentation'
+import * as Action from './actions'
 
 class PredictForm extends FormComponent {
   render() {
-    const {fields: {modelID, datasetID}, handleSubmit, resetForm, error} = this.props;
+    const {fields: {modelID, datasetID}, handleSubmit, submitting, resetForm, error} = this.props;
 
     return (
       <div>
@@ -31,13 +33,15 @@ class PredictForm extends FormComponent {
 }
 
 let mapStateToProps = (state, ownProps) => {
+  console.log(state.models);
   let filteredDatasets = state.datasets.filter(dataset =>
-    (dataset.project == ownProps.selectedProject.id))
-  let zerothDataset = filteredDatasets[0]
+    (dataset.project == ownProps.selectedProject.id));
+  let zerothDataset = filteredDatasets[0];
 
   let filteredModels = state.models.filter(model =>
-    (model.project == ownProps.selectedProject.id))
-  let zerothModel = filteredModels[0]
+    (model.project == ownProps.selectedProject.id));
+  let zerothModel = filteredModels[0];
+
   return {
     datasets: filteredDatasets,
     models: filteredModels,
@@ -52,11 +56,11 @@ PredictForm = reduxForm({
   fields: ['']
 }, mapStateToProps)(PredictForm);
 
-var PredictTab = (props) {
+var PredictTab = (props) => {
   return (
     <div>
       <AddExpand label="Predict Targets" id="predictFormExpander">
-        <PredictForm onSubmit={props.predict}
+        <PredictForm onSubmit={props.doPrediction}
                      selectedProject={props.selectedProject}/>
       </AddExpand>
     </div>
@@ -65,10 +69,10 @@ var PredictTab = (props) {
 
 let mapDispatchToProps = (dispatch) => {
   return {
-    predict: (form) => dispatch(Action.predict(form))
+    doPrediction: (form) => dispatch(Action.doPrediction(form))
   }
 }
 
-PredictTab = connect(null, matchDispatchToProps)(PredictTab)
+PredictTab = connect(null, mapDispatchToProps)(PredictTab)
 
 module.exports = PredictTab;
