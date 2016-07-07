@@ -79,8 +79,7 @@ export var TextareaInput = (props) => {
     <div className="form-group" style={textareaInputStyle}>
       <label>{props.label}</label>
       <textarea className="form-control"
-                value={props.value || ''} {...props}
-                rows="10" cols="50"/>
+                value={props.value || ''} {...props}/>
       <Error {...props}/>
     </div>
   )

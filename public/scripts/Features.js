@@ -66,7 +66,7 @@ class FeaturizeForm extends FormComponent {
             </TabPanel>
             <TabPanel>
               <TextareaInput label="Enter Python code defining custom features"
-                             {...customFeatsCode}/>
+                             rows="10" cols="50" {...customFeatsCode}/>
             </TabPanel>
           </Tabs>
         </Form>
