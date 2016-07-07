@@ -36,8 +36,8 @@ class Encoder(json.JSONEncoder):
         elif o in data_types:
             return data_types[o]
 
-        return json.JSONEncoder.default(self, o, indent=2)
+        return json.JSONEncoder.default(self, o)
 
 
 def to_json(obj):
-    return json.dumps(obj, cls=Encoder)
+    return json.dumps(obj, cls=Encoder, indent=2)
