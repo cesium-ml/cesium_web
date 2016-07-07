@@ -10,18 +10,28 @@ import * as Action from './actions'
 
 class PredictForm extends FormComponent {
   render() {
-    const {fields: {modelID, datasetID}, handleSubmit, submitting, resetForm, error} = this.props;
+    const {fields: {modelID, datasetID}, handleSubmit, submitting, resetForm,
+           error} = this.props;
+    let datasets = this.props.datasets.map(ds => (
+      {id: ds.id,
+       label: ds.name}
+    ));
+
+    let models = this.props.models.map(model => (
+      {id: model.id,
+       label: model.name}
+    ));
 
     return (
       <div>
         <Form onSubmit={handleSubmit} error={error}>
           <SelectInput label="Select Model"
                        key={this.props.selectedProject.id + "modelID"}
-                       options={this.props.models}
+                       options={models}
                        {...modelID}/>
           <SelectInput label="Select Data Set"
                        key={this.props.selectedProject.id + "datasetID"}
-                       options={this.props.datasets}
+                       options={datasets}
                        {...datasetID}/>
           <SubmitButton label="Predict"
                         submitting={submitting}
@@ -33,7 +43,6 @@ class PredictForm extends FormComponent {
 }
 
 let mapStateToProps = (state, ownProps) => {
-  console.log(state.models);
   let filteredDatasets = state.datasets.filter(dataset =>
     (dataset.project == ownProps.selectedProject.id));
   let zerothDataset = filteredDatasets[0];
@@ -46,8 +55,8 @@ let mapStateToProps = (state, ownProps) => {
     datasets: filteredDatasets,
     models: filteredModels,
     fields: ['modelID', 'datasetID'],
-    initialValues: {modelID: zerothModel ? zerothModel.id : '',
-                    datasetID: zerothDataset ? zerothDataset.id : ''}
+    initialValues: {modelID: zerothModel ? zerothModel.id.toString() : '',
+                    datasetID: zerothDataset ? zerothDataset.id.toString() : ''}
   }
 }
 
