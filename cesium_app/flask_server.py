@@ -24,6 +24,9 @@ from . import models as m
 from .flow import Flow
 from .celery_tasks import featurize_task, build_model_task, predict_task
 from . import util
+from .ext.sklearn_models import (
+    model_descriptions as sklearn_model_descriptions
+    )
 
 # Flask initialization
 app = Flask(__name__, static_url_path='', static_folder='../public')
@@ -460,3 +463,8 @@ def socket_auth_token():
         }, secret)
     return to_json({'status': 'OK',
                     'data': {'token': token}})
+
+
+@app.route("/sklearn_models", methods=["GET"])
+def sklearn_models():
+    return success(sklearn_model_descriptions)

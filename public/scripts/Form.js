@@ -23,7 +23,6 @@ export var Error = (props) => {
   }
 }
 Error.propTypes = {
-  touched: PropTypes.bool.isRequired,
   error: PropTypes.string
 }
 

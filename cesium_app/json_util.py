@@ -3,12 +3,22 @@ import json
 import peewee
 
 
+data_types = {
+    int: 'int',
+    float: 'float',
+    bool: 'bool',
+    dict: 'dict',
+    str: 'str',
+    list: 'list'
+    }
+
+
 class Encoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, datetime):
             return o.isoformat()
 
-        if isinstance(o, bytes):
+        elif isinstance(o, bytes):
             return o.decode('utf-8')
 
         elif isinstance(o, peewee.Model):
@@ -17,7 +27,16 @@ class Encoder(json.JSONEncoder):
         elif isinstance(o, peewee.SelectQuery):
             return [self.default(item) for item in list(o)]
 
-        return json.JSONEncoder.default(self, o)
+        elif o is int:
+            return 'int'
+
+        elif o is float:
+            return 'float'
+
+        elif o in data_types:
+            return data_types[o]
+
+        return json.JSONEncoder.default(self, o, indent=2)
 
 
 def to_json(obj):

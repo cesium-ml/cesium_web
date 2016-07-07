@@ -34,6 +34,9 @@ export const TOGGLE_EXPANDER = 'cesium/TOGGLE_EXPANDER'
 export const HIDE_EXPANDER = 'cesium/HIDE_EXPANDER'
 export const SHOW_EXPANDER = 'cesium/SHOW_EXPANDER'
 
+export const FETCH_SKLEARN_MODELS = 'cesium/FETCH_SKLEARN_MODELS'
+export const RECEIVE_SKLEARN_MODELS = 'cesium/RECEIVE_SKLEARN_MODELS'
+
 
 // Refactor this into a utility function
 String.prototype.format = function () {
@@ -52,8 +55,7 @@ export function hydrate() {
         dispatch(fetchFeaturesets());
         dispatch(fetchFeatures());
       })
-//  dispatch(fetchModels());
-//  dispatch(fetchPredictions());
+    dispatch(fetchSklearnModels());
   }
 }
 
@@ -378,4 +380,35 @@ export function computeFeatures(form) {
         return json;
       })
     )
+}
+
+
+export function fetchSklearnModels() {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      FETCH_SKLEARN_MODELS,
+
+      fetch('/sklearn_models')
+        .then(response => response.json())
+        .then(json => {
+          if (json.status == 'success') {
+            dispatch(receiveSklearnModels(json.data))
+          } else {
+            dispatch(
+              showNotification(
+                'Error downloading sklearn models ({})'.format(json.message)
+              ));
+          }
+          return json;
+        }
+        ).catch(ex => console.log('fetchSklearnModels exception:', ex))
+      )
+}
+
+function receiveSklearnModels(sklearn_models) {
+  return {
+    type: RECEIVE_SKLEARN_MODELS,
+    payload: sklearn_models
+  }
 }
