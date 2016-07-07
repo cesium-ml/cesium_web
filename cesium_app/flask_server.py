@@ -62,7 +62,7 @@ def error(message):
             "message": message
         })
 
-def success(data, action=None, payload=None):
+def success(data={}, action=None, payload=None):
     if action is not None:
         flow.push(get_username(), action, payload or {})
 
@@ -72,242 +72,232 @@ def success(data, action=None, payload=None):
             "data": data
         })
 
+
+from functools import wraps
+def exception_as_error(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception as e:
+            return error(str(e))
+
+    return wrapper
+
+
 @app.route("/project", methods=["GET", "POST"])
 @app.route("/project/<project_id>", methods=["GET", "PUT", "DELETE"])
+@exception_as_error
 def Project(project_id=None):
     """
     """
-    try:
-        # First, make sure the user owns the project they are trying to
-        # manipulate
-        result = {}
+    # First, make sure the user owns the project they are trying to
+    # manipulate
+    result = {}
 
+    if project_id is not None:
+        p = m.Project.get(m.Project.id == project_id)
+
+        if not p.is_owned_by(get_username()):
+            raise RuntimeError("User not authorized")
+
+    if request.method == 'POST':
+        data = request.get_json()
+
+        p = m.Project.add_by(data['projectName'],
+                             data.get('projectDescription', ''),
+                             get_username())
+
+        return success({"id": p.id}, 'cesium/FETCH_PROJECTS')
+
+    elif request.method == "GET":
         if project_id is not None:
-            p = m.Project.get(m.Project.id == project_id)
+            proj_info = m.Project.get(m.Project.id == project_id)
+        else:
+            proj_info = m.Project.all(get_username())
 
-            if not p.is_owned_by(get_username()):
-                raise RuntimeError("User not authorized")
+        return success(proj_info)
 
-        if request.method == 'POST':
-            data = request.get_json()
+    elif request.method == "PUT":
+        if project_id is None:
+            raise RuntimeError("No project ID provided")
 
-            p = m.Project.add_by(data['projectName'],
-                                 data.get('projectDescription', ''),
-                                 get_username())
+        data = request.get_json()
+        query = m.Project.update(
+            name=data['projectName'],
+            description=data.get('projectDescription', ''),
+            ).where(m.Project.id == project_id)
+        query.execute()
 
-            return success({"id": p.id}, 'cesium/FETCH_PROJECTS')
+        return success(action='cesium/FETCH_PROJECTS')
 
-        elif request.method == "GET":
-            if project_id is not None:
-                proj_info = m.Project.get(m.Project.id == project_id)
-            else:
-                proj_info = m.Project.all(get_username())
+    elif request.method == "DELETE":
+        if project_id is None:
+            raise RuntimeError("No project ID provided")
 
-            return success(proj_info)
+        p = m.Project.get(m.Project.id == project_id)
+        p.delete_instance()
 
-        elif request.method == "PUT":
-            if project_id is None:
-                raise RuntimeError("No project ID provided")
-
-            data = request.get_json()
-            query = m.Project.update(
-                name=data['projectName'],
-                description=data.get('projectDescription', ''),
-                ).where(m.Project.id == project_id)
-            query.execute()
-
-            return success({}, 'cesium/FETCH_PROJECTS')
-
-        elif request.method == "DELETE":
-            if project_id is None:
-                raise RuntimeError("No project ID provided")
-
-            p = m.Project.get(m.Project.id == project_id)
-            p.delete_instance()
-
-            return success({}, 'cesium/FETCH_PROJECTS')
-
-    except Exception as e:
-        return error(str(e))
-
-
-@app.route('/get_state', methods=['GET'])
-def get_state():
-    """
-    TODO change to use REST/CRUD
-    """
-    if request.method == 'GET':
-        state = {}
-        state["projectsList"] = m.Project.all(get_username())
-        state["datasetsList"] = [d for p in state["projectsList"]
-                                 for d in p.datasets]
-        return Response(to_json(state),
-                        mimetype='application/json',
-                        headers={'Cache-Control': 'no-cache',
-                                 'Access-Control-Allow-Origin': '*'})
+        return success(action='cesium/FETCH_PROJECTS')
 
 
 @app.route('/dataset', methods=['POST', 'GET'])
 @app.route('/dataset/<dataset_id>', methods=['GET', 'PUT', 'DELETE'])
+@exception_as_error
 def Dataset(dataset_id=None):
     """
     """
     if dataset_id:
         d = m.Dataset.get(m.Dataset.id == dataset_id)
-        if not d.is_owned_by(get_username()):
+        if not d.project.is_owned_by(get_username()):
             raise error('Unauthorized access')
 
-    try:
-        if request.method == 'POST':
-            form = request.form
+    if request.method == 'POST':
+        form = request.form
 
-            if not 'headerFile' in request.files:
-                return error('No header file uploaded')
+        if not 'headerFile' in request.files:
+            return error('No header file uploaded')
 
-            if not 'tarFile' in request.files:
-                return error('No tar file uploaded')
+        if not 'tarFile' in request.files:
+            return error('No tar file uploaded')
 
-            headerfile = request.files['headerFile']
-            zipfile = request.files['tarFile']
+        headerfile = request.files['headerFile']
+        zipfile = request.files['tarFile']
 
-            if zipfile.filename == '':
-                return error('Empty tar file uploaded')
+        if zipfile.filename == '':
+            return error('Empty tar file uploaded')
 
-            if headerfile.filename == '':
-                return error('Empty header file uploaded')
+        if headerfile.filename == '':
+            return error('Empty header file uploaded')
 
-            dataset_name = form['datasetName']
-            project_id = form['projectID']
+        dataset_name = form['datasetName']
+        project_id = form['projectID']
 
-            # files have the following attributes:
-            #
-            # 'close', 'content_length', 'content_type', 'filename', 'headers',
-            # 'mimetype', 'mimetype_params', 'name', 'save', 'stream']
+        # files have the following attributes:
+        #
+        # 'close', 'content_length', 'content_type', 'filename', 'headers',
+        # 'mimetype', 'mimetype_params', 'name', 'save', 'stream']
 
-            # Create unique file names
-            headerfile_name = (str(uuid.uuid4()) + "_" +
-                               str(secure_filename(headerfile.filename)))
-            zipfile_name = (str(uuid.uuid4()) + "_" +
-                            str(secure_filename(zipfile.filename)))
-            headerfile_path = pjoin(cfg['paths']['upload_folder'], headerfile_name)
-            zipfile_path = pjoin(cfg['paths']['upload_folder'], zipfile_name)
-            headerfile.save(headerfile_path)
-            zipfile.save(zipfile_path)
+        # Create unique file names
+        headerfile_name = (str(uuid.uuid4()) + "_" +
+                           str(secure_filename(headerfile.filename)))
+        zipfile_name = (str(uuid.uuid4()) + "_" +
+                        str(secure_filename(zipfile.filename)))
+        headerfile_path = pjoin(cfg['paths']['upload_folder'], headerfile_name)
+        zipfile_path = pjoin(cfg['paths']['upload_folder'], zipfile_name)
+        headerfile.save(headerfile_path)
+        zipfile.save(zipfile_path)
 
-            p = m.Project.get(m.Project.id == project_id)
-            time_series = data_management.parse_and_store_ts_data(
-                zipfile_path,
-                cfg['paths']['ts_data_folder'],
-                headerfile_path)
-            ts_paths = [ts.path for ts in time_series]
-            d = m.Dataset.add(name=dataset_name, project=p, file_uris=ts_paths)
+        p = m.Project.get(m.Project.id == project_id)
+        time_series = data_management.parse_and_store_ts_data(
+            zipfile_path,
+            cfg['paths']['ts_data_folder'],
+            headerfile_path)
+        ts_paths = [ts.path for ts in time_series]
+        d = m.Dataset.add(name=dataset_name, project=p, file_uris=ts_paths)
 
-            return success(d, 'cesium/FETCH_DATASETS')
+        return success(d, 'cesium/FETCH_DATASETS')
 
-        elif request.method == "GET":
-            if dataset_id is None:
-                datasets = [d for p in m.Project.all(get_username())
-                                for d in p.datasets]
-            else:
-                datasets = d
+    elif request.method == "GET":
+        if dataset_id is None:
+            datasets = [d for p in m.Project.all(get_username())
+                            for d in p.datasets]
+        else:
+            datasets = d
 
-            return success(datasets)
+        return success(datasets)
 
-        elif request.method == "DELETE":
-            if dataset_id is None:
-                raise error('No dataset specified')
+    elif request.method == "DELETE":
+        if dataset_id is None:
+            raise error('No dataset specified')
 
-            d.delete_instance()
+        d.delete_instance()
 
-            return success({}, 'cesium/FETCH_DATASETS')
+        return success(action='cesium/FETCH_DATASETS')
 
-        elif request.method == "PUT":
-            if dataset_id is None:
-                raise error('No dataset specified')
+    elif request.method == "PUT":
+        if dataset_id is None:
+            raise error('No dataset specified')
 
-            return error('Dataset updating not yet implemented')
-
-    except Exception as e:
-        return error(str(e))
+        return error('Dataset updating not yet implemented')
 
 
 @app.route('/features', methods=['POST', 'GET'])
 @app.route('/features/<featureset_id>', methods=['GET', 'PUT', 'DELETE'])
+@exception_as_error
 def Features(featureset_id=None):
     """
     """
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
-    try:
-        if request.method == 'POST':
-            data = request.get_json()
-            featureset_name = data.get('featuresetName', '')
-            datasetID = int(data['datasetID'])
-            feature_fields = {feature: selected for (feature, selected) in
-                              data.items() if feature.startswith(('sci_', 'obs_'))}
-            feat_type_name = [feat.split('_', 1) for (feat, selected) in
-                              feature_fields.items() if selected]
-            features_to_use = [fname for (ftype, fname) in feat_type_name]
+    if request.method == 'POST':
+        data = request.get_json()
+        featureset_name = data.get('featuresetName', '')
+        datasetID = int(data['datasetID'])
+        feature_fields = {feature: selected for (feature, selected) in
+                          data.items() if feature.startswith(('sci_', 'obs_'))}
+        feat_type_name = [feat.split('_', 1) for (feat, selected) in
+                          feature_fields.items() if selected]
+        features_to_use = [fname for (ftype, fname) in feat_type_name]
 
-            custom_feats_code = data['customFeatsCode'].strip()
+        custom_feats_code = data['customFeatsCode'].strip()
 
-            # Not working yet:
-            if custom_feats_code and 0:
-                custom_script_path = pjoin(
-                    cfg['paths']['upload_folder'], "custom_feature_scripts",
-                    str(uuid.uuid4()) + ".py")
-                with open(custom_script_path, 'w') as f:
-                    f.write(custom_feats_code)
-                # TODO: Extract list of custom features from code
-                custom_features = [] # request.form.getlist("Custom Features List")
-                features_to_use += custom_features
-            else:
-                custom_script_path = None
+        # Not working yet:
+        if custom_feats_code and 0:
+            custom_script_path = pjoin(
+                cfg['paths']['upload_folder'], "custom_feature_scripts",
+                str(uuid.uuid4()) + ".py")
+            with open(custom_script_path, 'w') as f:
+                f.write(custom_feats_code)
+            # TODO: Extract list of custom features from code
+            custom_features = [] # request.form.getlist("Custom Features List")
+            features_to_use += custom_features
+        else:
+            custom_script_path = None
 
-            fset_path = pjoin(cfg['paths']['features_folder'],
-                              '{}_featureset.nc'.format(uuid.uuid4()))
+        fset_path = pjoin(cfg['paths']['features_folder'],
+                          '{}_featureset.nc'.format(uuid.uuid4()))
 
-            dataset = m.Dataset.get(m.Dataset.id == datasetID)
+        dataset = m.Dataset.get(m.Dataset.id == datasetID)
 
-            fset = m.Featureset.create(name=featureset_name,
-                                       file=m.File.create(uri=fset_path),
-                                       project=dataset.project,
-                                       custom_features_script=custom_script_path)
-            res = featurize_task.delay(dataset.uris, fset_path, features_to_use,
-                                       custom_script_path)
+        fset = m.Featureset.create(name=featureset_name,
+                                   file=m.File.create(uri=fset_path),
+                                   project=dataset.project,
+                                   custom_features_script=custom_script_path)
+        res = featurize_task.delay(dataset.uris, fset_path, features_to_use,
+                                   custom_script_path)
 
-            return success(fset, 'cesium/FETCH_FEATURESETS')
+        return success(fset, 'cesium/FETCH_FEATURESETS')
 
-        elif request.method == 'GET':
-            if featureset_id is not None:
-                featureset_info = m.Featureset.get(m.Featureset.id == featureset_id)
-            else:
-                featureset_info = [f for p in m.Project.all(get_username())
-                                   for f in p.featuresets]
-            return success(featureset_info)
+    elif request.method == 'GET':
+        if featureset_id is not None:
+            featureset_info = m.Featureset.get(m.Featureset.id == featureset_id)
+        else:
+            featureset_info = [f for p in m.Project.all(get_username())
+                               for f in p.featuresets]
+        return success(featureset_info)
 
-        elif request.method == 'DELETE':
-            if featureset_id is None:
-                return error("Invalid request - feature set ID not provided.")
+    elif request.method == 'DELETE':
+        if featureset_id is None:
+            return error("Invalid request - feature set ID not provided.")
 
-            f = m.Featureset.get(m.Featureset.id == featureset_id)
-            if f.is_owned_by(get_username()):
-                f.delete_instance()
-            else:
-                raise UnauthorizedAccess("User not authorized for project.")
+        f = m.Featureset.get(m.Featureset.id == featureset_id)
+        if f.is_owned_by(get_username()):
+            f.delete_instance()
+        else:
+            raise UnauthorizedAccess("User not authorized for project.")
 
-            return success({}, 'cesium/FETCH_FEATURESETS')
-        elif request.method == 'PUT':
-            if featureset_id is None:
-                return error("Invalid request - feature set ID not provided.")
+        return success(action='cesium/FETCH_FEATURESETS')
+    elif request.method == 'PUT':
+        if featureset_id is None:
+            return error("Invalid request - feature set ID not provided.")
 
-            # TODO!
-            return error("Functionality for this endpoint is not yet implemented.")
+        # TODO!
+        return error("Functionality for this endpoint is not yet implemented.")
 
-    except Exception as e:
-        return error(str(e))
 
 @app.route('/models', methods=['POST', 'GET'])
 @app.route('/models/<model_id>', methods=['GET', 'PUT', 'DELETE'])
+@exception_as_error
 def Models(model_id=None):
     """
     """
@@ -349,42 +339,30 @@ def Models(model_id=None):
         else:
             model_info = [model for p in m.Project.all(get_username())
                           for model in p.models]
-        return to_json(
-            {
-                "status": "success",
-                "data": model_info
-            })
+        return success(model_info)
+
     elif request.method == 'DELETE':
         if model_id is None:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": "Invalid request - model set ID not provided."
-                })
+            return error("Invalid request - model set ID not provided.")
+
         f = m.Model.get(m.Model.id == model_id)
         if f.is_owned_by(get_username()):
             f.delete_instance()
         else:
             raise UnauthorizedAccess("User not authorized for project.")
 
-        return to_json({"status": "success"})
+        return success()
+
     elif request.method == 'PUT':
         if model_id is None:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": "Invalid request - model set ID not provided."
-                })
-        # TODO!
-        return to_json(
-            {
-                "status": "error",
-                "message": "Functionality for this endpoint is not yet implemented."
-            })
+            return error("Invalid request - model set ID not provided.")
+
+        return error("Functionality for this endpoint is not yet implemented.")
 
 
 @app.route('/predictions', methods=['POST', 'GET'])
 @app.route('/predictions/<prediction_id>', methods=['GET', 'PUT', 'DELETE'])
+@exception_as_error
 def Predictions(prediction_id=None):
     """
     """
@@ -400,25 +378,20 @@ def Predictions(prediction_id=None):
                                   project=dataset.project, model=model)
         predict_task(dataset.uris, prediction_path, model.file.uri,
                      custom_features_script=fset.custom_features_script)
-        return to_json({"status": "success"})
+        return success()
+
     elif request.method == 'GET':
         if prediction_id is not None:
             prediction_info = m.Prediction.get(m.Prediction.id == prediction_id)
         else:
             prediction_info = [prediction for p in m.Project.all(get_username())
                           for prediction in p.predictions]
-        return to_json(
-            {
-                "status": "success",
-                "data": prediction_info
-            })
+        return success(prediction_info)
+
     elif request.method == 'DELETE':
         if prediction_id is None:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": "Invalid request - prediction set ID not provided."
-                })
+            return error("Invalid request - prediction set ID not provided.")
+
         f = m.Prediction.get(m.Prediction.id == prediction_id)
         if f.is_owned_by(get_username()):
             f.delete_instance()
@@ -426,46 +399,38 @@ def Predictions(prediction_id=None):
             raise UnauthorizedAccess("User not authorized for project.")
 
         return to_json({"status": "success"})
+
     elif request.method == 'PUT':
         if prediction_id is None:
-            return to_json(
-                {
-                    "status": "error",
-                    "message": "Invalid request - prediction set ID not provided."
-                })
-        # TODO!
-        return to_json(
-            {
-                "status": "error",
-                "message": "Functionality for this endpoint is not yet implemented."
-            })
+            return error("Invalid request - prediction set ID not provided.")
+
+        return error("Functionality for this endpoint is not yet implemented.")
 
 
 @app.route("/features_list", methods=["GET"])
+@exception_as_error
 def get_features_list():
     if request.method == "GET":
-        return to_json({
-            "status": "success",
-            "data": {
-                "obs_features": oft.FEATURES_LIST,
-                "sci_features": sft.FEATURES_LIST},
-            "message": None})
+        return success({
+            "obs_features": oft.FEATURES_LIST,
+            "sci_features": sft.FEATURES_LIST})
 
 
 # !!!
 # This API call should **only be callable by logged in users**
 # !!!
 @app.route('/socket_auth_token', methods=['GET'])
+@exception_as_error
 def socket_auth_token():
     secret = cfg['flask']['secret-key']
     token = jwt.encode({
         'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=15),
         'username': get_username()
         }, secret)
-    return to_json({'status': 'OK',
-                    'data': {'token': token}})
+    return success({'token': token})
 
 
 @app.route("/sklearn_models", methods=["GET"])
+@exception_as_error
 def sklearn_models():
     return success(sklearn_model_descriptions)
