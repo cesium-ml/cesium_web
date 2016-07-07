@@ -76,7 +76,6 @@ PredictForm = reduxForm({
 }, mapStateToProps)(PredictForm);
 
 
-
 export var PredictionsTable = (props) => {
   return (
     <table classname="table">
@@ -110,6 +109,8 @@ let ptMapStateToProps = (state, ownProps) => {
   }
 }
 
+
+PredictionsTable = connect(ptMapStateToProps)(PredictionsTable);
 
 export var DeletePrediction = (props) => {
   let style = {
