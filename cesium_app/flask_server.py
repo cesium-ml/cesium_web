@@ -248,10 +248,12 @@ def Features(featureset_id=None):
             data = request.get_json()
             featureset_name = data.get('featuresetName', '')
             datasetID = int(data['datasetID'])
+            feature_fields = {feature: selected for (feature, selected) in
+                              data.items() if feature.startswith(('sci_', 'obs_'))}
             feat_type_name = [feat.split('_', 1) for (feat, selected) in
-                              data.items() if selected]
-            features_to_use = [fname for (ftype, fname) in feat_type_name if
-                              ftype in ('obs', 'sci')]
+                              feature_fields.items() if selected]
+            features_to_use = [fname for (ftype, fname) in feat_type_name]
+
             custom_feats_code = data['customFeatsCode'].strip()
 
             # Not working yet:
