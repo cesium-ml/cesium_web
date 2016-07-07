@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from "react-redux"
 import {reduxForm} from 'redux-form'
 import { FormInputRow, FormSelectInput, SelectInput, FormTitleRow,
-         FormComponent, Form, TextInput, FileInput, SubmitButton,
+         FormComponent, Form, TextInput, TextareaInput, FileInput, SubmitButton,
          CheckBoxInput } from './Form'
 //import FileInput from 'react-file-input'
 import ReactTabs from 'react-tabs'
@@ -21,7 +21,7 @@ var TabPanel = ReactTabs.TabPanel;
 
 class FeaturizeForm extends FormComponent {
   render() {
-    const {fields, fields: {datasetID, featuresetName, customFeatsFile, isTest},
+    const {fields, fields: {datasetID, featuresetName, customFeatsCode, isTest},
            handleSubmit, submitting, resetForm, error} = this.props;
     let datasets = this.props.datasets.map(ds => (
       {id: ds.id,
@@ -39,23 +39,36 @@ class FeaturizeForm extends FormComponent {
                        key={this.props.selectedProject.id}
                        options={datasets}
                        {...datasetID}/>
-          <b>Observation Features</b>
-          <ul>
-            {this.props.features.obs_features.map(feature => (
-            <CheckBoxInput key={'obs_' + feature} label={feature}
-                           {...fields['obs_' + feature]}/>
-             ))
-            }
-          </ul>
-
-          <b>Science Features</b>
-          <ul>
-            {this.props.features.sci_features.map(feature => (
-               <CheckBoxInput key={'sci_' + feature} label={feature}
-                              {...fields['sci_' + feature]}/>
-             ))
-            }
-          </ul>
+          <b>Select Features to Compute</b>
+          <Tabs>
+            <TabList>
+              <Tab>Observation Features</Tab>
+              <Tab>Science Features</Tab>
+              <Tab>Custom Features</Tab>
+            </TabList>
+            <TabPanel>
+              <ul>
+                {this.props.features.obs_features.map(feature => (
+                   <CheckBoxInput key={'obs_' + feature} label={feature}
+                                  {...fields['obs_' + feature]}/>
+                 ))
+                }
+              </ul>
+            </TabPanel>
+            <TabPanel>
+              <ul>
+                {this.props.features.sci_features.map(feature => (
+                   <CheckBoxInput key={'sci_' + feature} label={feature}
+                                  {...fields['sci_' + feature]}/>
+                 ))
+                }
+              </ul>
+            </TabPanel>
+            <TabPanel>
+              <TextareaInput label="Enter Python code defining custom features"
+                             rows="10" cols="50" {...customFeatsCode}/>
+            </TabPanel>
+          </Tabs>
         </Form>
       </div>
     )
@@ -72,14 +85,18 @@ let mapStateToProps = (state, ownProps) => {
   obs_fields.map((f, idx) => initialValues[f] = true)
   sci_fields.map((f, idx) => initialValues[f] = true)
 
+  let filteredDatasets = state.datasets.filter(dataset =>
+    (dataset.project == ownProps.selectedProject.id))
+  let zerothDataset = filteredDatasets[0]
+
   return {
     features: state.featuresets.features,
-    datasets: state.datasets.filter(dataset =>
-      (dataset.project == ownProps.selectedProject.id)
-    ),
+    datasets: filteredDatasets,
     fields: obs_fields.concat(sci_fields).concat(['datasetID', 'featuresetName',
-                                                  'customFeatsFile', 'isTest']),
-    initialValues
+                                                  'customFeatsCode', 'isTest']),
+    initialValues: {...initialValues,
+                    datasetID: zerothDataset ? zerothDataset.id.toString() : "",
+                    customFeatsCode: ""}
   }
 }
 
@@ -92,7 +109,7 @@ var FeaturesTab = (props) => {
     return (
       <div>
         <div>
-          <AddExpand label="Compute New Features">
+          <AddExpand label="Compute New Features" id="featsetFormExpander">
             <FeaturizeForm onSubmit={props.computeFeatures}
                            selectedProject={props.selectedProject}/>
           </AddExpand>
@@ -117,7 +134,7 @@ export var FeatureTable = (props) => {
     <table className="table">
       <thead>
         <tr>
-          <th>Name</th><th>Created</th><th>Debug (TODO remove)</th>
+          <th>Name</th><th>Created</th><th>Debug</th><th>Actions</th>
         </tr>
 
         {props.featuresets.map(featureset => (
@@ -125,6 +142,7 @@ export var FeatureTable = (props) => {
              <td>{featureset.name}</td>
              <td>{featureset.created}</td>
              <td>Project: {featureset.project}</td>
+             <td><DeleteFeatureset featuresetID={featureset.id}/></td>
            </tr>
          ))}
 
@@ -139,149 +157,27 @@ let ftMapStateToProps = (state) => {
   }
 }
 
-FeatureTable = connect(ftMapStateToProps)(FeatureTable)
-
-
-
-
-/* 
-   class _FeaturizeForm extends FormComponent {
-   render() {
-   const {fields: {datasetID, featuresetName, features, customFeatsFile},
-   handleSubmit} = this.props;
-   return (
-   <div>
-   <form onSubmit={handleSubmit}>
-   <FormTitleRow formTitle='Featurize Data'/>
-   <FormSelectInput inputName='Select Project'
-   inputTag='select'
-   formName='featurize'
-   optionsList={this.props.projects}
-   value={this.props.formFields['Select Project']}
-   handleInputChange={this.props.handleInputChange}
-   />
-   <FormSelectInput inputName='Select Dataset'
-   inputTag='select'
-   formName='featurize'
-   optionsList={this.props.datasets}
-   value={this.props.formFields['Select Dataset']}
-   handleInputChange={this.props.handleInputChange}
-   />
-   <FormInputRow inputName='Feature Set Title'
-   inputTag='input'
-   inputType='text'
-   formName='featurize'
-   value={this.props.formFields['Dataset Name']}
-   handleInputChange={this.props.handleInputChange}
-   />
-
-   <div className='submitButtonDiv' style={{marginTop: 15}}>
-   <input type='submit'
-   onClick={this.props.handleSubmit}
-   value='Submit'
-   className='submitButton'
-   />
-   </div>
-   </form>
-   <h4>Select Features to Compute (TODO: Make this a pop-up dialog)</h4>
-   <FeatureSelectionDialog
-   available_features={this.props.available_features}
-   updateSeldObsFeats={this.props.updateSeldObsFeats}
-   updateSeldSciFeats={this.props.updateSeldSciFeats}
-   onFeaturesDialogMount={this.props.onFeaturesDialogMount}
-   handleInputChange={this.props.handleInputChange}
-   testCustomFeatScript={this.props.testCustomFeatScript}
-   />
-
-   </div>
-   );
-   }
-   });
- */
-
-var FeatureSelectionDialog = React.createClass({
-  componentDidMount: function () {
-    this.props.onFeaturesDialogMount();
-  },
-  updateObsFeats: function (seld_obs_feats) {
-    this.props.updateSeldObsFeats(seld_obs_feats);
-  },
-  updateSciFeats: function (seld_sci_feats) {
-    this.props.updateSeldSciFeats(seld_sci_feats);
-  },
-  render: function() {
-    return (
-      <Tabs classname='second'>
-        <TabList>
-          <Tab>Feature Set 1</Tab>
-          <Tab>Feature Set 2</Tab>
-          <Tab>Custom Features</Tab>
-        </TabList>
-        <TabPanel>
-          <CheckboxGroup
-              name='obs_feature_selection'
-              value={Object.keys(filter(
-                  this.props.available_features['obs_features'], 'checked'))}
-              onChange={this.updateObsFeats}
-          >
-            { Checkbox => (
-                <form>
-                  {
-                    Object.keys(this.props.available_features.obs_features).map(title =>
-                      (
-                        <div key={title}><Checkbox value={title}/> {title}</div>
-                      )
-                    )
-                  }
-                </form>
-              )
-            }
-          </CheckboxGroup>
-        </TabPanel>
-        <TabPanel>
-          <CheckboxGroup
-              name='sci_feature_selection'
-              value={Object.keys(filter(
-                  this.props.available_features['sci_features'], 'checked'))}
-              onChange={this.updateSciFeats}
-          >
-            { Checkbox => (
-                <form>
-                  {
-                    Object.keys(this.props.available_features.sci_features).map(title =>
-                      (
-                        <div key={title}><Checkbox value={title}/> {title}</div>
-                      )
-                    )
-                  }
-                </form>
-              )
-            }
-          </CheckboxGroup>
-        </TabPanel>
-        <TabPanel>
-          Select Python file containing custom feature definitions:
-          <br /><br />
-          <div id='script_file_input_div'>
-            <FileInput name='Custom Features File'
-                       placeholder='Select .py file'
-                       onChange={this.props.handleInputChange.bind(
-                           null, 'Custom Features File',
-                           'file', 'featurize')}
-            />
-          </div>
-          <br />
-          <div>
-            <input type='button'
-                   onClick={this.props.testCustomFeatScript}
-                   value='Click to test' />
-          </div>
-          <div id='file_upload_message_div'></div>
-        </TabPanel>
-      </Tabs>
-    );
+export var DeleteFeatureset = (props) => {
+  let style = {
+    display: 'inline-block'
   }
-});
+  return (
+    <a style={style} onClick={() => props.deleteFeatureset(props.featuresetID)}>Delete</a>
+  )
+}
 
+let dfMapDispatchToProps = (dispatch) => {
+  return (
+    {deleteFeatureset: (id) => dispatch(Action.deleteFeatureset(id))}
+  );
+}
+
+let dfMapStateToProps = (state, ownProps) => {
+  return {featuresetID: ownProps.featuresetID};
+}
+
+DeleteFeatureset = connect(dfMapStateToProps, dfMapDispatchToProps)(DeleteFeatureset);
+
+FeatureTable = connect(ftMapStateToProps)(FeatureTable)
 
 module.exports = FeaturesTab;

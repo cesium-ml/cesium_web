@@ -11,6 +11,8 @@ export class MessageHandler {
     switch (message.action) {
       case Action.FETCH_PROJECTS:
         this.dispatch(Action.fetchProjects());
+      case Action.FETCH_FEATURESETS:
+        this.dispatch(Action.fetchFeaturesets());
     }
   }
 }

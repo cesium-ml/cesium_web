@@ -246,35 +246,42 @@ def Features(featureset_id=None):
     try:
         if request.method == 'POST':
             data = request.get_json()
+            featureset_name = data.get('featuresetName', '')
+            datasetID = int(data['datasetID'])
+            feature_fields = {feature: selected for (feature, selected) in
+                              data.items() if feature.startswith(('sci_', 'obs_'))}
+            feat_type_name = [feat.split('_', 1) for (feat, selected) in
+                              feature_fields.items() if selected]
+            features_to_use = [fname for (ftype, fname) in feat_type_name]
 
-            # featureset_name = request.form["Feature Set Title"].strip()
-            # dataset = m.Dataset.get(m.Dataset.id == request.form["Select Dataset"])
-            # features_to_use = request.form.getlist("Selected Features[]")
-            # custom_script_tested = (
-            #     request.form["Custom Features Script Tested"].strip() == "true")
-            # if custom_script_tested:
-            #     custom_script = request.files["Custom Features File"]
-            #     custom_script_fname = str(secure_filename(custom_script.filename))
-            #     custom_script_path = pjoin(
-            #             cfg['paths']['upload_folder'], "custom_feature_scripts",
-            #             str(uuid.uuid4()) + "_" + str(custom_script_fname))
-            #     custom_script.save(custom_script_path)
-            #     custom_features = request.form.getlist("Custom Features List")
-            #     features_to_use += custom_features
-            # else:
-            #     custom_script_path = None
-            # is_test = bool(request.form.get("is_test"))
-            # fset_path = pjoin(cfg['paths']['features_folder'],
-            #                   '{}_featureset.nc'.format(uuid.uuid4()))
-            # fset = m.Featureset.create(name=featureset_name,
-            #                            file=m.File.create(uri=fset_path),
-            #                            project=dataset.project,
-            #                            custom_features_script=custom_script_path)
+            custom_feats_code = data['customFeatsCode'].strip()
+
+            # Not working yet:
+            if custom_feats_code and 0:
+                custom_script_path = pjoin(
+                    cfg['paths']['upload_folder'], "custom_feature_scripts",
+                    str(uuid.uuid4()) + ".py")
+                with open(custom_script_path, 'w') as f:
+                    f.write(custom_feats_code)
+                # TODO: Extract list of custom features from code
+                custom_features = [] # request.form.getlist("Custom Features List")
+                features_to_use += custom_features
+            else:
+                custom_script_path = None
+
+            fset_path = pjoin(cfg['paths']['features_folder'],
+                              '{}_featureset.nc'.format(uuid.uuid4()))
+
+            dataset = m.Dataset.get(m.Dataset.id == datasetID)
+
+            fset = m.Featureset.create(name=featureset_name,
+                                       file=m.File.create(uri=fset_path),
+                                       project=dataset.project,
+                                       custom_features_script=custom_script_path)
             res = featurize_task.delay(dataset.uris, fset_path, features_to_use,
-                                       custom_script_path, is_test)
+                                       custom_script_path)
 
-            return success({'featureset': 'some_info_here'},
-                           'cesium/FETCH_FEATURESETS')
+            return success(fset, 'cesium/FETCH_FEATURESETS')
 
         elif request.method == 'GET':
             if featureset_id is not None:
@@ -294,7 +301,7 @@ def Features(featureset_id=None):
             else:
                 raise UnauthorizedAccess("User not authorized for project.")
 
-            return to_json({"status": "success"})
+            return success({}, 'cesium/FETCH_FEATURESETS')
         elif request.method == 'PUT':
             if featureset_id is None:
                 return error("Invalid request - feature set ID not provided.")
