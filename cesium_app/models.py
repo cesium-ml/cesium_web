@@ -113,11 +113,10 @@ class Featureset(BaseModel):
                                  related_name='featuresets')
     name = pw.CharField()
     created = pw.DateTimeField(default=datetime.datetime.now)
-
-    # could potentially live in the file
-    custom_features_script = pw.CharField(null=True)
-
+    custom_features_script = pw.CharField(null=True) # move to fset file?
     file = pw.ForeignKeyField(File, on_delete='CASCADE')
+    task_id = pw.CharField(null=True)
+    finished = pw.DateTimeField(null=True)
 
     def is_owned_by(self, username):
         return self.project.is_owned_by(username)
@@ -134,6 +133,8 @@ class Model(BaseModel):
     params = BinaryJSONField(default={})
     type = pw.CharField()
     file = pw.ForeignKeyField(File, on_delete='CASCADE')
+    task_id = pw.CharField(null=True)
+    finished = pw.DateTimeField(null=True)
 
     def is_owned_by(self, username):
         return self.project.is_owned_by(username)
@@ -148,6 +149,8 @@ class Prediction(BaseModel):
                                related_name='predictions')
     created = pw.DateTimeField(default=datetime.datetime.now)
     file = pw.ForeignKeyField(File, on_delete='CASCADE')
+    task_id = pw.CharField(null=True)
+    finished = pw.DateTimeField(null=True)
 
     def is_owned_by(self, username):
         return self.project.is_owned_by(username)

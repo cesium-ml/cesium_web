@@ -1,34 +1,24 @@
+from celery.signals import task_success
+import requests
 import xarray as xr
+
 from cesium import featurize, build_model, predict
+from cesium.celery_tasks import featurize_task
 from .celery_app import app
-from . import models as m
 
 
 @app.task()
-def featurize_task(ts_paths, output_path, features_to_use,
-                   custom_script_path=None, is_test=False):
-    """TODO
+def report_finished(*args, **kwargs):
+    r = requests.post('http://localhost:5000/task_complete',
+                      json=kwargs['data'])
+    #return r.json()['status']
 
-    Parameters
-    ----------
-    headerfile_path : str
-        Path to TS data header file.
-    zipfile_path : str
-        Path TS data tarball.
-    features_to_use : list
-        List of features to generate.
-    featureset_key : str
-        RethinkDB ID of new feature set.
-    is_test : bool
-        Boolean indicating whether to run as test.
-    custom_script_path : str
-        Path to custom features definition script, or "None".
-    """
-    first_N = cfg['cesium']['TEST_N'] if is_test else None
-    featurize.featurize_data_files(ts_paths, features_to_use=features_to_use,
-                                   output_path=output_path, first_N=first_N,
-                                   custom_script_path=custom_script_path)
-    # TODO send websocket message after completion
+
+def featurize_and_notify(fset_id, ts_paths, output_path, features_to_use,
+                         custom_script_path=None):
+    data = {'status': 'success', 'fset_id': fset_id}
+    return (featurize_task(ts_paths, features_to_use, output_path,
+                           custom_script_path) | report_finished.s(data=data))
 
 
 @app.task()

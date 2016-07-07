@@ -22,7 +22,7 @@ from .json_util import to_json
 
 from . import models as m
 from .flow import Flow
-from .celery_tasks import featurize_task, build_model_task, predict_task
+from .celery_tasks import featurize_and_notify, build_model_task, predict_task
 from . import util
 from .ext.sklearn_models import (
     model_descriptions as sklearn_model_descriptions
@@ -83,6 +83,28 @@ def exception_as_error(f):
             return error(str(e))
 
     return wrapper
+
+
+@app.route("/task_complete", methods=['POST'])
+def task_complete():
+    data = request.get_json()
+    if 'fset_id' in data:
+        fset = m.Featureset.get(m.Featureset.id == data['fset_id'])
+        fset.task_id = None
+        fset.finished = datetime.datetime.now
+        return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
+    elif 'model_id' in data:
+        model = m.Model.get(m.Model.id == data['model_id'])
+        model.task_id = None
+        model.finished = datetime.datetime.now
+        return success({"id": model.id}, 'cesium/FETCH_MODELS')
+    elif 'prediction_id' in data:
+        prediction = m.Prediction.get(m.Prediction.id == data['prediction_id'])
+        prediction.task_id = None
+        prediction.finished = datetime.datetime.now
+        return success({"id": prediction.id}, 'cesium/FETCH_PREDICTIONS')
+    else:
+        raise ValueError('Unrecognized task type')
 
 
 @app.route("/project", methods=["GET", "POST"])
@@ -173,11 +195,6 @@ def Dataset(dataset_id=None):
         dataset_name = form['datasetName']
         project_id = form['projectID']
 
-        # files have the following attributes:
-        #
-        # 'close', 'content_length', 'content_type', 'filename', 'headers',
-        # 'mimetype', 'mimetype_params', 'name', 'save', 'stream']
-
         # Create unique file names
         headerfile_name = (str(uuid.uuid4()) + "_" +
                            str(secure_filename(headerfile.filename)))
@@ -215,12 +232,6 @@ def Dataset(dataset_id=None):
 
         return success(action='cesium/FETCH_DATASETS')
 
-    elif request.method == "PUT":
-        if dataset_id is None:
-            raise error('No dataset specified')
-
-        return error('Dataset updating not yet implemented')
-
 
 @app.route('/features', methods=['POST', 'GET'])
 @app.route('/features/<featureset_id>', methods=['GET', 'PUT', 'DELETE'])
@@ -232,7 +243,7 @@ def Features(featureset_id=None):
     if request.method == 'POST':
         data = request.get_json()
         featureset_name = data.get('featuresetName', '')
-        datasetID = int(data['datasetID'])
+        dataset_id = int(data['datasetID'])
         feature_fields = {feature: selected for (feature, selected) in
                           data.items() if feature.startswith(('sci_', 'obs_'))}
         feat_type_name = [feat.split('_', 1) for (feat, selected) in
@@ -257,14 +268,15 @@ def Features(featureset_id=None):
         fset_path = pjoin(cfg['paths']['features_folder'],
                           '{}_featureset.nc'.format(uuid.uuid4()))
 
-        dataset = m.Dataset.get(m.Dataset.id == datasetID)
+        dataset = m.Dataset.get(m.Dataset.id == dataset_id)
 
         fset = m.Featureset.create(name=featureset_name,
                                    file=m.File.create(uri=fset_path),
                                    project=dataset.project,
                                    custom_features_script=custom_script_path)
-        res = featurize_task.delay(dataset.uris, fset_path, features_to_use,
-                                   custom_script_path)
+        res = featurize_and_notify(fset.id, dataset.uris, fset_path,
+                                   features_to_use, custom_script_path).delay()
+        fset.task_id = res.task_id
 
         return success(fset, 'cesium/FETCH_FEATURESETS')
 
