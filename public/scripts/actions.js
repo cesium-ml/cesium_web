@@ -62,7 +62,8 @@ export function hydrate() {
           dispatch(fetchDatasets()),
           dispatch(fetchFeaturesets()),
           dispatch(fetchFeatures()),
-          dispatch(fetchModels())
+          dispatch(fetchModels()),
+          dispatch(fetchPredictions())
         ]).then(() => {
           dispatch(spinLogo());
         });
