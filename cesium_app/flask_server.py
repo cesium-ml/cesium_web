@@ -22,7 +22,8 @@ from .json_util import to_json
 
 from . import models as m
 from .flow import Flow
-from .celery_tasks import featurize_and_notify, build_model_task, predict_task
+from .celery_tasks import (
+    featurize_and_notify, build_model_and_notify, predict_and_notify)
 from . import util
 from .ext.sklearn_models import (
     model_descriptions as sklearn_model_descriptions
@@ -62,6 +63,7 @@ def error(message):
             "message": message
         })
 
+# TODO only push messages to relevant user (what about task_complete?)
 def success(data={}, action=None, payload=None):
     if action is not None:
         flow.push(get_username(), action, payload or {})
@@ -85,6 +87,7 @@ def exception_as_error(f):
     return wrapper
 
 
+# TODO pass in user somehow
 @app.route("/task_complete", methods=['POST'])
 def task_complete():
     data = request.get_json()
@@ -274,8 +277,8 @@ def Features(featureset_id=None):
                                    file=m.File.create(uri=fset_path),
                                    project=dataset.project,
                                    custom_features_script=custom_script_path)
-        res = featurize_and_notify(fset.id, dataset.uris, fset_path,
-                                   features_to_use, custom_script_path).delay()
+        res = featurize_and_notify(fset.id, dataset.uris, features_to_use,
+                                   fset_path, custom_script_path).apply_async()
         fset.task_id = res.task_id
 
         return success(fset, 'cesium/FETCH_FEATURESETS')
@@ -318,16 +321,19 @@ def Models(model_id=None):
         data = request.get_json()
 
         model_name = data.pop('modelName')
-        model_id = data.pop('featureSet')
+        featureset_id = data.pop('featureSet')
         model_type = sklearn_model_descriptions[data.pop('modelType')]['name']
         project_id = data.pop('project')
 
-        fset = m.Featureset.get(m.Featureset.id == model_id)
+        fset = m.Featureset.get(m.Featureset.id == featureset_id)
 
         model_params = data
 
         model_params = {k: util.robust_literal_eval(v)
                         for k, v in model_params.items()}
+
+        # TODO split out constant params / params to optimize
+        model_params, params_to_optimize = model_params, {}
 
         util.check_model_param_types(model_type, model_params)
 
@@ -335,14 +341,14 @@ def Models(model_id=None):
                            '{}_model.nc'.format(uuid.uuid4()))
 
         model_file = m.File.create(uri=model_path)
-        model = m.Model(name=model_name, file=model_file, featureset=fset,
-                        project=fset.project, params=model_params,
-                        type=model_type)
+        model = m.Model.create(name=model_name, file=model_file,
+                               featureset=fset, project=fset.project,
+                               params=model_params, type=model_type)
 
-        model = build_model_task.delay(model_path, model_type, model_params,
-                                       fset.file.uri)
-
-        #model = list(model.collect())
+        res = build_model_and_notify(model_path, model_type, model_params,
+                                     fset.file.uri, model_file.uri,
+                                     params_to_optimize).apply_async()
+        model.task_id = res.task_id
 
         return success(data={'message': "We're working on your model"},
                        action='cesium/FETCH_MODELS')
@@ -393,10 +399,13 @@ def predictions(prediction_id=None):
         prediction_path = pjoin(cfg['paths']['predictions_folder'],
                                 '{}_prediction.nc'.format(uuid.uuid4()))
         prediction_file = m.Prediction.create(uri=prediction_path)
-        prediction = m.Prediction(file=prediction_file, dataset=dataset,
-                                  project=dataset.project, model=model)
-        predict_task(dataset.uris, prediction_path, model.file.uri,
-                     custom_features_script=fset.custom_features_script)
+        prediction = m.Prediction.create(file=prediction_file, dataset=dataset,
+                                         project=dataset.project, model=model)
+
+        res = predict_and_notify(dataset.uris, prediction_path, model.file.uri,
+                     custom_features_script=fset.custom_features_script).apply_async()
+        prediction.task_id = res.task_id
+
         return success(prediction, 'cesium/FETCH_PREDICTIONS')
 
     elif request.method == 'GET':
