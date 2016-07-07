@@ -16,6 +16,10 @@ export class MessageHandler {
         this.dispatch(Action.fetchDatasets());
       case Action.FETCH_FEATURESETS:
         this.dispatch(Action.fetchFeaturesets());
+      case Action.FETCH_MODELS:
+        this.dispatch(Action.fetchModels());
+      case Action.FETCH_PREDICTIONS:
+        this.dispatch(Action.fetchPredictions());
       default:
         console.log('Unknown message received through flow:',
                     message)
