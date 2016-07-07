@@ -57,7 +57,7 @@ export function match(field) {
 }
 
 export function oneFile(field) {
-  if (isEmpty(field) || (!field[0]) || !(field[0].size > 0)) {
+  if ((field === undefined) || (!field[0]) || !(field[0].size > 0)) {
     return 'Required'
   }
 }

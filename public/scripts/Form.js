@@ -140,10 +140,12 @@ export var FileInput = (props) => {
   let fileInputStyle = {
   }
 
+  let {value: _, ...otherProps} = props;
+
   return (
     <div className="form-group" style={fileInputStyle}>
       <label>{props.label}</label>
-      <input type="file" {...props} value={null}/>
+      <input type="file" {...otherProps}/>
       <Error {...props}/>
     </div>
   )

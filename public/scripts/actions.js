@@ -182,18 +182,27 @@ function receiveProjects(projects) {
   }
 }
 
+let objectType = (obj) => (
+  Object.prototype.toString.call(obj).slice(8, -1)
+)
+
 export function uploadDataset(form) {
+  let formData = new FormData();
+
+  for (let key in form) {
+    if (objectType(form[key][0]) === 'File') {
+      formData.append(key, form[key][0])
+    } else {
+      formData.append(key, form[key])
+    }
+  }
+
   return dispatch =>
     promiseAction(
       dispatch,
       UPLOAD_DATASET,
 
-      fetch('/dataset',
-            {method: 'POST',
-             body: JSON.stringify(form),
-             headers: new Headers({
-               'Content-Type': 'application/json'
-             })})
+      fetch('/dataset', {method: 'POST', body: formData})
         .then(response => response.json())
         .then(json => {
           if (json.status == 'success') {
@@ -260,8 +269,6 @@ function receiveFeaturesets(featuresets) {
 
 // POST new featureset form
 export function submitNewFeatureset(formdata) {
-  var data = new FormData();
-  data.append("json", JSON.stringify(formdata));
   return dispatch => (
     fetch('/features',
           {
@@ -269,7 +276,7 @@ export function submitNewFeatureset(formdata) {
             headers: new Headers({
               'Content-Type': 'application/json'
             }),
-            body: JSON.stringify(data)
+            body: JSON.stringify(formdata)
           }
     ).then(response => response.json())
      .then(json => {

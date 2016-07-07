@@ -152,12 +152,31 @@ def get_state():
 def Dataset(dataset_id=None):
     """
     """
-    # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
     try:
         if request.method == 'POST':
-            data = request.get_json()
-            print('data received for new dataset', data)
+            form = request.form
 
+            if not 'headerFile' in request.files:
+                return error('No header file uploaded')
+
+            if not 'tarFile' in request.files:
+                return error('No tar file uploaded')
+
+            header_file = request.files['headerFile']
+            tar_file = request.files['tarFile']
+
+            if tar_file.filename == '':
+                return error('Empty tar file uploaded')
+
+            if header_file.filename == '':
+                return error('Empty tar file uploaded')
+
+            # files have the following attributes:
+            #
+            # 'close', 'content_length', 'content_type', 'filename', 'headers',
+            # 'mimetype', 'mimetype_params', 'name', 'save', 'stream']
+
+            raise RuntimeError('implementation incomplete')
 
             # Create unique file names
             # headerfile_name = (str(uuid.uuid4()) + "_" +
