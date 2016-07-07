@@ -9,7 +9,7 @@ export var Notifications = (props) => {
     paddingTop: '0.8em',
     paddingBottom: '0.2em',
 
-    position: 'absolute',
+    position: 'fixed',
     zIndex: 3,
     top: 10,
     width: 750,

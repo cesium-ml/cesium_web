@@ -91,6 +91,10 @@ function expander(state={opened: {}}, action) {
   let id = action.payload ? action.payload.id : null;
   let newState = {...state};
 
+  if (!id) {
+    return state;
+  }
+
   switch (action.type) {
     case Action.TOGGLE_EXPANDER:
       newState.opened[id] = !state.opened[id];

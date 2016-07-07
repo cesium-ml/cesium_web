@@ -93,17 +93,23 @@ let mapStateToProps = (state, ownProps) => {
     features: state.featuresets.features,
     datasets: filteredDatasets,
     fields: obs_fields.concat(sci_fields).concat(['datasetID', 'featuresetName',
-                                                  'customFeatsCode', 'isTest']),
+                                                  'customFeatsCode']),
     initialValues: {...initialValues,
                     datasetID: zerothDataset ? zerothDataset.id.toString() : "",
                     customFeatsCode: ""}
   }
 }
 
+const validate = Validate.createValidator({
+  datasetID: [Validate.required],
+  featuresetName: [Validate.required]
+});
+
 FeaturizeForm = reduxForm({
   form: 'featurize',
   fields: ['']
 }, mapStateToProps)(FeaturizeForm);
+
 
 var FeaturesTab = (props) => {
     return (
@@ -151,11 +157,15 @@ export var FeatureTable = (props) => {
   );
 }
 
+
 let ftMapStateToProps = (state) => {
   return {
     featuresets: state.featuresets.featuresetList
   }
 }
+
+FeatureTable = connect(ftMapStateToProps)(FeatureTable)
+
 
 export var DeleteFeatureset = (props) => {
   let style = {
@@ -172,12 +182,7 @@ let dfMapDispatchToProps = (dispatch) => {
   );
 }
 
-let dfMapStateToProps = (state, ownProps) => {
-  return {featuresetID: ownProps.featuresetID};
-}
+DeleteFeatureset = connect(null, dfMapDispatchToProps)(DeleteFeatureset);
 
-DeleteFeatureset = connect(dfMapStateToProps, dfMapDispatchToProps)(DeleteFeatureset);
-
-FeatureTable = connect(ftMapStateToProps)(FeatureTable)
 
 module.exports = FeaturesTab;

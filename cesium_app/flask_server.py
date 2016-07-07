@@ -305,8 +305,6 @@ def Models(model_id=None):
     if request.method == 'POST':
         data = request.get_json()
 
- # {'min_weight_fraction_leaf': 0, 'criterion': 'gini', 'min_samples_leaf': 1, 'max_depth': 'None', 'max_leaf_nodes': 'None', 'min_samples_split': 2, 'n_estimators': 10, 'random_state': 'None', 'max_features': 'auto', 'oob_score': False, 'modelType': 0, 'bootstrap': True, 'class_weight': 'None'}
-
         model_name = data.pop('modelName')
         model_id = data.pop('featureSet')
         model_type = sklearn_model_descriptions[data.pop('modelType')]['name']
@@ -332,7 +330,9 @@ def Models(model_id=None):
         model = build_model_task.delay(model_path, model_type, model_params,
                                        fset.file.uri)
 
-        return success(model)
+        #model = list(model.collect())
+
+        return success({'message': "we're working on your model"})
 
     elif request.method == 'GET':
         if model_id is not None:
@@ -364,12 +364,16 @@ def Models(model_id=None):
 @app.route('/predictions', methods=['POST', 'GET'])
 @app.route('/predictions/<prediction_id>', methods=['GET', 'PUT', 'DELETE'])
 @exception_as_error
-def Predictions(prediction_id=None):
+def predictions(prediction_id=None):
     """
     """
     # TODO: ADD MORE ROBUST EXCEPTION HANDLING (HERE AND ALL OTHER FUNCTIONS)
     if request.method == 'POST':
         data = request.get_json()
+
+        dataset_id = data['datasetID']
+        model_id = data['modelID']
+
         dataset = m.Dataset.get(m.Dataset.id == int(data["datasetID"]))
         model = m.Model.get(m.Model.id == data["modelID"])
         fset = model.featureset

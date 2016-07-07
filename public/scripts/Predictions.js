@@ -8,6 +8,7 @@ import * as Validate from './validate'
 import {AddExpand} from './presentation'
 import * as Action from './actions'
 
+
 class PredictForm extends FormComponent {
   render() {
     const {fields: {modelID, datasetID}, handleSubmit, submitting, resetForm,
@@ -42,6 +43,7 @@ class PredictForm extends FormComponent {
   }
 }
 
+
 let mapStateToProps = (state, ownProps) => {
   let filteredDatasets = state.datasets.filter(dataset =>
     (dataset.project == ownProps.selectedProject.id));
@@ -55,15 +57,23 @@ let mapStateToProps = (state, ownProps) => {
     datasets: filteredDatasets,
     models: filteredModels,
     fields: ['modelID', 'datasetID'],
-    initialValues: {modelID: zerothModel ? zerothModel.id.toString() : '',
-                    datasetID: zerothDataset ? zerothDataset.id.toString() : ''}
+    initialValues: {modelID: zerothModel ? zerothModel.id : '',
+                    datasetID: zerothDataset ? zerothDataset.id : ''}
   }
 }
 
+const validate = Validate.createValidator({
+  modelID: [Validate.required],
+  datasetID: [Validate.required],
+});
+
+
 PredictForm = reduxForm({
   form: 'predict',
-  fields: ['']
+  fields: [''],
+  validate
 }, mapStateToProps)(PredictForm);
+
 
 var PredictTab = (props) => {
   return (
@@ -76,12 +86,15 @@ var PredictTab = (props) => {
   );
 }
 
+
 let mapDispatchToProps = (dispatch) => {
   return {
     doPrediction: (form) => dispatch(Action.doPrediction(form))
   }
 }
 
+
 PredictTab = connect(null, mapDispatchToProps)(PredictTab)
+
 
 module.exports = PredictTab;

@@ -24,6 +24,7 @@ export const RECEIVE_FEATURESETS = 'cesium/RECEIVE_FEATURESETS'
 export const COMPUTE_FEATURES = 'cesium/COMPUTE_FEATURES'
 export const DELETE_FEATURESET = 'cesium/DELETE_FEATURESET'
 
+export const FETCH_MODELS = 'cesium/FETCH_MODELS'
 export const RECEIVE_MODELS = 'cesium/RECEIVE_MODELS'
 export const CREATE_MODEL = 'cesium/CREATE_MODEL'
 
@@ -315,6 +316,7 @@ export function createModel(form) {
         .then(json => {
           if (json.status == 'success') {
             dispatch(resetForm('newModel'));
+            dispatch(hideExpander('newModelExpander'));
             dispatch(showNotification('Successfully added new model'));
           } else {
             return Promise.reject({_error: json.message});

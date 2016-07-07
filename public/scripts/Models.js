@@ -10,7 +10,11 @@ import {AddExpand} from './presentation'
 
 const ModelsTab = (props) => (
   <div>
-    <NewModelForm selectedProject={props.selectedProject}/>
+    <AddExpand label="Create New Model" id="newModelExpander">
+      <NewModelForm selectedProject={props.selectedProject}/>
+    </AddExpand>
+
+    <ModelTable selectedProject={props.selectedProject}/>
   </div>
 );
 
@@ -52,7 +56,7 @@ class NewModelForm extends FormComponent {
       <SelectInput label="Model Type"
                    options={selectModels} {...modelType}/>
 
-      <AddExpand label="Choose Model Parameters">
+      <AddExpand label="Choose Model Parameters" id='modelParameterExpander'>
           <Model model={chosenModel} {...fields}/>
       </AddExpand>
 
@@ -101,6 +105,7 @@ const mapDispatchToProps = (dispatch) => {
 
 const validate = Validate.createValidator({
   modelName: [Validate.required],
+  featureSet: [Validate.required]
 });
 
 NewModelForm = reduxForm({
@@ -132,6 +137,37 @@ export var Model = (props) => {
     </div>
   )
 }
+
+
+export var ModelTable = (props) => {
+  return (
+    <table className="table">
+      <thead>
+        <tr>
+          <th>Name</th><th>Created</th><th>Debug</th><th>Actions</th>
+        </tr>
+
+        {props.models.map(model => (
+           <tr key={model.id}>
+             <td>{model.name}</td>
+             <td>{model.created}</td>
+             <td>Project: {model.project}</td>
+             <td></td>
+           </tr>
+         ))}
+
+      </thead>
+    </table>
+  );
+}
+
+let mtMapStateToProps = (state) => {
+  return {
+    models: state.models
+  }
+}
+
+ModelTable = connect(mtMapStateToProps)(ModelTable)
 
 
 export default ModelsTab;
