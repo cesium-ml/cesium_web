@@ -31,6 +31,7 @@ export const CREATE_MODEL = 'cesium/CREATE_MODEL'
 export const FETCH_PREDICTIONS = 'cesium/FETCH_PREDICTIONS'
 export const RECEIVE_PREDICTIONS = 'cesium/RECEIVE_PREDICTIONS'
 export const DO_PREDICTION = 'cesium/DO_PREDICTION'
+export const DELETE_PREDICTION = 'cesium/DELETE_PREDICTION'
 
 export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION'
 export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION'
@@ -61,7 +62,8 @@ export function hydrate() {
           dispatch(fetchDatasets()),
           dispatch(fetchFeaturesets()),
           dispatch(fetchFeatures()),
-          dispatch(fetchModels())
+          dispatch(fetchModels()),
+          dispatch(fetchPredictions())
         ]).then(() => {
           dispatch(spinLogo());
         });
@@ -548,6 +550,28 @@ export function doPrediction(form) {
         }
         return json;
       })
+    )
+}
+
+
+export function deletePrediction(id) {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      DELETE_PREDICTION,
+
+      fetch('/predictions/' + id, {method: 'DELETE'})
+        .then(response => response.json())
+        .then(json => {
+          if (json.status == 'success') {
+            dispatch(showNotification('Prediction successfully deleted'));
+          } else {
+            dispatch(
+              showNotification(
+                'Error deleting prediction ({})'.format(json.message)
+              ));
+          }
+        })
     )
 }
 

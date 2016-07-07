@@ -344,7 +344,8 @@ def Models(model_id=None):
 
         #model = list(model.collect())
 
-        return success({'message': "we're working on your model"})
+        return success(data={'message': "We're working on your model"},
+                       action='cesium/FETCH_MODELS')
 
     elif request.method == 'GET':
         if model_id is not None:
@@ -364,7 +365,7 @@ def Models(model_id=None):
         else:
             raise UnauthorizedAccess("User not authorized for project.")
 
-        return success()
+        return success(action='cesium/FETCH_MODELS')
 
     elif request.method == 'PUT':
         if model_id is None:
@@ -396,7 +397,7 @@ def predictions(prediction_id=None):
                                   project=dataset.project, model=model)
         predict_task(dataset.uris, prediction_path, model.file.uri,
                      custom_features_script=fset.custom_features_script)
-        return success()
+        return success(prediction, 'cesium/FETCH_PREDICTIONS')
 
     elif request.method == 'GET':
         if prediction_id is not None:
@@ -416,7 +417,7 @@ def predictions(prediction_id=None):
         else:
             raise UnauthorizedAccess("User not authorized for project.")
 
-        return to_json({"status": "success"})
+        return success(action='cesium/FETCH_PREDICTIONS')
 
     elif request.method == 'PUT':
         if prediction_id is None:
