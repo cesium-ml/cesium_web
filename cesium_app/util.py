@@ -52,10 +52,9 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
         if entry["name"] == model_type:
             params_list = entry["params"]
             break
-    try:
-        params_list
-    except NameError:
+    else:
         raise ValueError("model_type not in list of allowable models.")
+
     # Iterate through params and check against expected types
     for k, v in model_params.items():
         # Empty string or "None" goes to `None`
@@ -67,15 +66,26 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
             if p["name"] == k:
                 param_entry = p
                 break
+
+        # Combine logic for params with one type and multiple types
         dest_types_list = make_list(param_entry["type"])
+
+        # ints are acceptable values for float parameters
+        if float in dest_types_list:
+            dest_types_list.append(int)
+
         if not all_as_lists:
-            v = [v,]
-        if all(type(x) in dest_types_list or x is None for x in v):
-            break
+            if type(v) not in dest_types_list and v is not None:
+                raise ValueError("Model parameter is not of expected type "
+                                 "(parameter {} ({}) is of type {}, which is not "
+                                 "in list of expected types ({}).".format(
+                                 param_entry["name"], v, type(v),
+                                 dest_types_list))
         else:
-            raise ValueError("Model parameter is not of expected type "
-                             "(parameter {} ({}) is of type {}, which is not "
-                             "in list of expected types ({}).".format(
+            if not all(type(x) in dest_types_list or x is None for x in v):
+                raise ValueError("Model parameter is not of expected type "
+                                 "(parameter {} ({}) is of type {}, which is not "
+                                 "in list of expected types ({}).".format(
                                  param_entry["name"], v, type(v),
                                  dest_types_list))
 

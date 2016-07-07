@@ -209,6 +209,7 @@ def Dataset(dataset_id=None):
         zipfile.save(zipfile_path)
 
         p = m.Project.get(m.Project.id == project_id)
+        # TODO this should give unique names to the time series files
         time_series = data_management.parse_and_store_ts_data(
             zipfile_path,
             cfg['paths']['ts_data_folder'],
@@ -277,8 +278,9 @@ def Features(featureset_id=None):
                                    file=m.File.create(uri=fset_path),
                                    project=dataset.project,
                                    custom_features_script=custom_script_path)
-        res = featurize_and_notify(fset.id, dataset.uris, features_to_use,
-                                   fset_path, custom_script_path).apply_async()
+        res = featurize_and_notify(get_username(), fset.id, dataset.uris,
+                                   features_to_use, fset_path,
+                                   custom_script_path).apply_async()
         fset.task_id = res.task_id
 
         return success(fset, 'cesium/FETCH_FEATURESETS')
@@ -334,7 +336,6 @@ def Models(model_id=None):
 
         # TODO split out constant params / params to optimize
         model_params, params_to_optimize = model_params, {}
-
         util.check_model_param_types(model_type, model_params)
 
         model_path = pjoin(cfg['paths']['models_folder'],
@@ -345,8 +346,9 @@ def Models(model_id=None):
                                featureset=fset, project=fset.project,
                                params=model_params, type=model_type)
 
-        res = build_model_and_notify(model_path, model_type, model_params,
-                                     fset.file.uri, model_file.uri,
+        res = build_model_and_notify(get_username(), model_path, model_type,
+                                     model_params, fset.file.uri,
+                                     model_file.uri,
                                      params_to_optimize).apply_async()
         model.task_id = res.task_id
 
@@ -402,8 +404,9 @@ def predictions(prediction_id=None):
         prediction = m.Prediction.create(file=prediction_file, dataset=dataset,
                                          project=dataset.project, model=model)
 
-        res = predict_and_notify(dataset.uris, prediction_path, model.file.uri,
-                     custom_features_script=fset.custom_features_script).apply_async()
+        res = predict_and_notify(get_username(), dataset.uris, prediction_path,
+            model.file.uri,
+            custom_features_script=fset.custom_features_script).apply_async()
         prediction.task_id = res.task_id
 
         return success(prediction, 'cesium/FETCH_PREDICTIONS')
