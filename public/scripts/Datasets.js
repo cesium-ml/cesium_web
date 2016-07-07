@@ -16,7 +16,7 @@ var DatasetsTab = (props) => {
     <div className='datasetsTab'>
 
       <AddExpand label="Upload new dataset" id='newDatasetExpander'>
-        <DatasetForm/>
+        <DatasetForm selectedProject={props.selectedProject}/>
       </AddExpand>
 
       <DatasetTable selectedProject={props.selectedProject}/>
@@ -41,6 +41,15 @@ class DatasetForm extends FormComponent {
   }
 }
 
+let dsMapStateToProps = (state, ownProps) => {
+  return {
+    initialValues: {
+      ...(ownProps.initialValues),
+      projectID: ownProps.selectedProject.id
+    }
+  }
+}
+
 let dsMapDispatchToProps = (dispatch) => {
   return {
     onSubmit: form => dispatch(Action.uploadDataset(form))
@@ -50,14 +59,14 @@ let dsMapDispatchToProps = (dispatch) => {
 const validate = Validate.createValidator({
   datasetName: [Validate.required],
   headerFile: [Validate.oneFile],
-  tarFile: [Validate.oneFile]
+  tarFile: [Validate.oneFile],
 });
 
 DatasetForm = reduxForm({
   form: 'newDataset',
-  fields: ['datasetName', 'headerFile', 'tarFile'],
+  fields: ['datasetName', 'headerFile', 'tarFile', 'projectID'],
   validate
-}, null, dsMapDispatchToProps)(DatasetForm);
+}, dsMapStateToProps, dsMapDispatchToProps)(DatasetForm);
 
 
 export var DatasetTable = (props) => {

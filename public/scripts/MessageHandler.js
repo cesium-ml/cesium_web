@@ -7,12 +7,18 @@ export class MessageHandler {
   }
 
   handle(message) {
-    console.log('Message received:', message);
     switch (message.action) {
       case Action.FETCH_PROJECTS:
         this.dispatch(Action.fetchProjects());
       case Action.FETCH_FEATURESETS:
         this.dispatch(Action.fetchFeaturesets());
+      case Action.FETCH_DATASETS:
+        this.dispatch(Action.fetchDatasets());
+      case Action.FETCH_FEATURESETS:
+        this.dispatch(Action.fetchFeaturesets());
+      default:
+        console.log('Unknown message received through flow:',
+                    message)
     }
   }
 }

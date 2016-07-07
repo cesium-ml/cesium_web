@@ -152,6 +152,11 @@ def get_state():
 def Dataset(dataset_id=None):
     """
     """
+    if dataset_id:
+        d = m.Dataset.get(m.Dataset.id == dataset_id)
+        if not d.is_owned_by(get_username()):
+            raise error('Unauthorized access')
+
     try:
         if request.method == 'POST':
             form = request.form
@@ -162,89 +167,66 @@ def Dataset(dataset_id=None):
             if not 'tarFile' in request.files:
                 return error('No tar file uploaded')
 
-            header_file = request.files['headerFile']
-            tar_file = request.files['tarFile']
+            headerfile = request.files['headerFile']
+            zipfile = request.files['tarFile']
 
-            if tar_file.filename == '':
+            if zipfile.filename == '':
                 return error('Empty tar file uploaded')
 
-            if header_file.filename == '':
-                return error('Empty tar file uploaded')
+            if headerfile.filename == '':
+                return error('Empty header file uploaded')
+
+            dataset_name = form['datasetName']
+            project_id = form['projectID']
 
             # files have the following attributes:
             #
             # 'close', 'content_length', 'content_type', 'filename', 'headers',
             # 'mimetype', 'mimetype_params', 'name', 'save', 'stream']
 
-            raise RuntimeError('implementation incomplete')
-
             # Create unique file names
-            # headerfile_name = (str(uuid.uuid4()) + "_" +
-            #                    str(secure_filename(headerfile.filename)))
-            # zipfile_name = (str(uuid.uuid4()) + "_" +
-            #                 str(secure_filename(zipfile.filename)))
-            # headerfile_path = pjoin(cfg['paths']['upload_folder'], headerfile_name)
-            # zipfile_path = pjoin(cfg['paths']['upload_folder'], zipfile_name)
-            # headerfile.save(headerfile_path)
-            # zipfile.save(zipfile_path)
-            # print("Saved", headerfile_name, "and", zipfile_name)
+            headerfile_name = (str(uuid.uuid4()) + "_" +
+                               str(secure_filename(headerfile.filename)))
+            zipfile_name = (str(uuid.uuid4()) + "_" +
+                            str(secure_filename(zipfile.filename)))
+            headerfile_path = pjoin(cfg['paths']['upload_folder'], headerfile_name)
+            zipfile_path = pjoin(cfg['paths']['upload_folder'], zipfile_name)
+            headerfile.save(headerfile_path)
+            zipfile.save(zipfile_path)
 
-            # p = m.Project.get(m.Project.id == project_id)
-            # time_series = data_management.parse_and_store_ts_data(
-            #     zipfile_path,
-            #     cfg['paths']['ts_data_folder'],
-            #     headerfile_path)
-            # ts_paths = [ts.path for ts in time_series]
-            # d = m.Dataset.add(name=dataset_name, project=p, file_uris=ts_paths)
-            return success({})
+            p = m.Project.get(m.Project.id == project_id)
+            time_series = data_management.parse_and_store_ts_data(
+                zipfile_path,
+                cfg['paths']['ts_data_folder'],
+                headerfile_path)
+            ts_paths = [ts.path for ts in time_series]
+            d = m.Dataset.add(name=dataset_name, project=p, file_uris=ts_paths)
+
+            return success(d, 'cesium/FETCH_DATASETS')
 
         elif request.method == "GET":
-            if dataset_id is not None:
-                dataset_info = m.Dataset.get(m.Dataset.id == dataset_id)
-            else:
-                dataset_info = [d for p in m.Project.all(get_username())
+            if dataset_id is None:
+                datasets = [d for p in m.Project.all(get_username())
                                 for d in p.datasets]
+            else:
+                datasets = d
 
-            return to_json(
-                {
-                    "status": "success",
-                    "data": dataset_info
-                })
+            return success(datasets)
+
         elif request.method == "DELETE":
             if dataset_id is None:
-                return to_json(
-                    {
-                        "status": "error",
-                        "message": "Invalid request - data set ID not provided."
-                    })
-            try:
-                d = m.Dataset.get(m.Dataset.id == dataset_id)
-                if d.is_owned_by(get_username()):
-                    d.delete_instance()
-                else:
-                    raise UnauthorizedAccess("User not authorized for project.")
-            except Exception as e:
-                return to_json(
-                    {
-                        "status": "error",
-                        "message": str(e)
-                    })
+                raise error('No dataset specified')
 
-            return to_json({"status": "success"})
+            d.delete_instance()
+
+            return success({}, 'cesium/FETCH_DATASETS')
+
         elif request.method == "PUT":
             if dataset_id is None:
-                return to_json(
-                    {
-                        "status": "error",
-                        "message": "Invalid request - data set ID not provided."
-                    })
-            # TODO!
-            return to_json(
-                {
-                    "status": "error",
-                    "message": "Functionality for this endpoint is not "
-                               "yet implemented."
-                })
+                raise error('No dataset specified')
+
+            return error('Dataset updating not yet implemented')
+
     except Exception as e:
         return error(str(e))
 
