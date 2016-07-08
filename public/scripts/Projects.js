@@ -84,7 +84,8 @@ export var AddProject = (props) => {
     boxShadow: '0 0 5px black'
   }
   return (
-    <AddExpand id={props.id} label={props.label || "Add Project"} style={expandBoxStyle}>
+    <AddExpand id={props.id} label={props.label || "Add Project"}
+               expandBoxStyle={expandBoxStyle} style={props.style}>
       <NewProjectForm label="Create Project" onSubmit={props.addProject}/>
     </AddExpand>
   );
@@ -135,7 +136,7 @@ export class ProjectSelector extends FormComponent {
     return (
       <div style={this.props.style}>
         <Form onSubmit={form => null}>
-          <SelectInput label="Select Your Project"
+          <SelectInput label={this.props.label}
                        options={projects}
                        {...project}/>
         </Form>
@@ -167,8 +168,6 @@ ProjectSelector = reduxForm({
 
 export var CurrentProject = (props) => {
   let style = {
-    marginBottom: '1em',
-    padding: '0.5em'
   }
 
   let project = props.selectedProject;

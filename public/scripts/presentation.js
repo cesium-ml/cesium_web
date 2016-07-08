@@ -38,7 +38,7 @@ export class AddExpand extends Component {
       </span>);
 
     return (
-      <div style={style}>
+      <div style={{...style, ...(this.props.style)}}>
 
         <a style={style.a} onClick={this.props.toggle}>
           { this.props.opened ? shrink : add }

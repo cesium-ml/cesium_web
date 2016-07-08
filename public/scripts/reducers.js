@@ -2,6 +2,7 @@ import { combineReducers } from 'redux'
 import {reducer as formReducer} from 'redux-form'
 
 import * as Action from './actions'
+import { reducer as notifications } from './Notifications'
 
 
 function projects(state={projectList: []}, action) {
@@ -52,22 +53,6 @@ function predictions(state = [], action) {
   switch (action.type) {
     case Action.RECEIVE_PREDICTIONS:
       return action.payload
-    default:
-      return state
-  }
-}
-
-
-function notifications(state={notes: []}, action) {
-  switch (action.type) {
-    case Action.SHOW_NOTIFICATION:
-      return {
-        notes: state.notes.concat(action.payload)
-      }
-    case Action.HIDE_NOTIFICATION:
-      return {
-        notes: state.notes.slice(1)
-      }
     default:
       return state
   }

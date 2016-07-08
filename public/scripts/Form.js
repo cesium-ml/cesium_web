@@ -58,7 +58,9 @@ export var TextInput = (props) => {
 
   return (
     <div className="form-group" style={textInputStyle}>
-      <label>{props.label}</label>
+      {props.label &&
+        <label>{props.label}</label>
+      }
       <input className="form-control"
              type="text"
              value={props.value || ''} {...props}/>
@@ -77,7 +79,9 @@ export var TextareaInput = (props) => {
 
   return (
     <div className="form-group" style={textareaInputStyle}>
-      <label>{props.label}</label>
+      {props.label &&
+        <label>{props.label}</label>
+      }
       <textarea className="form-control"
                 value={props.value || ''} {...props}/>
       <Error {...props}/>
@@ -109,7 +113,9 @@ export var SelectInput = (props) => {
 
   return (
     <div className="form-group" style={selectInputStyle}>
-      <label>{props.label}</label>
+      {props.label &&
+        <label>{props.label}</label>
+      }
       <select className="form-control"
               {...props}>
         {props.options.map((option, idx) => (
@@ -161,7 +167,9 @@ export var FileInput = (props) => {
 
   return (
     <div className="form-group" style={fileInputStyle}>
-      <label>{props.label}</label>
+      {props.label &&
+        <label>{props.label}</label>
+      }
       <input type="file" {...otherProps}/>
       <Error {...props}/>
     </div>
