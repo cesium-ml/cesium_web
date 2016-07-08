@@ -41,12 +41,12 @@ def build_model_and_notify(username, model_id, model_type, model_params,
             report_finished.si(data=data))
 
 
-def predict_and_notify(username, ts_paths, features_to_use, model, output_path,
-                       custom_features_script=None):
+def predict_and_notify(username, prediction_id, ts_paths, features_to_use,
+                       model_path, output_path, custom_features_script=None):
     """Returns Celery task that makes predictions and notifies the web app when
     the computation is complete.
     """
     data = {'status': 'success', 'prediction_id': prediction_id, 'username': username}
-    return (prediction_task(ts_paths, features_to_use, model, output_path,
+    return (prediction_task(ts_paths, features_to_use, model_path, output_path,
                             custom_features_script) |
             report_finished.si(data=data))

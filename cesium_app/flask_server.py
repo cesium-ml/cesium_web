@@ -277,6 +277,7 @@ def Features(featureset_id=None):
         fset = m.Featureset.create(name=featureset_name,
                                    file=m.File.create(uri=fset_path),
                                    project=dataset.project,
+                                   features_list=features_to_use,
                                    custom_features_script=custom_script_path)
         res = featurize_and_notify(get_username(), fset.id, dataset.uris,
                                    features_to_use, fset_path,
@@ -346,7 +347,7 @@ def Models(model_id=None):
                                featureset=fset, project=fset.project,
                                params=model_params, type=model_type)
 
-        res = build_model_and_notify(get_username(), model_path, model_type,
+        res = build_model_and_notify(get_username(), model.id, model_type,
                                      model_params, fset.file.uri,
                                      model_file.uri,
                                      params_to_optimize).apply_async()
@@ -395,17 +396,17 @@ def predictions(prediction_id=None):
         dataset_id = data['datasetID']
         model_id = data['modelID']
 
-        dataset = m.Dataset.get(m.Dataset.id == int(data["datasetID"]))
+        dataset = m.Dataset.get(m.Dataset.id == data["datasetID"])
         model = m.Model.get(m.Model.id == data["modelID"])
         fset = model.featureset
         prediction_path = pjoin(cfg['paths']['predictions_folder'],
                                 '{}_prediction.nc'.format(uuid.uuid4()))
-        prediction_file = m.Prediction.create(uri=prediction_path)
+        prediction_file = m.File.create(uri=prediction_path)
         prediction = m.Prediction.create(file=prediction_file, dataset=dataset,
                                          project=dataset.project, model=model)
 
-        res = predict_and_notify(get_username(), dataset.uris, prediction_path,
-            model.file.uri,
+        res = predict_and_notify(get_username(), prediction_id, dataset.uris,
+            fset.features_list, model.file.uri, prediction_path,
             custom_features_script=fset.custom_features_script).apply_async()
         prediction.task_id = res.task_id
 

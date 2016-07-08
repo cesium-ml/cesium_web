@@ -63,6 +63,7 @@ class UserProject(BaseModel):
         )
 
 
+# TODO Delete corresponding file upon deleting row
 class File(BaseModel):
     """ORM model of the TimeSeries table"""
     uri = pw.CharField(primary_key=True)  # s3://cesium_bin/3eef6601a
@@ -113,6 +114,7 @@ class Featureset(BaseModel):
                                  related_name='featuresets')
     name = pw.CharField()
     created = pw.DateTimeField(default=datetime.datetime.now)
+    features_list = ArrayField(pw.CharField)
     custom_features_script = pw.CharField(null=True) # move to fset file?
     file = pw.ForeignKeyField(File, on_delete='CASCADE')
     task_id = pw.CharField(null=True)
@@ -200,7 +202,7 @@ if __name__ == "__main__":
     print("Inserting dummy featureset...")
     test_file = File.get()
     f = Featureset.create(project=p, dataset=d, name='test featureset',
-                          file=test_file)
+                          features_list=['amplitude'], file=test_file)
 
     print("Inserting dummy model...")
     m = Model.create(project=p, featureset=f, name='test model',
