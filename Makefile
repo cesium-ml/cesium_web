@@ -39,7 +39,7 @@ paths:
 log: paths
 	./tools/watch_logs.py
 
-run: paths dependencies
+run: paths dependencies celery
 	$(SUPERVISORD) -c conf/supervisord.conf
 
 debug:
@@ -51,3 +51,10 @@ attach:
 
 clean:
 	rm $(bundle)
+
+celery:
+	@if [[ -z `ps ax | grep -v grep | grep -v make | grep 'celery worker'` ]]; then \
+		PYTHONPATH="./cesium_app" celery worker -A cesium_app.celery_app -l info & \
+	else \
+		echo "[Celery] is already running"; \
+        fi
