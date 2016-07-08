@@ -68,8 +68,9 @@ var MainContent = React.createClass({
       },
       topbar: {
         position: 'relative',
-        left: '-2em',
-        background: '#eee',
+        left: 0,
+        background: '#008CBA',
+        color: '#EFEFEF',
         height: 95,
         top: 0,
         margin: 0,
@@ -79,22 +80,10 @@ var MainContent = React.createClass({
         paddingLeft: '1em',
         paddingRight: '1em',
         paddingTop: '0em',
-        logo: {
-          position: 'absolute',
-          right: '1em',
-          top: 5,
-          height: 50,
-          marginBottom: '1em',
-          img: {
-            height: 50,
-            paddingTop: 10,
-            paddingBottom: 10,
-          }
-        },
         header: {
           float: 'right',
           fontWeight: 'bold',
-          fontSize: '120%',
+          fontSize: '200%',
           lineHeight: '50px',
           verticalAlign: 'bottom'
         },
@@ -106,13 +95,24 @@ var MainContent = React.createClass({
           paddingTop: '0.5em'
         }
       },
+      logo: {
+        position: 'absolute',
+        right: '1em',
+        top: 5,
+        height: 50,
+        marginBottom: '1em',
+        img: {
+          height: 50,
+          paddingTop: 10,
+          paddingBottom: 10,
+        }
+      },
       sidebar: {
         width: config.sidebar,
         background: 'MediumAquaMarine',
         position: 'relative',
         top: '0em',
         left: '0em',
-        paddingLeft: '2em',
         position: 'absolute',
         height: '100%',
         borderRight: 'solid 2px #36454f',
@@ -125,7 +125,27 @@ var MainContent = React.createClass({
         paddingTop: '1em'
       },
       projectSelector: {
-        padding: 0
+        padding: 0,
+        paddingLeft: '2em'
+      },
+      topic: {
+        width: config.sidebar,
+        position: 'relative',
+        left: 0,
+        background: 'DarkMagenta',
+        color: '#EFEFEF',
+        height: 60,
+        lineHeight: '60px',
+        verticalAlign: 'middle',
+        top: 0,
+        margin: 0,
+        padding: 0,
+        fontSize: '180%',
+        width: '100%',
+        marginBottom: '1em',
+        paddingTop: '0em',
+        paddingRight: '1em',
+        paddingLeft: '0.5em'
       }
     }
     let rotate = 'rotate(' + this.props.logoSpinAngle + 'deg)'
@@ -151,8 +171,10 @@ var MainContent = React.createClass({
           </div>
         </div>
 
-        <div style={style.selectors}>
-          <ProjectSelector/>
+        <div style={style.topic}>Project</div>
+
+        <div style={style.projectSelector}>
+          <ProjectSelector label='Choose your project here:'/>
           <AddProject id='newProjectExpander' label='Or click here to add a new one'/>
         </div>
       </div>
@@ -160,6 +182,13 @@ var MainContent = React.createClass({
       <div className='mainContent' style={style.main}>
 
         <Notifications style={style.notifications}/>
+
+        <div style={style.logo}>
+          <img src='images/cesium-blue-light.png'
+               onClick={this.props.spinLogo}
+               style={{...(style.logo.img), ...rotateStyle}}/>
+        </div>
+
 
         <Tabs>
           <TabList style={style.tabs}>
@@ -174,13 +203,6 @@ var MainContent = React.createClass({
                          messageHandler={messageHandler}
                />
              </Tab>
-
-               <div style={style.topbar.logo}>
-                 <img src='images/cesium-blue-light.png'
-                      onClick={this.props.spinLogo}
-                      style={{...(style.topbar.logo.img), ...rotateStyle}}/>
-               </div>
-
           </TabList>
           <TabPanel>
             <ProjectTab selectedProject={this.props.selectedProject}/>
@@ -201,6 +223,7 @@ var MainContent = React.createClass({
             <h3>System Status</h3>
           </TabPanel>
         </Tabs>
+
         <hr/>
           <div style={style.footer}>
             Follow the <a href="http://cesium.ml">Cesium project</a> on <a href="https://github.com/cesium-ml">GitHub</a>

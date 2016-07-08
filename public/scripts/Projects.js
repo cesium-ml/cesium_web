@@ -135,7 +135,7 @@ export class ProjectSelector extends FormComponent {
     return (
       <div style={this.props.style}>
         <Form onSubmit={form => null}>
-          <SelectInput label="Select Your Project"
+          <SelectInput label={this.props.label}
                        options={projects}
                        {...project}/>
         </Form>
@@ -167,8 +167,6 @@ ProjectSelector = reduxForm({
 
 export var CurrentProject = (props) => {
   let style = {
-    marginBottom: '1em',
-    padding: '0.5em'
   }
 
   let project = props.selectedProject;

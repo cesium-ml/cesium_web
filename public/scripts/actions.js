@@ -33,9 +33,6 @@ export const RECEIVE_PREDICTIONS = 'cesium/RECEIVE_PREDICTIONS'
 export const DO_PREDICTION = 'cesium/DO_PREDICTION'
 export const DELETE_PREDICTION = 'cesium/DELETE_PREDICTION'
 
-export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION'
-export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION'
-
 export const TOGGLE_EXPANDER = 'cesium/TOGGLE_EXPANDER'
 export const HIDE_EXPANDER = 'cesium/HIDE_EXPANDER'
 export const SHOW_EXPANDER = 'cesium/SHOW_EXPANDER'
@@ -44,6 +41,10 @@ export const FETCH_SKLEARN_MODELS = 'cesium/FETCH_SKLEARN_MODELS'
 export const RECEIVE_SKLEARN_MODELS = 'cesium/RECEIVE_SKLEARN_MODELS'
 
 export const SPIN_LOGO = 'cesium/SPIN_LOGO'
+
+
+import { showNotification, reduceNotifications } from './Notifications'
+import {promiseAction} from './action_tools'
 
 // Refactor this into a utility function
 String.prototype.format = function () {
@@ -70,17 +71,6 @@ export function hydrate() {
       })
     dispatch(fetchSklearnModels());
   }
-}
-
-
-function promiseAction(dispatch, action_type, promise) {
-  dispatch({
-    type: action_type,
-    payload: {
-      promise: promise
-    }
-  });
-  return promise;
 }
 
 
@@ -334,21 +324,6 @@ export function createModel(form) {
   )
 }
 
-export function showNotification(text) {
-  return (dispatch) => {
-    setTimeout(() => dispatch(hideNotification()), 3500);
-    dispatch({
-      type: SHOW_NOTIFICATION,
-      payload: text
-    });
-  }
-}
-
-export function hideNotification() {
-  return {
-    type: HIDE_NOTIFICATION
-  }
-}
 
 export function hideExpander(id) {
   return {
