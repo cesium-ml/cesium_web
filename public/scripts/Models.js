@@ -99,7 +99,10 @@ const mapStateToProps = function(state, ownProps) {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onSubmit: (form) => dispatch(Action.createModel(form))
+    onSubmit: (form) => {
+      form.modelType = parseInt(form.ModelType);
+      dispatch(Action.createModel(form))
+    }
   }
 }
 
