@@ -7,7 +7,7 @@ export var Notifications = (props) => {
     zIndex: 3,
     top: 10,
     width: 300,
-    left: 500,
+    left: 850,
     overflow: 'hidden',
 
     note: {
@@ -17,7 +17,7 @@ export var Notifications = (props) => {
       paddingBottom: '0.8em',
       paddingLeft: '1em',
       marginBottom: 5,
-      background: 'MediumSeaGreen',
+      background: 'MediumAquaMarine',
       width: '100%',
       display: 'inline-block',
       WebkitBoxShadow: '0 0 5px black',

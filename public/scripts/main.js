@@ -42,15 +42,24 @@ var MainContent = React.createClass({
     store.dispatch(Action.hydrate());
   },
   render: function() {
+    let config = {
+      sidebar: 300,
+      main: 800,
+      top: 20
+    }
+
     let style = {
       main: {
         background: 'white',
-        width: 800,
-        marginLeft: 50,
+        width: config.main,
+        marginLeft: 30 + config.sidebar,
         marginRight: 'auto',
-        marginTop: 20,
+        top: config.top,
+        position: 'relative',
         paddingLeft: '2em',
         paddingBottom: '1em',
+        paddingTop: '1em',
+        paddingRight: '1em',
         selectors: {
           paddingLeft: '2em',
           marginBottom: '1em',
@@ -61,30 +70,62 @@ var MainContent = React.createClass({
         position: 'relative',
         left: '-2em',
         background: '#eee',
-        height: 50,
-        paddingTop: 0,
+        height: 95,
+        top: 0,
         margin: 0,
-        width: 800,
+        width: config.sidebar,
+        borderRight: 'solid 2px #36454f',
         marginBottom: '1em',
         paddingLeft: '1em',
         paddingRight: '1em',
-        img: {
-          float: 'right',
+        paddingTop: '0em',
+        logo: {
+          position: 'absolute',
+          right: '1em',
+          top: 5,
           height: 50,
-          paddingTop: 10,
-          paddingBottom: 10
+          marginBottom: '1em',
+          img: {
+            height: 50,
+            paddingTop: 10,
+            paddingBottom: 10,
+          }
         },
-        text: {
-          display: 'inline-block',
+        header: {
+          float: 'right',
           fontWeight: 'bold',
           fontSize: '120%',
           lineHeight: '50px',
           verticalAlign: 'bottom'
+        },
+        subheader: {
+          fontStyle: 'italic',
+          float: 'right'
+        },
+        text: {
+          paddingTop: '0.5em'
         }
+      },
+      sidebar: {
+        width: config.sidebar,
+        background: 'MediumAquaMarine',
+        position: 'relative',
+        top: '0em',
+        left: '0em',
+        paddingLeft: '2em',
+        position: 'absolute',
+        height: '100%',
+        borderRight: 'solid 2px #36454f',
       },
       footer: {
         paddingRight: '1em',
         textAlign: 'right'
+      },
+      tabs: {
+        paddingTop: '1em'
+      },
+      projectSelector: {
+        padding: 0
       }
     }
     let rotate = 'rotate(' + this.props.logoSpinAngle + 'deg)'
@@ -100,26 +141,28 @@ var MainContent = React.createClass({
       transform: rotate
     }
     return (
-      <div className='mainContent' style={style.main}>
+      <div>
 
+      <div style={style.sidebar}>
         <div style={style.topbar}>
           <div style={style.topbar.text}>
-            Cesium :: <em>Machine Learning Time Series Platform</em>
+            <span style={style.topbar.header}>Cesium</span><br/>
+            <span style={style.topbar.subheader}>Machine Learning Time-Series Platform</span>
           </div>
-          <img src='images/cesium-blue-light.png'
-               onClick={this.props.spinLogo}
-               style={{...(style.topbar.img), ...rotateStyle}}
-          />
         </div>
 
-        <Notifications style={style.notifications}/>
         <div style={style.selectors}>
           <ProjectSelector/>
-          <AddProject id='newProjectExpander'/>
+          <AddProject id='newProjectExpander' label='Or click here to add a new one'/>
         </div>
+      </div>
+
+      <div className='mainContent' style={style.main}>
+
+        <Notifications style={style.notifications}/>
 
         <Tabs>
-          <TabList>
+          <TabList style={style.tabs}>
             <Tab>Project</Tab>
             <Tab>Data</Tab>
             <Tab>Features</Tab>
@@ -129,8 +172,15 @@ var MainContent = React.createClass({
               <WebSocket url={'ws://' + this.props.root + 'websocket'}
                          auth_url={location.protocol + '//' + this.props.root + 'socket_auth_token'}
                          messageHandler={messageHandler}
-              />
-            </Tab>
+               />
+             </Tab>
+
+               <div style={style.topbar.logo}>
+                 <img src='images/cesium-blue-light.png'
+                      onClick={this.props.spinLogo}
+                      style={{...(style.topbar.logo.img), ...rotateStyle}}/>
+               </div>
+
           </TabList>
           <TabPanel>
             <ProjectTab selectedProject={this.props.selectedProject}/>
@@ -155,6 +205,8 @@ var MainContent = React.createClass({
           <div style={style.footer}>
             Follow the <a href="http://cesium.ml">Cesium project</a> on <a href="https://github.com/cesium-ml">GitHub</a>
           </div>
+      </div>
+
       </div>
     );
   }

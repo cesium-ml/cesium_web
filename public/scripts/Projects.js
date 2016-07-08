@@ -77,13 +77,14 @@ ProjectTab = connect(null, ptMapDispatchToProps)(ProjectTab)
 
 
 export var AddProject = (props) => {
-  let style = {
+  let expandBoxStyle = {
     width: 500,
-    background: 'red'
+    WebkitBoxShadow: '0 0 5px black',
+    MozBoxShadow: '0 0 5px black',
+    boxShadow: '0 0 5px black'
   }
-
   return (
-    <AddExpand id={props.id} label="Add Project">
+    <AddExpand id={props.id} label={props.label || "Add Project"} style={expandBoxStyle}>
       <NewProjectForm label="Create Project" onSubmit={props.addProject}/>
     </AddExpand>
   );
@@ -131,17 +132,10 @@ export class ProjectSelector extends FormComponent {
        label: project.name}
     ));
 
-    let style = {
-      display: 'inline-block',
-      paddingRight: '2em',
-      form: {
-      }
-    }
-
     return (
-      <div style={style}>
-        <Form onSubmit={form => null} style={style.form}>
-          <SelectInput label="Select Project"
+      <div style={this.props.style}>
+        <Form onSubmit={form => null}>
+          <SelectInput label="Select Your Project"
                        options={projects}
                        {...project}/>
         </Form>
