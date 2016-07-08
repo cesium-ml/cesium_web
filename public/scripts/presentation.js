@@ -8,16 +8,20 @@ export class AddExpand extends Component {
     let style = {
       a: {textDecoration: 'none'},
       display: this.props.opened ? 'inline' : 'inline-block',
-      paddingRight: '1em',
       sign: {
         fontSize: '200%',
         fontWeight: 'bold'
       },
       children: {
-        border: '1px solid lightgray',
+        position: 'relative',
+        width: '100%',
+        zIndex: 5,
+        background: 'white',
+        border: '1px solid LightGray',
         paddingLeft: '2em',
         marginTop: '0.5em',
-        marginBottom: '1em'
+        marginBottom: '1em',
+        ...(this.props.style)
       }
     }
 

@@ -28,7 +28,7 @@ Error.propTypes = {
 
 export var Form = (props) => {
   let style = {
-    width: 450,
+    paddingRight: '2em',
     error: {
       color: 'Red',
       background: 'Pink',
