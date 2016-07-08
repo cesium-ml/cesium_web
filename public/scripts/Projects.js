@@ -84,7 +84,8 @@ export var AddProject = (props) => {
     boxShadow: '0 0 5px black'
   }
   return (
-    <AddExpand id={props.id} label={props.label || "Add Project"} style={expandBoxStyle}>
+    <AddExpand id={props.id} label={props.label || "Add Project"}
+               expandBoxStyle={expandBoxStyle} style={props.style}>
       <NewProjectForm label="Create Project" onSubmit={props.addProject}/>
     </AddExpand>
   );

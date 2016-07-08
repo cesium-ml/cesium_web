@@ -58,7 +58,6 @@ var MainContent = React.createClass({
         position: 'relative',
         paddingLeft: '2em',
         paddingBottom: '1em',
-        paddingTop: '1em',
         paddingRight: '1em',
         selectors: {
           paddingLeft: '2em',
@@ -117,16 +116,22 @@ var MainContent = React.createClass({
         height: '100%',
         borderRight: 'solid 2px #36454f',
       },
+      sidebarContent: {
+        paddingLeft: '1em'
+      },
       footer: {
         paddingRight: '1em',
         textAlign: 'right'
       },
       tabs: {
-        paddingTop: '1em'
+        paddingTop: '1.5em'
       },
       projectSelector: {
         padding: 0,
-        paddingLeft: '2em'
+        paddingLeft: '1em',
+        margin: 0,
+        position: 'relative',
+        top: '-1.2em',
       },
       topic: {
         width: config.sidebar,
@@ -143,9 +148,31 @@ var MainContent = React.createClass({
         fontSize: '180%',
         width: '100%',
         marginBottom: '1em',
-        paddingTop: '0em',
+        paddingTop: 0,
         paddingRight: '1em',
         paddingLeft: '0.5em'
+      },
+      moveUp: {
+        position: 'relative',
+        top: '-2em',
+        paddingTop: 0
+      },
+      circleStyle: {
+        display: 'inline-block',
+        padding: 0,
+        lineHeight: '60px',
+        textAlign: 'center',
+        whiteSpace: 'nowrap',
+        verticalAlign: 'baseline',
+        backgroundColor: 'Gold',
+        borderRadius: '50%',
+        border: '2px solid gray',
+        position: 'relative',
+        height: 60,
+        width: 60,
+        padding: 0,
+        fontSize: '200%',
+        marginRight: '0.5em'
       }
     }
     let rotate = 'rotate(' + this.props.logoSpinAngle + 'deg)'
@@ -173,10 +200,19 @@ var MainContent = React.createClass({
 
         <div style={style.topic}>Project</div>
 
-        <div style={style.projectSelector}>
-          <ProjectSelector label='Choose your project here:'/>
-          <AddProject id='newProjectExpander' label='Or click here to add a new one'/>
+        <div style={style.sidebarContent}>
+          <ProjectSelector label='Choose your project here:' style={style.projectSelector}/>
+          <AddProject id='newProjectExpander' label='Or click here to add a new one' style={style.moveUp}/>
         </div>
+
+        <div style={style.topic}>Progress</div>
+
+        <div style={style.sidebarContent}>
+          <div style={style.circleStyle}>&middot;&middot;&middot;</div><b>1. Do you have a dataset?</b><br/><br/>
+          <div style={style.circleStyle}>&middot;&middot;&middot;</div><b>2. Have you computed features?</b><br/>
+          <div style={style.circleStyle}>&middot;&middot;&middot;</div><b>2. How about training a model?</b><br/>
+        </div>
+
       </div>
 
       <div className='mainContent' style={style.main}>
