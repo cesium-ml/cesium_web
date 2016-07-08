@@ -325,7 +325,8 @@ def Models(model_id=None):
 
         model_name = data.pop('modelName')
         featureset_id = data.pop('featureSet')
-        model_type = sklearn_model_descriptions[data.pop('modelType')]['name']
+        # TODO remove cast once this is passed properly from the front end
+        model_type = sklearn_model_descriptions[int(data.pop('modelType'))]['name']
         project_id = data.pop('project')
 
         fset = m.Featureset.get(m.Featureset.id == featureset_id)
