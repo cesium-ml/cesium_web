@@ -7,7 +7,7 @@ import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 
 import {FormComponent, Form, TextInput, FileInput, SubmitButton } from './Form'
 import * as Validate from './validate'
-import {AddExpand} from './presentation'
+import Expand from './Expand'
 import * as Action from './actions'
 
 
@@ -15,9 +15,9 @@ var DatasetsTab = (props) => {
   return (
     <div className='datasetsTab'>
 
-      <AddExpand label="Upload new dataset" id='newDatasetExpander'>
+      <Expand label="Upload new dataset" id='newDatasetExpander'>
         <DatasetForm selectedProject={props.selectedProject}/>
-      </AddExpand>
+      </Expand>
 
       <DatasetTable selectedProject={props.selectedProject}/>
 

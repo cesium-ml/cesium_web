@@ -1,13 +1,13 @@
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import {toggleExpander} from './actions'
+import Dot from './Dot'
 
 
-export class AddExpand extends Component {
+export class Expand extends Component {
   render() {
     let style = {
       a: {textDecoration: 'none'},
-      display: this.props.opened ? 'inline' : 'inline-block',
       sign: {
         fontSize: '200%',
         fontWeight: 'bold'
@@ -15,25 +15,28 @@ export class AddExpand extends Component {
       children: {
         position: 'relative',
         width: '100%',
-        zIndex: 5,
+        zIndex: 1000,
         background: 'white',
         border: '1px solid LightGray',
         paddingLeft: '2em',
         marginTop: '0.5em',
         marginBottom: '1em',
-        ...(this.props.style)
-      }
+        ...(this.props.expandBoxStyle)
+      },
+      ...(this.props.style)
     }
 
     let add = (
       <span>
-        <span style={style.sign}>+ </span>
+        <span style={style.sign}><Dot height='0.7em'
+              value='+' style={style.dot}/> </span>
         {this.props.label}
       </span>);
 
     let shrink = (
       <span>
-        <span style={style.sign}>- </span>
+        <span style={style.sign}><Dot height='0.7em'
+              value='-' style={style.dot}/> </span>
         {this.props.label}
       </span>);
 
@@ -68,4 +71,6 @@ let mapDispatchToProps = (dispatch, ownProps) => {
   }
 }
 
-AddExpand = connect(mapStateToProps, mapDispatchToProps)(AddExpand)
+Expand = connect(mapStateToProps, mapDispatchToProps)(Expand)
+
+export {Expand as default}

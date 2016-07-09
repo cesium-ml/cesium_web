@@ -5,14 +5,14 @@ import {reduxForm} from 'redux-form'
 import { FormComponent, TextInput, CheckBoxInput, SelectInput, SubmitButton, Form, Button } from './Form'
 import * as Validate from './validate'
 import * as Action from './actions'
-import {AddExpand} from './presentation'
+import Expand from './Expand'
 
 
 const ModelsTab = (props) => (
   <div>
-    <AddExpand label="Create New Model" id="newModelExpander">
+    <Expand label="Create New Model" id="newModelExpander">
       <NewModelForm selectedProject={props.selectedProject}/>
-    </AddExpand>
+    </Expand>
 
     <ModelTable selectedProject={props.selectedProject}/>
   </div>
@@ -56,9 +56,9 @@ class NewModelForm extends FormComponent {
       <SelectInput label="Model Type"
                    options={selectModels} {...modelType}/>
 
-      <AddExpand label="Choose Model Parameters" id='modelParameterExpander'>
+      <Expand label="Choose Model Parameters" id='modelParameterExpander'>
           <Model model={chosenModel} {...fields}/>
-      </AddExpand>
+      </Expand>
 
         <SubmitButton label="Create Model"/>
       </Form>
