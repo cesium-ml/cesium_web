@@ -194,21 +194,21 @@ def Dataset(dataset_id=None):
         if zipfile.filename == '':
             return error('Empty tar file uploaded')
 
-        if headerfile.filename == '':
-            return error('Empty header file uploaded')
-
         dataset_name = form['datasetName']
         project_id = form['projectID']
 
-        # Create unique file names
-        headerfile_name = (str(uuid.uuid4()) + "_" +
-                           str(secure_filename(headerfile.filename)))
         zipfile_name = (str(uuid.uuid4()) + "_" +
                         str(secure_filename(zipfile.filename)))
-        headerfile_path = pjoin(cfg['paths']['upload_folder'], headerfile_name)
         zipfile_path = pjoin(cfg['paths']['upload_folder'], zipfile_name)
-        headerfile.save(headerfile_path)
         zipfile.save(zipfile_path)
+
+        if headerfile.filename != '':
+            headerfile_name = (str(uuid.uuid4()) + "_" +
+                               str(secure_filename(headerfile.filename)))
+            headerfile_path = pjoin(cfg['paths']['upload_folder'], headerfile_name)
+            headerfile.save(headerfile_path)
+        else:
+            headerfile_path = None
 
         p = m.Project.get(m.Project.id == project_id)
         # TODO this should give unique names to the time series files
