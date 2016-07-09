@@ -152,7 +152,7 @@ export var ModelTable = (props) => {
              <td>{model.name}</td>
              <td>{model.created}</td>
              <td>Project: {model.project}</td>
-             <td></td>
+             <td><DeleteModel modelID={model.id}/></td>
            </tr>
          ))}
 
@@ -168,6 +168,24 @@ let mtMapStateToProps = (state) => {
 }
 
 ModelTable = connect(mtMapStateToProps)(ModelTable)
+
+
+export var DeleteModel = (props) => {
+  let style = {
+    display: 'inline-block'
+  }
+  return (
+    <a style={style} onClick={() => props.deleteModel(props.modelID)}>Delete</a>
+  )
+}
+
+let dmMapDispatchToProps = (dispatch) => {
+  return (
+    {deleteModel: (id) => dispatch(Action.deleteModel(id))}
+  );
+}
+
+DeleteModel = connect(null, dmMapDispatchToProps)(DeleteModel);
 
 
 export default ModelsTab;

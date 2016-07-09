@@ -27,6 +27,7 @@ export const DELETE_FEATURESET = 'cesium/DELETE_FEATURESET'
 export const FETCH_MODELS = 'cesium/FETCH_MODELS'
 export const RECEIVE_MODELS = 'cesium/RECEIVE_MODELS'
 export const CREATE_MODEL = 'cesium/CREATE_MODEL'
+export const DELETE_MODEL = 'cesium/DELETE_MODEL'
 
 export const FETCH_PREDICTIONS = 'cesium/FETCH_PREDICTIONS'
 export const RECEIVE_PREDICTIONS = 'cesium/RECEIVE_PREDICTIONS'
@@ -513,6 +514,28 @@ function receiveModels(models) {
     type: RECEIVE_MODELS,
     payload: models
   }
+}
+
+
+export function deleteModel(id) {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      DELETE_MODEL,
+
+      fetch('/models/' + id, {method: 'DELETE'})
+        .then(response => response.json())
+        .then(json => {
+          if (json.status == 'success') {
+            dispatch(showNotification('Model successfully deleted'));
+          } else {
+            dispatch(
+              showNotification(
+                'Error deleting model ({})'.format(json.message)
+              ));
+          }
+        })
+  )
 }
 
 
