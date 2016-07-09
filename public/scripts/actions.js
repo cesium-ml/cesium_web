@@ -193,7 +193,7 @@ export function uploadDataset(form) {
   let formData = new FormData();
 
   for (let key in form) {
-    if (objectType(form[key][0]) === 'File') {
+    if (form[key] && objectType(form[key][0]) === 'File') {
       formData.append(key, form[key][0])
     } else {
       formData.append(key, form[key])
