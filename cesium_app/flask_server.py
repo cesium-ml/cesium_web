@@ -182,13 +182,9 @@ def Dataset(dataset_id=None):
     if request.method == 'POST':
         form = request.form
 
-        if not 'headerFile' in request.files:
-            return error('No header file uploaded')
-
         if not 'tarFile' in request.files:
             return error('No tar file uploaded')
 
-        headerfile = request.files['headerFile']
         zipfile = request.files['tarFile']
 
         if zipfile.filename == '':
@@ -202,7 +198,9 @@ def Dataset(dataset_id=None):
         zipfile_path = pjoin(cfg['paths']['upload_folder'], zipfile_name)
         zipfile.save(zipfile_path)
 
-        if headerfile.filename != '':
+        # Header file is optional for unlabled data w/o metafeatures
+        if 'headerFile' in request.files:
+            headerfile = request.files['headerFile']
             headerfile_name = (str(uuid.uuid4()) + "_" +
                                str(secure_filename(headerfile.filename)))
             headerfile_path = pjoin(cfg['paths']['upload_folder'], headerfile_name)
