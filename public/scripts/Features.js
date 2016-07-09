@@ -10,7 +10,7 @@ import CheckboxGroup from 'react-checkbox-group'
 import _ from 'underscore'
 import filter from 'filter-values'
 import * as Validate from './validate'
-import {AddExpand} from './presentation'
+import Expand from './Expand'
 import * as Action from './actions'
 
 var Tab = ReactTabs.Tab;
@@ -115,10 +115,10 @@ var FeaturesTab = (props) => {
     return (
       <div>
         <div>
-          <AddExpand label="Compute New Features" id="featsetFormExpander">
+          <Expand label="Compute New Features" id="featsetFormExpander">
             <FeaturizeForm onSubmit={props.computeFeatures}
                            selectedProject={props.selectedProject}/>
-          </AddExpand>
+          </Expand>
         </div>
 
         <FeatureTable selectedProject={props.selectedProject}/>
@@ -176,17 +176,10 @@ export var DeleteFeatureset = (props) => {
     display: 'inline-block'
   }
   return (
-    <a style={style} onClick={() => props.deleteFeatureset(props.featuresetID)}>Delete</a>
+    <a style={style} onClick={() => {
+      props.dispatch(Action.deleteFeatureset(props.featuresetID))
+    }}>Delete</a>
   )
 }
-
-let dfMapDispatchToProps = (dispatch) => {
-  return (
-    {deleteFeatureset: (id) => dispatch(Action.deleteFeatureset(id))}
-  );
-}
-
-DeleteFeatureset = connect(null, dfMapDispatchToProps)(DeleteFeatureset);
-
 
 module.exports = FeaturesTab;

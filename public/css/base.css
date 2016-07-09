@@ -16,7 +16,7 @@
   transition: opacity 200ms ease-in;
 }
 body {
-  background-color: SlateGray !important;
+  background-color: white !important;
   margin: 0;
   font-family: 'Fira Sans', sans-serif !important;
 }

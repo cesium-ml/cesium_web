@@ -36,6 +36,7 @@ import PredictTab from './Predictions'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 import { Notifications } from './Notifications'
 import { colorScheme as cs } from './colorscheme'
+import Progress from './Progress'
 
 
 var MainContent = React.createClass({
@@ -52,18 +53,15 @@ var MainContent = React.createClass({
     let style = {
       main: {
         background: 'white',
+        zIndex: 5,
 
         position: 'absolute',
-        bottom: 0,
         height: 'auto',
-        overflow: 'hidden',
         top: config.topbar,
         right: 0,
         left: config.sidebar,
         width: 'auto',
 
-        paddingLeft: '2em',
-        paddingBottom: '1em',
         marginBottom: 0,
         marginRight: 'auto',
 
@@ -74,7 +72,8 @@ var MainContent = React.createClass({
         }
       },
       topbar: {
-        position: 'relative',
+        position: 'fixed',
+        zIndex: 10,
         left: 0,
         background: cs.darkBlue,
         color: '#EFEFEF',
@@ -113,23 +112,26 @@ var MainContent = React.createClass({
       },
       sidebar: {
         width: config.sidebar,
-        background: '#eee',
-        position: 'absolute',
+        zIndex: 10,
+        background: cs.darkGray,
+        color: '#eee',
+        position: 'fixed',
         top: config.topbar,
         bottom: 0,
         left: '0em',
-        position: 'absolute',
         height: 'auto',
       },
       sidebarContent: {
         paddingLeft: '1em'
       },
       footer: {
+        position: 'fixed',
+        zIndex: -1000,
         fontSize: '110%',
-        position: 'absolute',
         bottom: 0,
-        left: 0,
-        width: '100%',
+        margin: 0,
+        left: config.sidebar,
+        right: 0,
         textAlign: 'center',
         verticalAlign: 'middle',
         color: 'white',
@@ -141,15 +143,18 @@ var MainContent = React.createClass({
           textDecoration: 'underline'
         }
       },
-      tabs: {
-        paddingTop: '1.5em'
-      },
       projectSelector: {
-        padding: 0,
-        paddingLeft: '1em',
-        margin: 0,
-        position: 'relative',
-        top: '-1.2em',
+        zIndex: 1000,
+        marginLeft: '1em',
+        position: 'relative'
+      },
+      addProject: {
+        a: {color: 'white'},
+        paddingTop: '-2em',
+        paddingBottom: '1em',
+        dot: {
+          background: cs.darkGray
+        }
       },
       topic: {
         width: config.sidebar,
@@ -175,23 +180,20 @@ var MainContent = React.createClass({
         top: '-2em',
         paddingTop: 0
       },
-      circleStyle: {
-        display: 'inline-block',
-        padding: 0,
-        lineHeight: '40px',
-        textAlign: 'center',
-        whiteSpace: 'nowrap',
-        verticalAlign: 'baseline',
-        backgroundColor: cs.lightBlue,
-        borderRadius: '50%',
-        border: '2px solid gray',
-        position: 'relative',
-        height: 40,
-        width: 40,
-        padding: 0,
-        fontSize: '200%',
-        marginRight: '0.5em'
-      }
+      tabs: {
+        paddingTop: '1em',
+        paddingLeft: '1em',
+      },
+      tabPanel: {
+        background: 'white',
+        height: 'auto',
+        paddingLeft: '2em',
+        paddingRight: '1em',
+        paddingBottom: '1em'
+      },
+      progress: {
+        height: '4em'
+      },
     }
     let rotate = 'rotate(' + this.props.logoSpinAngle + 'deg)'
     let rotateStyle = {
@@ -225,15 +227,24 @@ var MainContent = React.createClass({
 
         <div style={style.sidebarContent}>
           <ProjectSelector label='Choose your project here:' style={style.projectSelector}/>
-          <AddProject id='newProjectExpander' label='Or click here to add a new one' style={style.moveUp}/>
+          <AddProject id='newProjectExpander' label='Or click here to add a new one' style={style.addProject}/>
         </div>
 
         <div style={style.topic}>Progress</div>
 
         <div style={style.sidebarContent}>
-          <div style={style.circleStyle}>&middot;&middot;&middot;</div><b>1. Do you have a dataset?</b><br/><br/>
-          <div style={style.circleStyle}>&middot;&middot;&middot;</div><b>2. Have you computed features?</b><br/>
-          <div style={style.circleStyle}>&middot;&middot;&middot;</div><b>3. How about training a model?</b><br/>
+          <div style={style.progress}>
+            <Progress type="data"/>
+          </div>
+          <div style={style.progress}>
+            <Progress type="features"/>
+          </div>
+          <div style={style.progress}>
+            <Progress type="models"/>
+          </div>
+          <div style={style.progress}>
+            <Progress type="predict"/>
+          </div>
         </div>
 
       </div>
@@ -241,12 +252,6 @@ var MainContent = React.createClass({
       <div className='mainContent' style={style.main}>
 
         <Notifications style={style.notifications}/>
-
-      <div style={style.footer}>
-          Cesium is an open source Machine Learning Time-Series Platform
-          &middot;
-          Follow the <a style={style.footer.a} href="http://cesium.ml">Cesium project</a> on <a style={style.footer.a} href="https://github.com/cesium-ml">GitHub</a>
-        </div>
 
         <Tabs>
           <TabList style={style.tabs}>
@@ -262,25 +267,31 @@ var MainContent = React.createClass({
                />
              </Tab>
           </TabList>
-          <TabPanel>
+          <TabPanel style={style.tabPanel}>
             <ProjectTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
-          <TabPanel>
+          <TabPanel style={style.tabPanel}>
             <DatasetsTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
-          <TabPanel>
+          <TabPanel style={style.tabPanel}>
             <FeaturesTab selectedProject={this.props.selectedProject} />
           </TabPanel>
-          <TabPanel>
+          <TabPanel style={style.tabPanel}>
             <ModelsTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
-          <TabPanel>
+          <TabPanel style={style.tabPanel}>
             <PredictTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
-          <TabPanel>
+          <TabPanel style={style.tabPanel}>
             <h3>System Status</h3>
           </TabPanel>
         </Tabs>
+        <div style={style.footer}>
+          Cesium is an open source Machine Learning Time-Series Platform
+          &middot;
+          Follow the <a style={style.footer.a} href="http://cesium.ml">Cesium project</a> on <a style={style.footer.a} href="https://github.com/cesium-ml">GitHub</a>
+        </div>
+
       </div>
 
       </div>

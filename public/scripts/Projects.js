@@ -7,7 +7,7 @@ import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 import { FormComponent, Form, SelectInput, TextInput, SubmitButton } from './Form'
 import {reduxForm} from 'redux-form'
 import * as Validate from './validate'
-import {AddExpand} from './presentation'
+import Expand from './Expand'
 import * as Action from './actions.js'
 
 
@@ -77,16 +77,19 @@ ProjectTab = connect(null, ptMapDispatchToProps)(ProjectTab)
 
 export var AddProject = (props) => {
   let expandBoxStyle = {
+    zIndex: 1000,
+    position: 'relative',
     width: 500,
     WebkitBoxShadow: '0 0 5px black',
     MozBoxShadow: '0 0 5px black',
-    boxShadow: '0 0 5px black'
+    boxShadow: '0 0 5px black',
+    color: 'black'
   }
   return (
-    <AddExpand id={props.id} label={props.label || "Add Project"}
+    <Expand id={props.id} label={props.label || "Add Project"}
                expandBoxStyle={expandBoxStyle} style={props.style}>
       <NewProjectForm label="Create Project" onSubmit={props.addProject}/>
-    </AddExpand>
+    </Expand>
   );
 };
 
