@@ -58,7 +58,6 @@ let dsMapDispatchToProps = (dispatch) => {
 
 const validate = Validate.createValidator({
   datasetName: [Validate.required],
-  headerFile: [Validate.oneFile],
   tarFile: [Validate.oneFile],
 });
 
