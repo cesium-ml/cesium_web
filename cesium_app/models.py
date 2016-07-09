@@ -123,6 +123,16 @@ class Featureset(BaseModel):
     def is_owned_by(self, username):
         return self.project.is_owned_by(username)
 
+    @staticmethod
+    def failed():
+        rq = pw.RawQuery(Featureset,
+                         """SELECT featureset.id, featureset.task_id
+                         FROM featureset JOIN
+                         celery_taskmeta ON (featureset.task_id =
+                         celery_taskmeta.task_id)
+                         WHERE status = 'FAILURE'""");
+        return rq.execute()
+
 
 class Model(BaseModel):
     """ORM model of the Model table"""
@@ -141,6 +151,16 @@ class Model(BaseModel):
     def is_owned_by(self, username):
         return self.project.is_owned_by(username)
 
+    @staticmethod
+    def failed():
+        rq = pw.RawQuery(Model,
+                         """SELECT model.id, model.task_id
+                         FROM model JOIN
+                         celery_taskmeta ON (model.task_id =
+                         celery_taskmeta.task_id)
+                         WHERE status = 'FAILURE'""");
+        return rq.execute()
+
 
 class Prediction(BaseModel):
     """ORM model of the Prediction table"""
@@ -156,6 +176,25 @@ class Prediction(BaseModel):
 
     def is_owned_by(self, username):
         return self.project.is_owned_by(username)
+
+    def display_info(self):
+        info = self.__dict__()
+        info['model_type'] = self.model.type
+        info['dataset_name'] = self.dataset.name
+        info['model_name'] = self.model.name
+        info['featureset_name'] = self.model.featureset.name
+
+        return info
+
+    @staticmethod
+    def failed():
+        rq = pw.RawQuery(Prediction,
+                         """SELECT prediction.id, prediction.task_id
+                         FROM prediction JOIN
+                         celery_taskmeta ON (prediction.task_id =
+                         celery_taskmeta.task_id)
+                         WHERE status = 'FAILURE'""");
+        return rq.execute()
 
 
 models = [

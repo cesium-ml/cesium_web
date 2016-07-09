@@ -97,19 +97,36 @@ def task_complete():
         fset = m.Featureset.get(m.Featureset.id == data['fset_id'])
         fset.task_id = None
         fset.finished = datetime.datetime.now
+        fset.save()
         return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
     elif 'model_id' in data:
         model = m.Model.get(m.Model.id == data['model_id'])
         model.task_id = None
         model.finished = datetime.datetime.now
+        model.save()
         return success({"id": model.id}, 'cesium/FETCH_MODELS')
     elif 'prediction_id' in data:
         prediction = m.Prediction.get(m.Prediction.id == data['prediction_id'])
         prediction.task_id = None
         prediction.finished = datetime.datetime.now
+        prediction.save()
         return success({"id": prediction.id}, 'cesium/FETCH_PREDICTIONS')
     else:
         raise ValueError('Unrecognized task type')
+
+
+# TODO how to communicate to user that task failed?
+@app.route("/cleanup_failures", methods=['GET'])
+def cleanup_failures():
+    for fset in m.Featurest.failed():
+        fset.delete_instance()
+        # push error, tell front end to update
+    for model in m.Model.failed():
+        model.delete_instance()
+        # push error, tell front end to update
+    for prediction in m.Prediction.failed():
+        prediction.delete_instance()
+        # push error, tell front end to update
 
 
 @app.route("/project", methods=["GET", "POST"])
@@ -283,6 +300,8 @@ def Features(featureset_id=None):
                                    features_to_use, fset_path,
                                    custom_script_path).apply_async()
         fset.task_id = res.task_id
+        fset.save()
+        import pdb; pdb.set_trace()
 
         return success(fset, 'cesium/FETCH_FEATURESETS')
 
@@ -353,6 +372,7 @@ def Models(model_id=None):
                                      model_file.uri,
                                      params_to_optimize).apply_async()
         model.task_id = res.task_id
+        model.save()
 
         return success(data={'message': "We're working on your model"},
                        action='cesium/FETCH_MODELS')
@@ -410,15 +430,18 @@ def predictions(prediction_id=None):
             fset.features_list, model.file.uri, prediction_path,
             custom_features_script=fset.custom_features_script).apply_async()
         prediction.task_id = res.task_id
+        prediction.save()
 
         return success(prediction, 'cesium/FETCH_PREDICTIONS')
 
     elif request.method == 'GET':
         if prediction_id is not None:
-            prediction_info = m.Prediction.get(m.Prediction.id == prediction_id)
+            prediction = m.Prediction.get(m.Prediction.id == prediction_id)
+            prediction_info = prediction.display_info()
         else:
-            prediction_info = [prediction for p in m.Project.all(get_username())
-                          for prediction in p.predictions]
+            predictions = [prediction for p in m.Project.all(get_username())
+                           for prediction in p.predictions]
+            prediction_info = [p.display_info() for p in predictions]
         return success(prediction_info)
 
     elif request.method == 'DELETE':
