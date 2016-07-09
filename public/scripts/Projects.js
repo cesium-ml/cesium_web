@@ -49,7 +49,6 @@ export var ProjectTab = (props) => {
   let style = {
     marginLeft: '0em',
     paddingLeft: '2em',
-    borderLeft: '20px solid LightSkyBlue'
   }
 
   return (

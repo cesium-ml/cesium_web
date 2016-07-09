@@ -35,6 +35,7 @@ import ModelsTab from './Models'
 import PredictTab from './Predictions'
 import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
 import { Notifications } from './Notifications'
+import { colorScheme as cs } from './colorscheme'
 
 
 var MainContent = React.createClass({
@@ -44,21 +45,28 @@ var MainContent = React.createClass({
   render: function() {
     let config = {
       sidebar: 300,
-      main: 800,
-      top: 20
+      topbar: '4em',
+      footer: '4em'
     }
 
     let style = {
       main: {
         background: 'white',
-        width: config.main,
-        marginLeft: 30 + config.sidebar,
-        marginRight: 'auto',
-        top: config.top,
-        position: 'relative',
+
+        position: 'absolute',
+        bottom: 0,
+        height: 'auto',
+        overflow: 'hidden',
+        top: config.topbar,
+        right: 0,
+        left: config.sidebar,
+        width: 'auto',
+
         paddingLeft: '2em',
         paddingBottom: '1em',
-        paddingRight: '1em',
+        marginBottom: 0,
+        marginRight: 'auto',
+
         selectors: {
           paddingLeft: '2em',
           marginBottom: '1em',
@@ -68,17 +76,18 @@ var MainContent = React.createClass({
       topbar: {
         position: 'relative',
         left: 0,
-        background: '#008CBA',
+        background: cs.darkBlue,
         color: '#EFEFEF',
-        height: 95,
+        height: config.topbar,
+        lineHeight: config.topbar,
+        verticalAlign: 'middle',
         top: 0,
         margin: 0,
-        width: config.sidebar,
+        right: 0,
         borderRight: 'solid 2px #36454f',
         marginBottom: '1em',
         paddingLeft: '1em',
         paddingRight: '1em',
-        paddingTop: '0em',
         header: {
           float: 'right',
           fontWeight: 'bold',
@@ -88,6 +97,7 @@ var MainContent = React.createClass({
         },
         subheader: {
           fontStyle: 'italic',
+          fontSize: '100%',
           float: 'right'
         },
         text: {
@@ -95,11 +105,6 @@ var MainContent = React.createClass({
         }
       },
       logo: {
-        position: 'absolute',
-        right: '1em',
-        top: 5,
-        height: 50,
-        marginBottom: '1em',
         img: {
           height: 50,
           paddingTop: 10,
@@ -108,20 +113,33 @@ var MainContent = React.createClass({
       },
       sidebar: {
         width: config.sidebar,
-        background: 'MediumAquaMarine',
-        position: 'relative',
-        top: '0em',
+        background: '#eee',
+        position: 'absolute',
+        top: config.topbar,
+        bottom: 0,
         left: '0em',
         position: 'absolute',
-        height: '100%',
-        borderRight: 'solid 2px #36454f',
+        height: 'auto',
       },
       sidebarContent: {
         paddingLeft: '1em'
       },
       footer: {
-        paddingRight: '1em',
-        textAlign: 'right'
+        fontSize: '110%',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        width: '100%',
+        textAlign: 'center',
+        verticalAlign: 'middle',
+        color: 'white',
+        lineHeight: config.footer,
+        height: config.footer,
+        background: cs.darkBlue,
+        a: {
+          color: 'white',
+          textDecoration: 'underline'
+        }
       },
       tabs: {
         paddingTop: '1.5em'
@@ -137,7 +155,7 @@ var MainContent = React.createClass({
         width: config.sidebar,
         position: 'relative',
         left: 0,
-        background: 'DarkMagenta',
+        background: cs.blue,
         color: '#EFEFEF',
         height: 60,
         lineHeight: '60px',
@@ -160,16 +178,16 @@ var MainContent = React.createClass({
       circleStyle: {
         display: 'inline-block',
         padding: 0,
-        lineHeight: '60px',
+        lineHeight: '40px',
         textAlign: 'center',
         whiteSpace: 'nowrap',
         verticalAlign: 'baseline',
-        backgroundColor: 'Gold',
+        backgroundColor: cs.lightBlue,
         borderRadius: '50%',
         border: '2px solid gray',
         position: 'relative',
-        height: 60,
-        width: 60,
+        height: 40,
+        width: 40,
         padding: 0,
         fontSize: '200%',
         marginRight: '0.5em'
@@ -190,14 +208,19 @@ var MainContent = React.createClass({
     return (
       <div>
 
-      <div style={style.sidebar}>
         <div style={style.topbar}>
           <div style={style.topbar.text}>
-            <span style={style.topbar.header}>Cesium</span><br/>
-            <span style={style.topbar.subheader}>Machine Learning Time-Series Platform</span>
+            <div style={style.topbar.header}>
+              Cesium &nbsp;
+                <img src='images/cesium-blue-dark.png'
+                     onClick={this.props.spinLogo}
+                     style={{...(style.logo.img), ...rotateStyle}}/>
+            </div>
+
           </div>
         </div>
 
+      <div style={style.sidebar}>
         <div style={style.topic}>Project</div>
 
         <div style={style.sidebarContent}>
@@ -210,7 +233,7 @@ var MainContent = React.createClass({
         <div style={style.sidebarContent}>
           <div style={style.circleStyle}>&middot;&middot;&middot;</div><b>1. Do you have a dataset?</b><br/><br/>
           <div style={style.circleStyle}>&middot;&middot;&middot;</div><b>2. Have you computed features?</b><br/>
-          <div style={style.circleStyle}>&middot;&middot;&middot;</div><b>2. How about training a model?</b><br/>
+          <div style={style.circleStyle}>&middot;&middot;&middot;</div><b>3. How about training a model?</b><br/>
         </div>
 
       </div>
@@ -219,12 +242,11 @@ var MainContent = React.createClass({
 
         <Notifications style={style.notifications}/>
 
-        <div style={style.logo}>
-          <img src='images/cesium-blue-light.png'
-               onClick={this.props.spinLogo}
-               style={{...(style.logo.img), ...rotateStyle}}/>
+      <div style={style.footer}>
+          Cesium is an open source Machine Learning Time-Series Platform
+          &middot;
+          Follow the <a style={style.footer.a} href="http://cesium.ml">Cesium project</a> on <a style={style.footer.a} href="https://github.com/cesium-ml">GitHub</a>
         </div>
-
 
         <Tabs>
           <TabList style={style.tabs}>
@@ -259,11 +281,6 @@ var MainContent = React.createClass({
             <h3>System Status</h3>
           </TabPanel>
         </Tabs>
-
-        <hr/>
-          <div style={style.footer}>
-            Follow the <a href="http://cesium.ml">Cesium project</a> on <a href="https://github.com/cesium-ml">GitHub</a>
-          </div>
       </div>
 
       </div>
