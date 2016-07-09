@@ -255,7 +255,14 @@ export function fetchFeaturesets() {
       fetch('/features')
         .then(response => response.json())
         .then(json => {
-          return dispatch(receiveFeaturesets(json.data))
+          if (json.status == 'success') {
+            return dispatch(receiveFeaturesets(json.data))
+          } else {
+            return dispatch(
+              showNotification(
+                'Error downloading feature sets ({})'.format(json.message)
+              ));
+          }
         }
         ).catch(ex => console.log('fetchFeaturesets', ex))
   )
@@ -490,7 +497,10 @@ export function fetchModels() {
           if (json.status == 'success') {
             return dispatch(receiveModels(json.data))
           } else {
-            return dispatch(showNotification(json.message));
+            return dispatch(
+              showNotification(
+                'Error downloading models ({})'.format(json.message)
+              ));
           }
         }
         ).catch(ex => console.log('fetchModels', ex))
