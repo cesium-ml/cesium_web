@@ -11,6 +11,7 @@ import uuid
 from werkzeug.utils import secure_filename
 import jwt
 import datetime
+import traceback
 
 from .config import cfg
 from cesium import obs_feature_tools as oft
@@ -82,6 +83,7 @@ def exception_as_error(f):
         try:
             return f(*args, **kwargs)
         except Exception as e:
+            print(traceback.format_exc())
             return error(str(e))
 
     return wrapper
