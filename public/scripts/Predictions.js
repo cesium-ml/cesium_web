@@ -91,7 +91,7 @@ export var PredictionsTable = (props) => {
         {props.predictions.map(prediction => (
            [
              <tr key={prediction.id}
-                 onClick={() => $("predResultsDiv" + prediction.id).toggle()}> {/* Help,  Stefan!: why isn't prediction defined here? I'm guessing you'll want to make this an extension on the Expand action (which currently doesn't accommodate this situation) */}
+                 onClick={() => $("predResultsDiv" + prediction.id).toggle()}>
                <td>{prediction.model_name}</td>
                <td>{prediction.dataset_name}</td>
                <td>{prediction.created}</td>
@@ -99,7 +99,7 @@ export var PredictionsTable = (props) => {
                <td><DeletePrediction predictionID={prediction.id}/></td>
              </tr>,
              <tr key={prediction.id + 'results'}>
-               <td style={{colspan: 42}}> {/* Help, Stefan!: This is still filling up a single cell width.. wtf? */}
+               <td colspan="42">
                  <PredictionResults prediction={prediction} />
                </td>
              </tr>
