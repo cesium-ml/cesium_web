@@ -125,27 +125,29 @@ let PredictionResults = (props) => {
         <thead>
           <tr>
             <th>Time Series</th>
-              {[ (firstResult && firstResult.target) ?
-                 (<th>True Class/Target</th>)
-                 :
-             (() => {
-                switch (modelType) {
-                  case "RandomForestClassifier":
-                  case "RFC":
-                  case "LinearSGDClassifier":
-                  case "":
-                    return Object.keys(firstResult.prediction).map((classLabel, idx) => (
-                      [<th key={'pred'}>Predicted Class</th>,<th key={'prob'}>Probability</th>]
-                    ));
-                  case "RidgeClassifierCV":
-                    return (<th>Predicted Class</th>);
-                  case "RandomForestRegressor":
-                  case "LinearRegressor":
-                  case "BayesianARDRegressor":
-                  case "BayesianRidgeRegressor":
-                    return (<th>Predicted Target</th>);
-                }})()
-            ]}
+            {[
+               (() => {
+                 if(firstResult && firstResult.target)
+                   return (<th>True Class/Target</th>);
+               })(),
+               (() => {
+                 switch (modelType) {
+                   case "RandomForestClassifier":
+                   case "RFC":
+                   case "LinearSGDClassifier":
+                   case "":
+                     return Object.keys(firstResult.prediction).map((classLabel, idx) => (
+                       [<th key={'pred'}>Predicted Class</th>,<th key={'prob'}>Probability</th>]
+                     ));
+                   case "RidgeClassifierCV":
+                     return (<th>Predicted Class</th>);
+                   case "RandomForestRegressor":
+                   case "LinearRegressor":
+                   case "BayesianARDRegressor":
+                   case "BayesianRidgeRegressor":
+                     return (<th>Predicted Target</th>);
+                 }})()
+             ]}
           </tr>
         </thead>
         <tbody>
