@@ -10,6 +10,7 @@ import Expand from './Expand'
 import * as Action from './actions'
 import {plot_example} from './example_plot'
 import {objectType} from './utils'
+import FoldableRow from './FoldableRow'
 
 
 class PredictForm extends FormComponent {
@@ -80,64 +81,61 @@ PredictForm = reduxForm({
 
 export var PredictionsTable = (props) => {
   return (
-    <table className="table">
+    <table>
       <thead>
         <tr>
-          <th>Data Set Name</th><th>Model Name</th><th>Created</th><th>Debug</th><th>Actions</th>
+          <th style={{width: '10em'}}>Data Set Name</th>
+          <th style={{width: '10em'}}>Model Name</th>
+          <th style={{width: '5em'}}>Created</th>
+          <th style={{width: '5em'}}>Debug</th>
+          <th style={{width: '5em'}}>Actions</th>
         </tr>
       </thead>
-      <tbody>
 
-        {props.predictions.map(prediction => (
-           [
-             <tr key={prediction.id}
-                 onClick={() => $("predResultsDiv" + prediction.id).toggle()}>
-               <td>{prediction.model_name}</td>
+      {props.predictions.map((prediction, idx) => (
+         <FoldableRow key={idx}>
+             <tr key={'row' + idx}>
+               <td style={{textDecoration: 'underline'}}>{prediction.model_name}</td>
                <td>{prediction.dataset_name}</td>
                <td>{prediction.created}</td>
                <td>Project: {prediction.project}</td>
                <td><DeletePrediction predictionID={prediction.id}/></td>
-             </tr>,
-             <tr key={prediction.id + 'results'}>
-               <td colspan="42">
+             </tr>
+             <tr key={'pred' + idx}>
+               <td colSpan={10}>
                  <PredictionResults prediction={prediction} />
                </td>
-             </tr>
-           ]
-        ))}
+            </tr>
+        </FoldableRow>
+      ))}
 
-      </tbody>
     </table>
   )
 }
 
 
 let PredictionResults = (props) => {
-  console.log(props);
   let defaultHiddenStyle = {display: 'inline-block'}; {/* default to 'none' */}
   let modelType = props.prediction.model_type;
   let results = props.prediction.results;
   let firstResult = results ? results[Object.keys(results)[0]] : null;
 
   return (
-    <div id={"predResultsDiv" + props.prediction.id} style={defaultHiddenStyle}>
       <table className='table'>
         <thead>
           <tr>
             <th>Time Series</th>
-            {[
-              (() => {
-                if(firstResult && firstResult.target)
-                  return (<th>True Class/Target</th>);
-              })(),
-              (() => {
+              {[ (firstResult && firstResult.target) ?
+                 (<th>True Class/Target</th>)
+                 :
+             (() => {
                 switch (modelType) {
                   case "RandomForestClassifier":
                   case "RFC":
                   case "LinearSGDClassifier":
                   case "":
-                    return Object.keys(firstResult.prediction).map(classLabel => (
-                      [<th>Predicted Class</th>,<th>Probability</th>]
+                    return Object.keys(firstResult.prediction).map((classLabel, idx) => (
+                      [<th key={'pred'}>Predicted Class</th>,<th key={'prob'}>Probability</th>]
                     ));
                   case "RidgeClassifierCV":
                     return (<th>Predicted Class</th>);
@@ -152,8 +150,8 @@ let PredictionResults = (props) => {
         </thead>
         <tbody>
           {
-            Object.keys(results).map(fname => (
-              <tr><td>{fname}</td>
+            Object.keys(results).map((fname, idx) => (
+              <tr key={idx}><td>{fname}</td>
                 {[
                 (() => {
                   if (firstResult && firstResult.target)
@@ -166,7 +164,7 @@ let PredictionResults = (props) => {
                     case "LinearSGDClassifier":
                     case "":
                       return Object.keys(firstResult.prediction).map(classLabel => (
-                        [<td>{classLabel}</td>,<td>{firstResult.prediction[classLabel]}</td>]
+                        [<td key='class'>{classLabel}</td>,<td key='result'>{firstResult.prediction[classLabel]}</td>]
                       ));
                     case "RidgeClassifierCV":
                       return (<td>{firstResult.prediction}</td>);
@@ -181,7 +179,6 @@ let PredictionResults = (props) => {
           }
         </tbody>
       </table>
-    </div>
   )
 }
 
@@ -224,7 +221,9 @@ class PredictTab extends Component {
           <PredictForm onSubmit={props.doPrediction}
                        selectedProject={props.selectedProject}/>
         </Expand>
+        <br/>
         <PredictionsTable selectedProject={props.selectedProject}/>
+        <br/>
         <div id='plotly-div'></div>
       </div>
     );
