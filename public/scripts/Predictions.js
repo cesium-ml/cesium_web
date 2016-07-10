@@ -80,14 +80,15 @@ PredictForm = reduxForm({
 
 export var PredictionsTable = (props) => {
   return (
-    <table>
+    <table className="table">
       <thead>
         <tr>
-          <th style={{width: '10em'}}>Data Set Name</th>
-          <th style={{width: '10em'}}>Model Name</th>
-          <th style={{width: '5em'}}>Created</th>
-          <th style={{width: '5em'}}>Debug</th>
-          <th style={{width: '5em'}}>Actions</th>
+          <th style={{width: '15em'}}>Data Set Name</th>
+          <th style={{width: '15em'}}>Model Name</th>
+          <th style={{width: '20em'}}>Created</th>
+          <th style={{width: '10em'}}>Debug</th>
+          <th style={{width: '15em'}}>Actions</th>
+          <th style={{width: 'auto'}}></th>{ /* extra column, used to capture expanded space */ }
         </tr>
       </thead>
 
@@ -99,9 +100,10 @@ export var PredictionsTable = (props) => {
                <td>{prediction.created}</td>
                <td>Project: {prediction.project}</td>
                <td><DeletePrediction predictionID={prediction.id}/></td>
+               <td></td>
              </tr>
              <tr key={'pred' + idx}>
-               <td colSpan={10}>
+               <td colSpan={6}>
                  <PredictionResults prediction={prediction} />
                </td>
             </tr>
