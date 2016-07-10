@@ -188,7 +188,7 @@ class Prediction(BaseModel):
             try:
                 with xr.open_dataset(self.file.uri) as pset:
                     info['results'] = pset.load()
-            except OSError:
+            except (RuntimeError, OSError):
                 info['results'] = None
 
         return info
