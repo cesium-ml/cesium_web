@@ -190,7 +190,6 @@ class Prediction(BaseModel):
                     info['results'] = pset.load()
             except (RuntimeError, OSError):
                 info['results'] = None
-
         return info
 
     @staticmethod

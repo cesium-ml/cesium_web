@@ -8,6 +8,8 @@ import * as Validate from './validate'
 import Expand from './Expand'
 import * as Action from './actions'
 import {plot_example} from './example_plot'
+import {objectType} from './utils'
+import FoldableRow from './FoldableRow'
 
 
 class PredictForm extends FormComponent {
@@ -78,28 +80,108 @@ PredictForm = reduxForm({
 
 export var PredictionsTable = (props) => {
   return (
-    <table className="table">
+    <table>
       <thead>
         <tr>
-          <th>Name</th><th>Created</th><th>Debug</th><th>Actions</th>
+          <th style={{width: '10em'}}>Data Set Name</th>
+          <th style={{width: '10em'}}>Model Name</th>
+          <th style={{width: '5em'}}>Created</th>
+          <th style={{width: '5em'}}>Debug</th>
+          <th style={{width: '5em'}}>Actions</th>
         </tr>
       </thead>
-      <tbody>
 
-        {props.predictions.map(prediction => (
-           <tr key={prediction.id}>
-             <td>{prediction.name}</td>
-             <td>{prediction.created}</td>
-             <td>Project: {prediction.project}</td>
-             <td><DeletePrediction predictionID={prediction.id}/></td>
-           </tr>
-         ))}
+      {props.predictions.map((prediction, idx) => (
+         <FoldableRow key={idx}>
+             <tr key={'row' + idx}>
+               <td style={{textDecoration: 'underline'}}>{prediction.model_name}</td>
+               <td>{prediction.dataset_name}</td>
+               <td>{prediction.created}</td>
+               <td>Project: {prediction.project}</td>
+               <td><DeletePrediction predictionID={prediction.id}/></td>
+             </tr>
+             <tr key={'pred' + idx}>
+               <td colSpan={10}>
+                 <PredictionResults prediction={prediction} />
+               </td>
+            </tr>
+        </FoldableRow>
+      ))}
 
-      </tbody>
     </table>
   )
 }
 
+
+let PredictionResults = (props) => {
+  let defaultHiddenStyle = {display: 'inline-block'}; {/* default to 'none' */}
+  let modelType = props.prediction.model_type;
+  let results = props.prediction.results;
+  let firstResult = results ? results[Object.keys(results)[0]] : null;
+
+  return (
+      <table className='table'>
+        <thead>
+          <tr>
+            <th>Time Series</th>
+            {[
+               (() => {
+                 if(firstResult && firstResult.target)
+                   return (<th>True Class/Target</th>);
+               })(),
+               (() => {
+                 switch (modelType) {
+                   case "RandomForestClassifier":
+                   case "RFC":
+                   case "LinearSGDClassifier":
+                   case "":
+                     return Object.keys(firstResult.prediction).map((classLabel, idx) => (
+                       [<th key={'pred'}>Predicted Class</th>,<th key={'prob'}>Probability</th>]
+                     ));
+                   case "RidgeClassifierCV":
+                     return (<th>Predicted Class</th>);
+                   case "RandomForestRegressor":
+                   case "LinearRegressor":
+                   case "BayesianARDRegressor":
+                   case "BayesianRidgeRegressor":
+                     return (<th>Predicted Target</th>);
+                 }})()
+             ]}
+          </tr>
+        </thead>
+        <tbody>
+          {
+            Object.keys(results).map((fname, idx) => (
+              <tr key={idx}><td>{fname}</td>
+                {[
+                (() => {
+                  if (firstResult && firstResult.target)
+                    return (<td>{firstResult.target}</td>);
+                })(),
+                (() => {
+                  switch (modelType) {
+                    case "RandomForestClassifier":
+                    case "RFC":
+                    case "LinearSGDClassifier":
+                    case "":
+                      return Object.keys(firstResult.prediction).map(classLabel => (
+                        [<td key='class'>{classLabel}</td>,<td key='result'>{firstResult.prediction[classLabel]}</td>]
+                      ));
+                    case "RidgeClassifierCV":
+                      return (<td>{firstResult.prediction}</td>);
+                    case "RandomForestRegressor":
+                    case "LinearRegressor":
+                    case "BayesianARDRegressor":
+                    case "BayesianRidgeRegressor":
+                      return (<td>{firstResult.prediction}</td>);
+                  }})()
+                ]}
+              </tr>))
+          }
+        </tbody>
+      </table>
+  )
+}
 
 let ptMapStateToProps = (state, ownProps) => {
   let filteredPredictions = state.predictions.filter(pred =>
@@ -140,7 +222,9 @@ class PredictTab extends Component {
           <PredictForm onSubmit={props.doPrediction}
                        selectedProject={props.selectedProject}/>
         </Expand>
+        <br/>
         <PredictionsTable selectedProject={props.selectedProject}/>
+        <br/>
         <div id='plotly-div'></div>
       </div>
     );

@@ -46,6 +46,7 @@ export const SPIN_LOGO = 'cesium/SPIN_LOGO'
 
 import { showNotification, reduceNotifications } from './Notifications'
 import {promiseAction} from './action_tools'
+import {objectType} from './utils'
 
 // Refactor this into a utility function
 String.prototype.format = function () {
@@ -186,9 +187,6 @@ function receiveProjects(projects) {
   }
 }
 
-let objectType = (obj) => (
-  Object.prototype.toString.call(obj).slice(8, -1)
-)
 
 export function uploadDataset(form) {
   let formData = new FormData();
