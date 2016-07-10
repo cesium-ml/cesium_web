@@ -96,19 +96,19 @@ def task_complete():
     if 'fset_id' in data:
         fset = m.Featureset.get(m.Featureset.id == data['fset_id'])
         fset.task_id = None
-        fset.finished = datetime.datetime.now
+        fset.finished = datetime.datetime.now()
         fset.save()
         return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
     elif 'model_id' in data:
         model = m.Model.get(m.Model.id == data['model_id'])
         model.task_id = None
-        model.finished = datetime.datetime.now
+        model.finished = datetime.datetime.now()
         model.save()
         return success({"id": model.id}, 'cesium/FETCH_MODELS')
     elif 'prediction_id' in data:
         prediction = m.Prediction.get(m.Prediction.id == data['prediction_id'])
         prediction.task_id = None
-        prediction.finished = datetime.datetime.now
+        prediction.finished = datetime.datetime.now()
         prediction.save()
         return success({"id": prediction.id}, 'cesium/FETCH_PREDICTIONS')
     else:
@@ -301,7 +301,6 @@ def Features(featureset_id=None):
                                    custom_script_path).apply_async()
         fset.task_id = res.task_id
         fset.save()
-        import pdb; pdb.set_trace()
 
         return success(fset, 'cesium/FETCH_FEATURESETS')
 
@@ -425,10 +424,10 @@ def predictions(prediction_id=None):
         prediction_file = m.File.create(uri=prediction_path)
         prediction = m.Prediction.create(file=prediction_file, dataset=dataset,
                                          project=dataset.project, model=model)
-
-        res = predict_and_notify(get_username(), prediction_id, dataset.uris,
+        res = predict_and_notify(get_username(), prediction.id, dataset.uris,
             fset.features_list, model.file.uri, prediction_path,
             custom_features_script=fset.custom_features_script).apply_async()
+
         prediction.task_id = res.task_id
         prediction.save()
 

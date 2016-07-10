@@ -6,6 +6,7 @@ import peewee as pw
 from playhouse.fields import ManyToManyField
 from playhouse.postgres_ext import ArrayField, BinaryJSONField
 from playhouse.shortcuts import model_to_dict
+import xarray as xr
 
 from cesium_app.json_util import to_json
 from cesium_app.config import cfg
@@ -183,6 +184,12 @@ class Prediction(BaseModel):
         info['dataset_name'] = self.dataset.name
         info['model_name'] = self.model.name
         info['featureset_name'] = self.model.featureset.name
+        if self.task_id is None:
+            try:
+                with xr.open_dataset(self.file.uri) as pset:
+                    info['results'] = pset.load()
+            except OSError:
+                info['results'] = None
 
         return info
 
