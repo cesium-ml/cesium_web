@@ -1,4 +1,5 @@
 import React, { Component, PropTypes } from 'react'
+import $ from 'jquery'
 import { connect } from 'react-redux'
 import { reduxForm } from 'redux-form'
 
@@ -8,6 +9,7 @@ import * as Validate from './validate'
 import Expand from './Expand'
 import * as Action from './actions'
 import {plot_example} from './example_plot'
+import {objectType} from './utils'
 
 
 class PredictForm extends FormComponent {
@@ -81,25 +83,107 @@ export var PredictionsTable = (props) => {
     <table className="table">
       <thead>
         <tr>
-          <th>Name</th><th>Created</th><th>Debug</th><th>Actions</th>
+          <th>Data Set Name</th><th>Model Name</th><th>Created</th><th>Debug</th><th>Actions</th>
         </tr>
       </thead>
       <tbody>
 
         {props.predictions.map(prediction => (
-           <tr key={prediction.id}>
-             <td>{prediction.name}</td>
-             <td>{prediction.created}</td>
-             <td>Project: {prediction.project}</td>
-             <td><DeletePrediction predictionID={prediction.id}/></td>
-           </tr>
-         ))}
+           [
+             <tr key={prediction.id}
+                 onClick={() => $("predResultsDiv" + prediction.id).toggle()}> {/* Help,  Stefan!: why isn't prediction defined here? I'm guessing you'll want to make this an extension on the Expand action (which currently doesn't accommodate this situation) */}
+               <td>{prediction.model_name}</td>
+               <td>{prediction.dataset_name}</td>
+               <td>{prediction.created}</td>
+               <td>Project: {prediction.project}</td>
+               <td><DeletePrediction predictionID={prediction.id}/></td>
+             </tr>,
+             <tr key={prediction.id + 'results'}>
+               <td style={{colspan: 42}}> {/* Help, Stefan!: This is still filling up a single cell width.. wtf? */}
+                 <PredictionResults prediction={prediction} />
+               </td>
+             </tr>
+           ]
+        ))}
 
       </tbody>
     </table>
   )
 }
 
+
+let PredictionResults = (props) => {
+  console.log(props);
+  let defaultHiddenStyle = {display: 'inline-block'}; {/* default to 'none' */}
+  let modelType = props.prediction.model_type;
+  let results = props.prediction.results;
+  let firstResult = results ? results[Object.keys(results)[0]] : null;
+
+  return (
+    <div id={"predResultsDiv" + props.prediction.id} style={defaultHiddenStyle}>
+      <table className='table'>
+        <thead>
+          <tr>
+            <th>Time Series</th>
+            {[
+              (() => {
+                if(firstResult && firstResult.target)
+                  return (<th>True Class/Target</th>);
+              })(),
+              (() => {
+                switch (modelType) {
+                  case "RandomForestClassifier":
+                  case "RFC":
+                  case "LinearSGDClassifier":
+                  case "":
+                    return Object.keys(firstResult.prediction).map(classLabel => (
+                      [<th>Predicted Class</th>,<th>Probability</th>]
+                    ));
+                  case "RidgeClassifierCV":
+                    return (<th>Predicted Class</th>);
+                  case "RandomForestRegressor":
+                  case "LinearRegressor":
+                  case "BayesianARDRegressor":
+                  case "BayesianRidgeRegressor":
+                    return (<th>Predicted Target</th>);
+                }})()
+            ]}
+          </tr>
+        </thead>
+        <tbody>
+          {
+            Object.keys(results).map(fname => (
+              <tr><td>{fname}</td>
+                {[
+                (() => {
+                  if (firstResult && firstResult.target)
+                    return (<td>{firstResult.target}</td>);
+                })(),
+                (() => {
+                  switch (modelType) {
+                    case "RandomForestClassifier":
+                    case "RFC":
+                    case "LinearSGDClassifier":
+                    case "":
+                      return Object.keys(firstResult.prediction).map(classLabel => (
+                        [<td>{classLabel}</td>,<td>{firstResult.prediction[classLabel]}</td>]
+                      ));
+                    case "RidgeClassifierCV":
+                      return (<td>{firstResult.prediction}</td>);
+                    case "RandomForestRegressor":
+                    case "LinearRegressor":
+                    case "BayesianARDRegressor":
+                    case "BayesianRidgeRegressor":
+                      return (<td>{firstResult.prediction}</td>);
+                  }})()
+                ]}
+              </tr>))
+          }
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 let ptMapStateToProps = (state, ownProps) => {
   let filteredPredictions = state.predictions.filter(pred =>
