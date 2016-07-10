@@ -136,7 +136,7 @@ let PredictionResults = (props) => {
                    case "LinearSGDClassifier":
                    case "":
                      return Object.keys(firstResult.prediction).map((classLabel, idx) => (
-                       [<th key={'pred'}>Predicted Class</th>,<th key={'prob'}>Probability</th>]
+                       [<th key={'pred' + idx}>Predicted Class</th>,<th key={'prob' + idx}>Probability</th>]
                      ));
                    case "RidgeClassifierCV":
                      return (<th>Predicted Class</th>);
@@ -164,8 +164,8 @@ let PredictionResults = (props) => {
                     case "RFC":
                     case "LinearSGDClassifier":
                     case "":
-                      return Object.keys(firstResult.prediction).map(classLabel => (
-                        [<td key='class'>{classLabel}</td>,<td key='result'>{firstResult.prediction[classLabel]}</td>]
+                      return Object.keys(firstResult.prediction).map((classLabel, idx2) => (
+                        [<td key={'class' + idx2}>{classLabel}</td>,<td key={'result' + idx2}>{firstResult.prediction[classLabel]}</td>]
                       ));
                     case "RidgeClassifierCV":
                       return (<td>{firstResult.prediction}</td>);
