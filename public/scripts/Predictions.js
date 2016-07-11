@@ -8,7 +8,7 @@ import * as Validate from './validate'
 import Expand from './Expand'
 import * as Action from './actions'
 import {plot_example} from './example_plot'
-import {objectType} from './utils'
+import {objectType, contains} from './utils'
 import FoldableRow from './FoldableRow'
 
 
@@ -116,72 +116,64 @@ export var PredictionsTable = (props) => {
 
 
 let PredictionResults = (props) => {
-  let defaultHiddenStyle = {display: 'inline-block'}; {/* default to 'none' */}
   let modelType = props.prediction.model_type;
   let results = props.prediction.results;
+
   let firstResult = results ? results[Object.keys(results)[0]] : null;
+  let classes = Object.keys(firstResult.prediction)
+
+  let predictionTarget = firstResult ? firstResult.target : null
+  let modelHasProba = contains(['RandomForestClassifier',
+                                'LinearSGDClassifier'],
+                               modelType)
+  let modelHasTarget = contains(['RandomForestRegressor',
+                                 'LinearRegressor',
+                                 'BayesianARDRegressor',
+                                 'BayesianRidgeRegressor'],
+                                modelType)
+  let modelHasClass = contains(['RidgeClassifierCV'], modelType)
 
   return (
-      <table className='table'>
-        <thead>
-          <tr>
-            <th>Time Series</th>
-            {[
-               (() => {
-                 if(firstResult && firstResult.target)
-                   return (<th>True Class/Target</th>);
-               })(),
-               (() => {
-                 switch (modelType) {
-                   case "RandomForestClassifier":
-                   case "RFC":
-                   case "LinearSGDClassifier":
-                   case "":
-                     return Object.keys(firstResult.prediction).map((classLabel, idx) => (
-                       [<th key={'pred' + idx}>Predicted Class</th>,<th key={'prob' + idx}>Probability</th>]
-                     ));
-                   case "RidgeClassifierCV":
-                     return (<th>Predicted Class</th>);
-                   case "RandomForestRegressor":
-                   case "LinearRegressor":
-                   case "BayesianARDRegressor":
-                   case "BayesianRidgeRegressor":
-                     return (<th>Predicted Target</th>);
-                 }})()
-             ]}
-          </tr>
-        </thead>
-        <tbody>
-          {
-            Object.keys(results).map((fname, idx) => (
-              <tr key={idx}><td>{fname}</td>
-                {[
-                (() => {
-                  if (firstResult && firstResult.target)
-                    return (<td>{firstResult.target}</td>);
-                })(),
-                (() => {
-                  switch (modelType) {
-                    case "RandomForestClassifier":
-                    case "RFC":
-                    case "LinearSGDClassifier":
-                    case "":
-                      return Object.keys(firstResult.prediction).map((classLabel, idx2) => (
-                        [<td key={'class' + idx2}>{classLabel}</td>,<td key={'result' + idx2}>{firstResult.prediction[classLabel]}</td>]
-                      ));
-                    case "RidgeClassifierCV":
-                      return (<td>{firstResult.prediction}</td>);
-                    case "RandomForestRegressor":
-                    case "LinearRegressor":
-                    case "BayesianARDRegressor":
-                    case "BayesianRidgeRegressor":
-                      return (<td>{firstResult.prediction}</td>);
-                  }})()
-                ]}
-              </tr>))
+    <table className='table'>
+      <thead>
+        <tr>
+          <th>Time Series</th>
+          {predictionTarget && <th>True Class/Target</th>}
+
+          {modelHasProba &&
+           classes.map((classLabel, idx) => ([
+             <th key="0">Predicted Class</th>,
+             <th key="1">Probability</th>
+           ]))
           }
-        </tbody>
-      </table>
+
+          {modelHasClass && <th>Predicted Class</th>}
+          {modelHasTarget && <th>Predicted Target</th>}
+        </tr>
+      </thead>
+
+      <tbody>
+        {classes.map((fname, idx) => (
+          <tr key={idx}>
+
+            <td>{fname}</td>
+
+            {predictionTarget && <td>{predictionTarget}</td>}
+
+            {modelHasProba &&
+             classes.map((classLabel, idx) => ([
+               <td key="0">{classLabel}</td>,
+               <td key="1">{firstResult.prediction[classLabel]}</td>
+             ]))
+            }
+
+            {modelHasClass && <td>{firstResult.prediction}</td>}
+            {modelHasTarget && <td>{firstResult.prediction}</td>}
+
+          </tr>))
+        }
+      </tbody>
+    </table>
   )
 }
 
