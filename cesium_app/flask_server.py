@@ -64,6 +64,7 @@ def error(message):
             "message": message
         })
 
+
 # TODO only push messages to relevant user (what about task_complete?)
 def success(data={}, action=None, payload=None):
     if action is not None:
@@ -90,43 +91,42 @@ def exception_as_error(f):
 
 
 # TODO pass in user somehow
+# TODO show error notification for failures
 @app.route("/task_complete", methods=['POST'])
 def task_complete():
     data = request.get_json()
     if 'fset_id' in data:
         fset = m.Featureset.get(m.Featureset.id == data['fset_id'])
-        fset.task_id = None
-        fset.finished = datetime.datetime.now()
-        fset.save()
-        return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
+        if data['status'] == 'success':
+            fset.task_id = None
+            fset.finished = datetime.datetime.now()
+            fset.save()
+            return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
+        elif data['status'] == 'error':
+            fset.delete_instance()
+            return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
     elif 'model_id' in data:
         model = m.Model.get(m.Model.id == data['model_id'])
-        model.task_id = None
-        model.finished = datetime.datetime.now()
-        model.save()
-        return success({"id": model.id}, 'cesium/FETCH_MODELS')
+        if data['status'] == 'success':
+            model.task_id = None
+            model.finished = datetime.datetime.now()
+            model.save()
+            return success({"id": model.id}, 'cesium/FETCH_MODELS')
+        elif data['status'] == 'error':
+            model.delete_instance()
+            return success({"id": model.id}, 'cesium/FETCH_MODELS')
     elif 'prediction_id' in data:
         prediction = m.Prediction.get(m.Prediction.id == data['prediction_id'])
-        prediction.task_id = None
-        prediction.finished = datetime.datetime.now()
-        prediction.save()
-        return success({"id": prediction.id}, 'cesium/FETCH_PREDICTIONS')
+        if data['status'] == 'success':
+            prediction.task_id = None
+            prediction.finished = datetime.datetime.now()
+            prediction.save()
+            return success({"id": prediction.id}, 'cesium/FETCH_PREDICTIONS')
+        elif data['status'] == 'error':
+            prediction.delete_instance()
+            return success({"id": prediction.id}, 'cesium/FETCH_PREDICTIONS')
     else:
         raise ValueError('Unrecognized task type')
-
-
-# TODO how to communicate to user that task failed?
-@app.route("/cleanup_failures", methods=['GET'])
-def cleanup_failures():
-    for fset in m.Featurest.failed():
-        fset.delete_instance()
-        # push error, tell front end to update
-    for model in m.Model.failed():
-        model.delete_instance()
-        # push error, tell front end to update
-    for prediction in m.Prediction.failed():
-        prediction.delete_instance()
-        # push error, tell front end to update
 
 
 @app.route("/project", methods=["GET", "POST"])
