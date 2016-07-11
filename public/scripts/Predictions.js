@@ -153,7 +153,10 @@ let PredictionResults = (props) => {
       </thead>
 
       <tbody>
-        {classes.map((fname, idx) => (
+      {Object.keys(results).map((fname, idx) => {
+        let result = results[fname]
+
+        return (
           <tr key={idx}>
 
             <td>{fname}</td>
@@ -163,15 +166,15 @@ let PredictionResults = (props) => {
             {modelHasProba &&
              classes.map((classLabel, idx) => ([
                <td key="0">{classLabel}</td>,
-               <td key="1">{firstResult.prediction[classLabel]}</td>
+               <td key="1">{result.prediction[classLabel]}</td>
              ]))
             }
 
-            {modelHasClass && <td>{firstResult.prediction}</td>}
-            {modelHasTarget && <td>{firstResult.prediction}</td>}
+            {modelHasClass && <td>{result.prediction}</td>}
+            {modelHasTarget && <td>{result.prediction}</td>}
 
-          </tr>))
-        }
+          </tr>
+        )})}
       </tbody>
     </table>
   )
