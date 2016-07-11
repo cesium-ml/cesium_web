@@ -120,7 +120,8 @@ let PredictionResults = (props) => {
   let results = props.prediction.results;
 
   let firstResult = results ? results[Object.keys(results)[0]] : null;
-  let classes = Object.keys(firstResult.prediction)
+  let classes = (firstResult && firstResult.prediction) ?
+                Object.keys(firstResult.prediction) : null;
 
   let modelHasProba = contains(['RandomForestClassifier',
                                 'LinearSGDClassifier'],
