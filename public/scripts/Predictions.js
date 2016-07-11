@@ -162,7 +162,7 @@ let PredictionResults = (props) => {
 
             <td>{fname}</td>
 
-            {hasTarget(result) && [
+            {[hasTarget(result) &&
               <td key="pt">{result.target}</td>,
 
               modelHasProba &&
