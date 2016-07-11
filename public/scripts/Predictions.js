@@ -132,14 +132,14 @@ let PredictionResults = (props) => {
                                 modelType)
   let modelHasClass = contains(['RidgeClassifierCV'], modelType)
 
-  let hasTarget = (p) => (p.target != null)
+  let hasTrueTargetLabel = (p) => (p.target != null)
 
   return (
     <table className='table'>
       <thead>
         <tr>
           <th>Time Series</th>
-          {hasTarget(firstResult) && <th>True Class/Target</th>}
+          {hasTrueTargetLabel(firstResult) && <th>True Class/Target</th>}
 
           {modelHasProba &&
            classes.map((classLabel, idx) => ([
@@ -162,7 +162,7 @@ let PredictionResults = (props) => {
 
             <td>{fname}</td>
 
-            {[hasTarget(result) &&
+            {[hasTrueTargetLabel(result) &&
               <td key="pt">{result.target}</td>,
 
               modelHasProba &&
