@@ -8,7 +8,7 @@ import * as Validate from './validate'
 import Expand from './Expand'
 import * as Action from './actions'
 import {plot_example} from './example_plot'
-import {objectType} from './utils'
+import {objectType, contains} from './utils'
 import FoldableRow from './FoldableRow'
 
 
@@ -80,14 +80,15 @@ PredictForm = reduxForm({
 
 export var PredictionsTable = (props) => {
   return (
-    <table>
+    <table className="table">
       <thead>
         <tr>
-          <th style={{width: '10em'}}>Data Set Name</th>
-          <th style={{width: '10em'}}>Model Name</th>
-          <th style={{width: '5em'}}>Created</th>
-          <th style={{width: '5em'}}>Debug</th>
-          <th style={{width: '5em'}}>Actions</th>
+          <th style={{width: '15em'}}>Data Set Name</th>
+          <th style={{width: '15em'}}>Model Name</th>
+          <th style={{width: '20em'}}>Created</th>
+          <th style={{width: '10em'}}>Debug</th>
+          <th style={{width: '15em'}}>Actions</th>
+          <th style={{width: 'auto'}}></th>{ /* extra column, used to capture expanded space */ }
         </tr>
       </thead>
 
@@ -99,9 +100,10 @@ export var PredictionsTable = (props) => {
                <td>{prediction.created}</td>
                <td>Project: {prediction.project}</td>
                <td><DeletePrediction predictionID={prediction.id}/></td>
+               <td></td>
              </tr>
              <tr key={'pred' + idx}>
-               <td colSpan={10}>
+               <td colSpan={6}>
                  <PredictionResults prediction={prediction} />
                </td>
             </tr>
@@ -114,72 +116,70 @@ export var PredictionsTable = (props) => {
 
 
 let PredictionResults = (props) => {
-  let defaultHiddenStyle = {display: 'inline-block'}; {/* default to 'none' */}
   let modelType = props.prediction.model_type;
   let results = props.prediction.results;
+
   let firstResult = results ? results[Object.keys(results)[0]] : null;
+  let classes = Object.keys(firstResult.prediction)
+
+  let modelHasProba = contains(['RandomForestClassifier',
+                                'LinearSGDClassifier'],
+                               modelType)
+  let modelHasTarget = contains(['RandomForestRegressor',
+                                 'LinearRegressor',
+                                 'BayesianARDRegressor',
+                                 'BayesianRidgeRegressor'],
+                                modelType)
+  let modelHasClass = contains(['RidgeClassifierCV'], modelType)
+
+  let hasTarget = (p) => (p.target != null)
 
   return (
-      <table className='table'>
-        <thead>
-          <tr>
-            <th>Time Series</th>
-            {[
-               (() => {
-                 if(firstResult && firstResult.target)
-                   return (<th>True Class/Target</th>);
-               })(),
-               (() => {
-                 switch (modelType) {
-                   case "RandomForestClassifier":
-                   case "RFC":
-                   case "LinearSGDClassifier":
-                   case "":
-                     return Object.keys(firstResult.prediction).map((classLabel, idx) => (
-                       [<th key={'pred'}>Predicted Class</th>,<th key={'prob'}>Probability</th>]
-                     ));
-                   case "RidgeClassifierCV":
-                     return (<th>Predicted Class</th>);
-                   case "RandomForestRegressor":
-                   case "LinearRegressor":
-                   case "BayesianARDRegressor":
-                   case "BayesianRidgeRegressor":
-                     return (<th>Predicted Target</th>);
-                 }})()
-             ]}
-          </tr>
-        </thead>
-        <tbody>
-          {
-            Object.keys(results).map((fname, idx) => (
-              <tr key={idx}><td>{fname}</td>
-                {[
-                (() => {
-                  if (firstResult && firstResult.target)
-                    return (<td>{firstResult.target}</td>);
-                })(),
-                (() => {
-                  switch (modelType) {
-                    case "RandomForestClassifier":
-                    case "RFC":
-                    case "LinearSGDClassifier":
-                    case "":
-                      return Object.keys(firstResult.prediction).map(classLabel => (
-                        [<td key='class'>{classLabel}</td>,<td key='result'>{firstResult.prediction[classLabel]}</td>]
-                      ));
-                    case "RidgeClassifierCV":
-                      return (<td>{firstResult.prediction}</td>);
-                    case "RandomForestRegressor":
-                    case "LinearRegressor":
-                    case "BayesianARDRegressor":
-                    case "BayesianRidgeRegressor":
-                      return (<td>{firstResult.prediction}</td>);
-                  }})()
-                ]}
-              </tr>))
+    <table className='table'>
+      <thead>
+        <tr>
+          <th>Time Series</th>
+          {hasTarget(firstResult) && <th>True Class/Target</th>}
+
+          {modelHasProba &&
+           classes.map((classLabel, idx) => ([
+             <th key="0">Predicted Class</th>,
+             <th key="1">Probability</th>
+           ]))
           }
-        </tbody>
-      </table>
+
+          {modelHasClass && <th>Predicted Class</th>}
+          {modelHasTarget && <th>Predicted Target</th>}
+        </tr>
+      </thead>
+
+      <tbody>
+      {Object.keys(results).map((fname, idx) => {
+        let result = results[fname]
+
+        return (
+          <tr key={idx}>
+
+            <td>{fname}</td>
+
+            {hasTarget(result) && [
+              <td key="pt">{result.target}</td>,
+
+              modelHasProba &&
+              classes.map((classLabel, idx) => ([
+                <td key="cl0">{classLabel}</td>,
+                <td key="cl1">{result.prediction[classLabel]}</td>
+              ])),
+
+              modelHasClass && <td key="rp">{result.prediction}</td>,
+
+              modelHasTarget && <td key="rp">{result.prediction}</td>
+            ]}
+
+          </tr>
+        )})}
+      </tbody>
+    </table>
   )
 }
 
