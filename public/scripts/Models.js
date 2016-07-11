@@ -6,6 +6,7 @@ import { FormComponent, TextInput, CheckBoxInput, SelectInput, SubmitButton, For
 import * as Validate from './validate'
 import * as Action from './actions'
 import Expand from './Expand'
+import { $try } from './utils'
 
 
 const ModelsTab = (props) => (
@@ -69,7 +70,7 @@ class NewModelForm extends FormComponent {
 const mapStateToProps = function(state, ownProps) {
   let formState = state.form.newModel
   let currentModelType = formState ? formState.modelType : null
-  let currentModelId = currentModelType ? currentModelType.value : 0
+  let currentModelId = $try( () => formState.modelType.value ) || 0
   let currentModel = state.sklearnModels[currentModelId]
   let modelFields = currentModel.params.map(param => param.name)
 
