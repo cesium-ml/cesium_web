@@ -122,7 +122,6 @@ let PredictionResults = (props) => {
   let firstResult = results ? results[Object.keys(results)[0]] : null;
   let classes = Object.keys(firstResult.prediction)
 
-  let predictionTarget = firstResult ? firstResult.target : null
   let modelHasProba = contains(['RandomForestClassifier',
                                 'LinearSGDClassifier'],
                                modelType)
@@ -133,12 +132,14 @@ let PredictionResults = (props) => {
                                 modelType)
   let modelHasClass = contains(['RidgeClassifierCV'], modelType)
 
+  let hasTarget = (p) => (p.target != null)
+
   return (
     <table className='table'>
       <thead>
         <tr>
           <th>Time Series</th>
-          {predictionTarget && <th>True Class/Target</th>}
+          {hasTarget(firstResult) && <th>True Class/Target</th>}
 
           {modelHasProba &&
            classes.map((classLabel, idx) => ([
@@ -161,17 +162,19 @@ let PredictionResults = (props) => {
 
             <td>{fname}</td>
 
-            {predictionTarget && <td>{predictionTarget}</td>}
+            {hasTarget(result) && [
+              <td key="pt">{result.target}</td>,
 
-            {modelHasProba &&
-             classes.map((classLabel, idx) => ([
-               <td key="0">{classLabel}</td>,
-               <td key="1">{result.prediction[classLabel]}</td>
-             ]))
-            }
+              modelHasProba &&
+              classes.map((classLabel, idx) => ([
+                <td key="cl0">{classLabel}</td>,
+                <td key="cl1">{result.prediction[classLabel]}</td>
+              ])),
 
-            {modelHasClass && <td>{result.prediction}</td>}
-            {modelHasTarget && <td>{result.prediction}</td>}
+              modelHasClass && <td key="rp">{result.prediction}</td>,
+
+              modelHasTarget && <td key="rp">{result.prediction}</td>
+            ]}
 
           </tr>
         )})}

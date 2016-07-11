@@ -68,7 +68,7 @@ class NewModelForm extends FormComponent {
 
 const mapStateToProps = function(state, ownProps) {
   let formState = state.form.newModel;
-  let currentModelId = formState ? state.form.newModel.modelType.value : 0;
+  let currentModelId = formState ? formState.modelType.value : 0;
   let currentModel = state.sklearnModels[currentModelId];
   let modelFields = currentModel.params.map(param => param.name);
 
