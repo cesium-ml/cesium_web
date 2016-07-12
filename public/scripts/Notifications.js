@@ -6,10 +6,10 @@ import {promiseAction} from './action_tools'
 export var Notifications = (props) => {
   let style = {
     position: 'fixed',
-    zIndex: 3,
-    top: 10,
-    width: 300,
-    left: 850,
+    zIndex: 20000,
+    top: '4.5em',
+    width: '30em',
+    right: '1em',
     overflow: 'hidden',
 
     note: {
