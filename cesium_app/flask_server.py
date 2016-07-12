@@ -101,9 +101,13 @@ def task_complete():
             fset.task_id = None
             fset.finished = datetime.datetime.now()
             fset.save()
+            success({"id": "Featureset '{}' finished.".format(fset.name)},
+                    'cesium/SHOW_NOTIFICATION')
             return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
         elif data['status'] == 'error':
             fset.delete_instance()
+            success({"id": "Featureset '{}' failed. Please try again.".format(fset.name)},
+                    'cesium/SHOW_NOTIFICATION')
             return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
     elif 'model_id' in data:
         model = m.Model.get(m.Model.id == data['model_id'])
@@ -111,9 +115,13 @@ def task_complete():
             model.task_id = None
             model.finished = datetime.datetime.now()
             model.save()
+            success({"id": "Model '{}' finished.".format(model.name)},
+                    'cesium/SHOW_NOTIFICATION')
             return success({"id": model.id}, 'cesium/FETCH_MODELS')
         elif data['status'] == 'error':
             model.delete_instance()
+            success({"id": "Model '{}' failed. Please try again.".format(model.name)},
+                    'cesium/SHOW_NOTIFICATION')
             return success({"id": model.id}, 'cesium/FETCH_MODELS')
     elif 'prediction_id' in data:
         prediction = m.Prediction.get(m.Prediction.id == data['prediction_id'])
@@ -121,9 +129,17 @@ def task_complete():
             prediction.task_id = None
             prediction.finished = datetime.datetime.now()
             prediction.save()
+            success({"id": "Prediction ''/''"
+                           "finished.".format(prediction.dataset.name,
+                                       prediction.model.name)},
+                    'cesium/SHOW_NOTIFICATION')
             return success({"id": prediction.id}, 'cesium/FETCH_PREDICTIONS')
         elif data['status'] == 'error':
             prediction.delete_instance()
+            success({"id": "Prediction ''/''"
+                           "failed. Please try again.".format(prediction.dataset.name,
+                                       prediction.model.name)},
+                    'cesium/SHOW_NOTIFICATION')
             return success({"id": prediction.id}, 'cesium/FETCH_PREDICTIONS')
     else:
         raise ValueError('Unrecognized task type')

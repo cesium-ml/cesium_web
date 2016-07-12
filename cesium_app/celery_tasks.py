@@ -3,7 +3,8 @@ import requests
 
 from cesium import featurize, build_model, predict
 from cesium.celery_tasks import (
-    featurize_task, build_model_task, prediction_task)
+    featurize_task, build_model_task, prediction_task,
+    predict_prefeaturized_task)
 from .celery_app import app
 from .config import cfg
 
@@ -61,8 +62,8 @@ def build_model_and_notify(username, model_id, model_type, model_params,
 
 def predict_and_notify(username, prediction_id, ts_paths, features_to_use,
                        model_path, output_path, custom_features_script=None):
-    """Returns Celery task that makes predictions and notifies the web app when
-    the computation is complete.
+    """Returns Celery task that makes featurizes, makes predictions, and
+    notifies the web app when the computation is complete.
     """
     data = {'prediction_id': prediction_id, 'username': username}
     pred_chord = prediction_task(ts_paths, features_to_use, model_path,
@@ -70,3 +71,16 @@ def predict_and_notify(username, prediction_id, ts_paths, features_to_use,
     for t in pred_chord.tasks:
         t.set(link_error=[report_error.si(data=data)])
     return (pred_chord | report_finished.si(data=data))
+
+
+def predict_fset_and_notify(username, prediction_id, featureset_path,
+                            model_path, output_path,
+                            custom_features_script=None):
+    """Returns Celery task that makes predictions for pre-featurized data and
+    notifies the web app when the computation is complete.
+    """
+    data = {'prediction_id': prediction_id, 'username': username}
+    pred_task = predict_prefeaturized_task(featureset_path, model_path,
+                                           output_path, custom_features_script)
+    pred_task.set(link_error=[report_error.si(data=data)])
+    return (pred_task | report_finished.si(data=data))

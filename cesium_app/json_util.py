@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import numpy as np
 import peewee
 import six
 import xarray as xr
@@ -59,11 +60,14 @@ class Encoder(json.JSONEncoder):
         elif o is float:
             return 'float'
 
+        elif isinstance(o, np.ndarray):
+            return o.tolist()
+
         elif isinstance(o, xr.Dataset):
             return {ts_name: dataset_row_to_dict(o.sel(name=ts_name))
                     for ts_name in o.name.values}
 
-        elif o in data_types:
+        elif type(o) is type and o in data_types:
             return data_types[o]
 
         return json.JSONEncoder.default(self, o)
