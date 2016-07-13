@@ -2,7 +2,6 @@
 // https://github.com/acdlite/flux-standard-action
 
 import {reset as resetForm} from 'redux-form';
-import {change} from 'redux-form';
 
 export const HYDRATE = 'cesium/HYDRATE'
 
