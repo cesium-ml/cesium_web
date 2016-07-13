@@ -81,7 +81,7 @@ let myFormReducer = (theirFormReducer) => {
         for (var idx in field_names) {
           formState[field_names[idx]].value = !allAreChecked;
         }
-        console.log("formState", formState);
+        formState["dummy_" + String(Math.random())] = null;
         state.featurize = formState;
     }
     return theirFormReducer(state, action);
