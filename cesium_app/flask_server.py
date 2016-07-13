@@ -109,7 +109,7 @@ def task_complete():
             fset.delete_instance()
             success(action='cesium/SHOW_NOTIFICATION',
                     payload={"note": "Featureset '{}'" " failed. Please try"
-                             " again".format(fset.name)})
+                             " again".format(fset.name), "type": "error"})
             return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
     elif 'model_id' in data:
         model = m.Model.get(m.Model.id == data['model_id'])
@@ -124,7 +124,8 @@ def task_complete():
             model.delete_instance()
             success(action='cesium/SHOW_NOTIFICATION',
                     payload={"note": "Model '{}' failed."
-                             " Please try again.".format(model.name)})
+                             " Please try again.".format(model.name),
+                             "type": "error"})
             return success({"id": model.id}, 'cesium/FETCH_MODELS')
     elif 'prediction_id' in data:
         prediction = m.Prediction.get(m.Prediction.id == data['prediction_id'])
@@ -142,7 +143,8 @@ def task_complete():
             success(action='cesium/SHOW_NOTIFICATION',
                     payload={"note": "Prediction ''/''" " failed. Please try"
                              " again.".format(prediction.dataset.name,
-                                            prediction.model.name)})
+                                            prediction.model.name),
+                             "type": "error" })
             return success({"id": prediction.id}, 'cesium/FETCH_PREDICTIONS')
     else:
         raise ValueError('Unrecognized task type')
