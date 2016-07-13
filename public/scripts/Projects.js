@@ -9,6 +9,7 @@ import {reduxForm} from 'redux-form'
 import * as Validate from './validate'
 import Expand from './Expand'
 import * as Action from './actions.js'
+import {colorScheme as cs} from './colorscheme'
 
 
 class ProjectForm extends FormComponent {
@@ -51,19 +52,37 @@ export var ProjectTab = (props) => {
     paddingLeft: '2em',
   }
 
-  return (
-    <div style={style}>
-      <EditProjectForm
-        label="Update"
-        onSubmit={props.updateProject}
-        initialValues={{projectName: p.name,
-                        projectDescription: p.description,
-                        projectId: p.id}}
-      />
+  let newCesiumStyle = {
+    marginTop: '2em',
+    background: 'white',
+    width: '20em',
+    color: cs.darkBlue,
+    padding: '1em',
+    height: '100%',
+    fontSize: '200%'
+  }
 
-      <DeleteProject projectId={props.selectedProject.id}/>
-    </div>
-  )
+  if (!p.id)
+    return (
+      <div style={newCesiumStyle}>
+        <p>Welcome to Cesium!</p>
+        <p>🡸 Please create a new project.</p>
+     </div>
+    )
+  else
+    return (
+      <div style={style}>
+        <EditProjectForm
+          label="Update"
+          onSubmit={props.updateProject}
+          initialValues={{projectName: p.name,
+                          projectDescription: p.description,
+                          projectId: p.id}}
+        />
+
+        <DeleteProject projectId={props.selectedProject.id}/>
+      </div>
+    )
 }
 
 let ptMapDispatchToProps = (dispatch) => {

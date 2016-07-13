@@ -79,7 +79,6 @@ var MainContent = React.createClass({
         color: '#EFEFEF',
         height: config.topbar,
         lineHeight: config.topbar,
-        verticalAlign: 'middle',
         top: 0,
         margin: 0,
         right: 0,
@@ -87,6 +86,7 @@ var MainContent = React.createClass({
         marginBottom: '1em',
         paddingLeft: '1em',
         paddingRight: '1em',
+        paddingTop: 0,
         header: {
           float: 'right',
           fontWeight: 'bold',
@@ -107,7 +107,7 @@ var MainContent = React.createClass({
         img: {
           height: 50,
           paddingTop: 10,
-          paddingBottom: 10,
+          paddingBottom: 10
         }
       },
       sidebar: {
