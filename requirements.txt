@@ -8,4 +8,5 @@ waitress
 tornado
 pyzmq
 pyjwt
+plotly
 simplejson
