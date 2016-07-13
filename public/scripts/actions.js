@@ -623,7 +623,7 @@ export function spinLogo() {
 }
 
 
-export function checkUncheckAll(prefix) {
+export function checkUncheckAllFeatures(prefix) {
   return {
     type: CHECK_UNCHECK_FEATURES,
     payload: prefix

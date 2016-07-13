@@ -69,20 +69,20 @@ let myFormReducer = (theirFormReducer) => {
       case Action.CHECK_UNCHECK_FEATURES:
         let field_names = Object.keys(state.featurize).filter(
           fn => fn.startsWith(action.payload))
-        let formState = Object.assign({}, state.featurize)
+        let featurizeFormState = Object.assign({}, state.featurize)
         let allAreChecked = (() => {
           for (var idx in field_names) {
-            if (formState[field_names[idx]].value == false) {
+            if (featurizeFormState[field_names[idx]].value == false) {
               return false;
             }
             return true;
           }
         })()
         for (var idx in field_names) {
-          formState[field_names[idx]].value = !allAreChecked;
+          featurizeFormState[field_names[idx]].value = !allAreChecked;
         }
-        formState["dummy_" + String(Math.random())] = null;
-        state.featurize = formState;
+        featurizeFormState["dummy_" + String(Math.random())] = null;
+        state.featurize = featurizeFormState;
     }
     return theirFormReducer(state, action);
   }

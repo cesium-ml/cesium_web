@@ -22,7 +22,7 @@ var TabPanel = ReactTabs.TabPanel;
 class FeaturizeForm extends FormComponent {
   render() {
     const {fields, fields: {datasetID, featuresetName, customFeatsCode, isTest},
-           handleSubmit, submitting, resetForm, error, checkUncheckAll} = this.props;
+           handleSubmit, submitting, resetForm, error, checkUncheckAllFeatures} = this.props;
     let datasets = this.props.datasets.map(ds => (
       {id: ds.id,
        label: ds.name}
@@ -47,7 +47,7 @@ class FeaturizeForm extends FormComponent {
               <Tab>Custom Features</Tab>
             </TabList>
             <TabPanel>
-              <a href="#" onClick={() => {checkUncheckAll("obs_")}}>Check/Uncheck All</a>
+              <a href="#" onClick={() => {checkUncheckAllFeatures("obs_")}}>Check/Uncheck All</a>
               <ul>
                 {this.props.features.obs_features.map(feature => (
                    <CheckBoxInput key={'obs_' + feature} label={feature}
@@ -57,7 +57,7 @@ class FeaturizeForm extends FormComponent {
               </ul>
             </TabPanel>
             <TabPanel>
-              <a href="#" onClick={() => {checkUncheckAll("sci_")}}>Check/Uncheck All</a>
+              <a href="#" onClick={() => {checkUncheckAllFeatures("sci_")}}>Check/Uncheck All</a>
               <ul>
                 {this.props.features.sci_features.map(feature => (
                    <CheckBoxInput key={'sci_' + feature} label={feature}
@@ -104,7 +104,7 @@ let mapStateToProps = (state, ownProps) => {
 
 let ffMapDispatchToProps = (dispatch) => {
   return {
-    checkUncheckAll: (prefix) => dispatch(Action.checkUncheckAll(prefix))
+    checkUncheckAllFeatures: (prefix) => dispatch(Action.checkUncheckAllFeatures(prefix))
   }
 }
 
