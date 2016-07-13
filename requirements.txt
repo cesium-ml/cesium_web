@@ -8,3 +8,4 @@ waitress
 tornado
 pyzmq
 pyjwt
+simplejson

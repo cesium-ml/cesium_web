@@ -1,5 +1,5 @@
 from datetime import datetime
-import json
+import simplejson as json
 import numpy as np
 import peewee
 import six
@@ -22,8 +22,6 @@ def dataset_row_to_dict(row):
     front end can display.
     """
     out = {}
-    if 'channel' in row:
-        row = row.drop('channel')
     out['target'] = row.target.values.item() if 'target' in row else None
     if 'prediction' in row:
         if 'class_label' in row:  # {class label: probability}
@@ -74,4 +72,4 @@ class Encoder(json.JSONEncoder):
 
 
 def to_json(obj):
-    return json.dumps(obj, cls=Encoder, indent=2)
+    return json.dumps(obj, cls=Encoder, indent=2, ignore_nan=True)
