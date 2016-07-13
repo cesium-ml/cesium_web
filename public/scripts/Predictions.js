@@ -133,7 +133,7 @@ let PredictionResults = (props) => {
                                 modelType)
   let modelHasClass = contains(['RidgeClassifierCV'], modelType)
 
-  let hasTrueTargetLabel = (p) => (p.target != null)
+  let hasTrueTargetLabel = (p) => (p && p.target)
 
   return (
     <table className='table'>
