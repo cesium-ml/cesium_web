@@ -155,7 +155,7 @@ let PredictionResults = (props) => {
       </thead>
 
       <tbody>
-      {Object.keys(results).map((fname, idx) => {
+      {results && Object.keys(results).map((fname, idx) => {
         let result = results[fname]
 
         return (
