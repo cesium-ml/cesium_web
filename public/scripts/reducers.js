@@ -66,6 +66,23 @@ let myFormReducer = (theirFormReducer) => {
       case Action.SELECT_PROJECT:
         const {id} = action.payload;
         state.projectSelector.project.value = id ? id.toString() : "";
+      case Action.CHECK_UNCHECK_FEATURES:
+        let field_names = Object.keys(state.featurize).filter(
+          fn => fn.startsWith(action.payload))
+        let formState = Object.assign({}, state.featurize)
+        let allAreChecked = (() => {
+          for (var idx in field_names) {
+            if (formState[field_names[idx]].value == false) {
+              return false;
+            }
+            return true;
+          }
+        })()
+        for (var idx in field_names) {
+          formState[field_names[idx]].value = !allAreChecked;
+        }
+        console.log("formState", formState);
+        state.featurize = formState;
     }
     return theirFormReducer(state, action);
   }

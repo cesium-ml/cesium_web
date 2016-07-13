@@ -2,6 +2,7 @@
 // https://github.com/acdlite/flux-standard-action
 
 import {reset as resetForm} from 'redux-form';
+import {change} from 'redux-form';
 
 export const HYDRATE = 'cesium/HYDRATE'
 
@@ -42,6 +43,7 @@ export const FETCH_SKLEARN_MODELS = 'cesium/FETCH_SKLEARN_MODELS'
 export const RECEIVE_SKLEARN_MODELS = 'cesium/RECEIVE_SKLEARN_MODELS'
 
 export const SPIN_LOGO = 'cesium/SPIN_LOGO'
+export const CHECK_UNCHECK_FEATURES = '/cesium/CHECK_UNCHECK_FEATURES'
 
 
 import { showNotification, reduceNotifications } from './Notifications'
@@ -618,5 +620,13 @@ export function receivePredictions(preds) {
 export function spinLogo() {
   return {
     type: SPIN_LOGO
+  }
+}
+
+
+export function checkUncheckAll(prefix) {
+  return {
+    type: CHECK_UNCHECK_FEATURES,
+    payload: prefix
   }
 }
