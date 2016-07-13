@@ -28,7 +28,8 @@ export class MessageHandler {
         this.dispatch(Action.fetchPredictions());
         break
       case SHOW_NOTIFICATION:
-        this.dispatch(showNotification(message.payload.note));
+        this.dispatch(showNotification(message.payload.note,
+                                       message.payload.type));
         break
       default:
         console.log('Unknown message received through flow:',

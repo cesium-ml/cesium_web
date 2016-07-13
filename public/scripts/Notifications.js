@@ -19,7 +19,6 @@ export var Notifications = (props) => {
       paddingBottom: '0.8em',
       paddingLeft: '1em',
       marginBottom: 5,
-      background: 'MediumAquaMarine',
       width: '100%',
       display: 'inline-block',
       WebkitBoxShadow: '0 0 5px black',
@@ -28,11 +27,18 @@ export var Notifications = (props) => {
     }
   }
 
+
+  let note_color = {
+    'error': 'Crimson',
+    'info': 'MediumAquaMarine'
+  }
+
   return (
     (props.notifications.length > 0) &&
       <div style={style}>
         {props.notifications.map((notification, idx) => (
-          <div key={notification.id} style={style.note}
+          <div key={notification.id}
+               style={{...style.note, background: note_color[notification.type]}}
                onClick={() => props.dispatch(hideNotification(notification.id))}>
             {notification.note}
           </div>
@@ -54,14 +60,15 @@ export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION'
 export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION'
 
 let nextNotificationId = 0
-export function showNotification(note) {
+export function showNotification(note, type='info') {
   let thisId = nextNotificationId++;
   return (dispatch) => {
     dispatch({
       type: SHOW_NOTIFICATION,
       payload: {
         id: thisId,
-        note
+        note,
+        type
       }
     })
     setTimeout(() => dispatch(hideNotification(thisId)), 2000);
@@ -78,9 +85,9 @@ export function hideNotification(id) {
 export function reducer(state={notes: []}, action) {
   switch (action.type) {
     case SHOW_NOTIFICATION:
-      let {id, note} = action.payload;
+      let {id, note, type} = action.payload;
       return {
-        notes: state.notes.concat({id, note})
+        notes: state.notes.concat({id, note, type})
       }
     case HIDE_NOTIFICATION:
       return {
