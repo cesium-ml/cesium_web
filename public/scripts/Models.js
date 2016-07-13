@@ -163,9 +163,13 @@ export var ModelTable = (props) => {
   );
 }
 
-let mtMapStateToProps = (state) => {
+let mtMapStateToProps = (state, ownProps) => {
   return {
-    models: state.models
+    models: state.models.filter(
+      model => {
+        return (model.project == ownProps.selectedProject.id);
+      }
+    )
   }
 }
 
