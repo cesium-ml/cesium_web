@@ -321,7 +321,7 @@ export function createModel(form) {
           if (json.status == 'success') {
             dispatch(resetForm('newModel'));
             dispatch(hideExpander('newModelExpander'));
-            dispatch(showNotification('Successfully added new model'));
+            dispatch(showNotification('Model training begun.'));
           } else {
             return Promise.reject({_error: json.message});
           }
@@ -419,7 +419,7 @@ export function computeFeatures(form) {
       ).then(json => {
         if (json.status == 'success') {
           dispatch(resetForm('featurize'));
-          dispatch(showNotification('Successfully computed feature set'));
+          dispatch(showNotification('Feature computation begun.'));
           dispatch(hideExpander('featsetFormExpander'));
         } else {
           return Promise.reject({_error: json.message});
@@ -553,7 +553,7 @@ export function doPrediction(form) {
       ).then(json => {
         if (json.status == 'success') {
           dispatch(resetForm('predict'));
-          dispatch(showNotification('Successfully computed model predictions'));
+          dispatch(showNotification('Model predictions begun.'));
           dispatch(hideExpander('predictFormExpander'));
         } else {
           return Promise.reject({_error: json.message});

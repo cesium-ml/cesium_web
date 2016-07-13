@@ -29,6 +29,7 @@ from . import util
 from .ext.sklearn_models import (
     model_descriptions as sklearn_model_descriptions
     )
+from . import plot
 
 # Flask initialization
 app = Flask(__name__, static_url_path='', static_folder='../public')
@@ -101,13 +102,14 @@ def task_complete():
             fset.task_id = None
             fset.finished = datetime.datetime.now()
             fset.save()
-            success({"id": "Featureset '{}' finished.".format(fset.name)},
-                    'cesium/SHOW_NOTIFICATION')
+            success(action='cesium/SHOW_NOTIFICATION',
+                    payload={"note": "Featureset '{}'" " finished.".format(fset.name)})
             return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
         elif data['status'] == 'error':
             fset.delete_instance()
-            success({"id": "Featureset '{}' failed. Please try again.".format(fset.name)},
-                    'cesium/SHOW_NOTIFICATION')
+            success(action='cesium/SHOW_NOTIFICATION',
+                    payload={"note": "Featureset '{}'" " failed. Please try"
+                             " again".format(fset.name)})
             return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
     elif 'model_id' in data:
         model = m.Model.get(m.Model.id == data['model_id'])
@@ -115,13 +117,14 @@ def task_complete():
             model.task_id = None
             model.finished = datetime.datetime.now()
             model.save()
-            success({"id": "Model '{}' finished.".format(model.name)},
-                    'cesium/SHOW_NOTIFICATION')
+            success(action='cesium/SHOW_NOTIFICATION',
+                    payload={"note": "Model'{}'" " finished.".format(model.name)})
             return success({"id": model.id}, 'cesium/FETCH_MODELS')
         elif data['status'] == 'error':
             model.delete_instance()
-            success({"id": "Model '{}' failed. Please try again.".format(model.name)},
-                    'cesium/SHOW_NOTIFICATION')
+            success(action='cesium/SHOW_NOTIFICATION',
+                    payload={"note": "Model '{}' failed."
+                             " Please try again.".format(model.name)})
             return success({"id": model.id}, 'cesium/FETCH_MODELS')
     elif 'prediction_id' in data:
         prediction = m.Prediction.get(m.Prediction.id == data['prediction_id'])
@@ -129,17 +132,17 @@ def task_complete():
             prediction.task_id = None
             prediction.finished = datetime.datetime.now()
             prediction.save()
-            success({"id": "Prediction ''/''"
-                           "finished.".format(prediction.dataset.name,
-                                       prediction.model.name)},
-                    'cesium/SHOW_NOTIFICATION')
+            success(action='cesium/SHOW_NOTIFICATION',
+                    payload={"note": "Prediction ''/''"
+                             " finished.".format(prediction.dataset.name,
+                                                prediction.model.name)})
             return success({"id": prediction.id}, 'cesium/FETCH_PREDICTIONS')
         elif data['status'] == 'error':
             prediction.delete_instance()
-            success({"id": "Prediction ''/''"
-                           "failed. Please try again.".format(prediction.dataset.name,
-                                       prediction.model.name)},
-                    'cesium/SHOW_NOTIFICATION')
+            success(action='cesium/SHOW_NOTIFICATION',
+                    payload={"note": "Prediction ''/''" " failed. Please try"
+                             " again.".format(prediction.dataset.name,
+                                            prediction.model.name)})
             return success({"id": prediction.id}, 'cesium/FETCH_PREDICTIONS')
     else:
         raise ValueError('Unrecognized task type')
@@ -505,3 +508,12 @@ def socket_auth_token():
 @exception_as_error
 def sklearn_models():
     return success(sklearn_model_descriptions)
+
+
+@app.route('/plot_features/<featureset_id>', methods=['GET'])
+@exception_as_error
+def PlotFeatures(featureset_id):
+    fset = m.Featureset.get(m.Featureset.id == featureset_id)
+    features_to_plot = sorted(fset.features_list)[0:4]
+    data, layout = plot.feature_scatterplot(fset.file.uri, features_to_plot)
+    return success({'fig_data': data, 'fig_layout': layout})
