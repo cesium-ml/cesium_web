@@ -71,7 +71,7 @@ export function showNotification(note, type='info') {
         type
       }
     })
-    setTimeout(() => dispatch(hideNotification(thisId)), 2000);
+    setTimeout(() => dispatch(hideNotification(thisId)), 3000);
   }
 }
 
