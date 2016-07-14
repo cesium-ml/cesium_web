@@ -12,6 +12,8 @@ import filter from 'filter-values'
 import * as Validate from './validate'
 import Expand from './Expand'
 import * as Action from './actions'
+import Plot from './Plot'
+import FoldableRow from './FoldableRow'
 
 var Tab = ReactTabs.Tab;
 var Tabs = ReactTabs.Tabs;
@@ -115,24 +117,28 @@ const validate = Validate.createValidator({
 
 FeaturizeForm = reduxForm({
   form: 'featurize',
-  fields: ['']
+  fields: [''],
+  validate: validate
 }, mapStateToProps, ffMapDispatchToProps)(FeaturizeForm);
 
 
 var FeaturesTab = (props) => {
-    return (
+  let {featurePlotURL} = props;
+  return (
+    <div>
       <div>
-        <div>
-          <Expand label="Compute New Features" id="featsetFormExpander">
-            <FeaturizeForm onSubmit={props.computeFeatures}
-                           selectedProject={props.selectedProject}/>
-          </Expand>
-        </div>
-
-        <FeatureTable selectedProject={props.selectedProject}/>
-
+        <Expand label="Compute New Features" id="featsetFormExpander">
+          <FeaturizeForm onSubmit={props.computeFeatures}
+                         selectedProject={props.selectedProject}/>
+        </Expand>
       </div>
-    );
+
+      <FeatureTable selectedProject={props.selectedProject}
+                    featurePlotURL={featurePlotURL}
+      />
+
+    </div>
+  );
 };
 
 let ftMapDispatchToProps = (dispatch) => {
@@ -145,25 +151,37 @@ FeaturesTab = connect(null, ftMapDispatchToProps)(FeaturesTab)
 
 export var FeatureTable = (props) => {
   return (
-    <table className="table">
-      <thead>
-        <tr>
-          <th>Name</th><th>Created</th><th>Debug</th><th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div>
+      <table className="table">
+        <thead>
+          <tr>
+            <th style={{width: '15em'}}>Name</th>
+            <th style={{width: '20em'}}>Created</th>
+            <th style={{width: '10em'}}>Debug</th>
+            <th style={{width: '15em'}}>Actions</th>
+            <th style={{width: 'auto'}}></th>{ /* extra column for spacing */ }
+          </tr>
+        </thead>
 
-        {props.featuresets.map(featureset => (
-           <tr key={featureset.id}>
-             <td>{featureset.name}</td>
-             <td>{featureset.created}</td>
-             <td>Project: {featureset.project}</td>
-             <td><DeleteFeatureset featuresetID={featureset.id}/></td>
-           </tr>
-         ))}
+        {props.featuresets.map((featureset, idx) => (
+          <FoldableRow key={idx}>
+            <tr key={featureset.id}>
+               <td>{featureset.name}</td>
+               <td>{featureset.created}</td>
+               <td>Project: {featureset.project}</td>
+               <td><DeleteFeatureset featuresetID={featureset.id}/></td>
+            </tr>
+            <tr key={"plot" + featureset.id}>
+              <td colSpan={4}>
+                <Plot url={props.featurePlotURL + '/' + featureset.id}/>
+              </td>
+            </tr>
+          </FoldableRow>
+        ))}
 
-      </tbody>
-    </table>
+
+      </table>
+    </div>
   );
 }
 
