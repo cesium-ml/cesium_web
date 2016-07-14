@@ -518,4 +518,4 @@ def PlotFeatures(featureset_id):
     fset = m.Featureset.get(m.Featureset.id == featureset_id)
     features_to_plot = sorted(fset.features_list)[0:4]
     data, layout = plot.feature_scatterplot(fset.file.uri, features_to_plot)
-    return success({'fig_data': data, 'fig_layout': layout})
+    return success({'data': data, 'layout': layout})
