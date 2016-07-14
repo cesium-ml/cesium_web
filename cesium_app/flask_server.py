@@ -118,7 +118,7 @@ def task_complete():
             model.finished = datetime.datetime.now()
             model.save()
             success(action='cesium/SHOW_NOTIFICATION',
-                    payload={"note": "Model'{}'" " finished.".format(model.name)})
+                    payload={"note": "Model '{}'" " finished.".format(model.name)})
             return success({"id": model.id}, 'cesium/FETCH_MODELS')
         elif data['status'] == 'error':
             model.delete_instance()
