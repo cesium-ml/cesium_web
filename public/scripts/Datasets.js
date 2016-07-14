@@ -87,7 +87,7 @@ export var DatasetTable = (props) => {
     <table className="table">
       <thead>
         <tr>
-          <th>Name</th><th>Created</th><th>Actions</th>
+          <th>Name</th><th>Uploaded</th><th>Actions</th>
     </tr>
 
 

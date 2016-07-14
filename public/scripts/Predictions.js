@@ -84,30 +84,39 @@ export var PredictionsTable = (props) => {
         <tr>
           <th style={{width: '15em'}}>Data Set Name</th>
           <th style={{width: '15em'}}>Model Name</th>
-          <th style={{width: '20em'}}>Created</th>
-          <th style={{width: '10em'}}>Debug</th>
+          <th style={{width: '25em'}}>Created</th>
+          <th style={{width: '15em'}}>Status</th>
           <th style={{width: '15em'}}>Actions</th>
           <th style={{width: 'auto'}}></th>{ /* extra column, used to capture expanded space */ }
         </tr>
       </thead>
 
-      {props.predictions.map((prediction, idx) => (
+    {props.predictions.map((prediction, idx) => {
+      let done = prediction.finished
+      let status = done ? <td>Completed {prediction.finished}</td> : <td>In progress</td>
+
+      let foldedContent = done && (
+        <tr key={'pred' + idx}>
+          <td colSpan={6}>
+            <PredictionResults prediction={prediction}/>
+          </td>
+        </tr>
+      )
+
+      return (
          <FoldableRow key={idx}>
              <tr key={'row' + idx}>
                <td style={{textDecoration: 'underline'}}>{prediction.model_name}</td>
                <td>{prediction.dataset_name}</td>
                <td>{prediction.created}</td>
-               <td>Project: {prediction.project}</td>
+               {status}
                <td><DeletePrediction predictionID={prediction.id}/></td>
                <td></td>
-             </tr>
-             <tr key={'pred' + idx}>
-               <td colSpan={6}>
-                 <PredictionResults prediction={prediction}/>
-               </td>
             </tr>
+            {foldedContent}
         </FoldableRow>
-      ))}
+      )})
+    }
 
     </table>
   )

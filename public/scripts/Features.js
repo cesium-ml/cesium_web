@@ -156,8 +156,8 @@ export var FeatureTable = (props) => {
         <thead>
           <tr>
             <th style={{width: '15em'}}>Name</th>
-            <th style={{width: '20em'}}>Created</th>
-            <th style={{width: '10em'}}>Status</th>
+            <th style={{width: '15em'}}>Created</th>
+            <th style={{width: '15em'}}>Status</th>
             <th style={{width: '15em'}}>Actions</th>
             <th style={{width: 'auto'}}></th>{ /* extra column for spacing */ }
           </tr>

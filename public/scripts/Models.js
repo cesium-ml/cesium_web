@@ -144,17 +144,23 @@ export var ModelTable = (props) => {
     <table className="table">
       <thead>
         <tr>
-          <th>Name</th><th>Created</th><th>Debug</th><th>Actions</th>
+          <th>Name</th><th>Created</th><th>Status</th><th>Actions</th>
         </tr>
 
-        {props.models.map(model => (
-           <tr key={model.id}>
-             <td>{model.name}</td>
-             <td>{model.created}</td>
-             <td>Project: {model.project}</td>
-             <td><DeleteModel modelID={model.id}/></td>
-           </tr>
-         ))}
+    {
+      props.models.map(model => {
+        let done = model.finished
+        let status = done ? <td>Completed {model.finished}</td> : <td>In progress</td>
+
+        return (
+          <tr key={model.id}>
+            <td>{model.name}</td>
+            <td>{model.created}</td>
+            {status}
+            <td><DeleteModel modelID={model.id}/></td>
+          </tr>
+        )})
+      }
 
       </thead>
     </table>
