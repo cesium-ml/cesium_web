@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from "react-redux"
 import {reduxForm} from 'redux-form'
 import { FormComponent, Form, TextInput, TextareaInput, FileInput, SubmitButton,
-         CheckBoxInput } from './Form'
+         CheckBoxInput, SelectInput } from './Form'
 import ReactTabs from 'react-tabs'
 
 import * as Validate from './validate'
