@@ -379,6 +379,8 @@ def Models(model_id=None):
         project_id = data.pop('project')
 
         fset = m.Featureset.get(m.Featureset.id == featureset_id)
+        if fset.finished is None:
+            raise RuntimeError("Can't build model for in-progress featureset.")
 
         model_params = data
 
@@ -449,7 +451,11 @@ def predictions(prediction_id=None):
 
         dataset = m.Dataset.get(m.Dataset.id == data["datasetID"])
         model = m.Model.get(m.Model.id == data["modelID"])
+        if fset.model is None:
+            raise RuntimeError("Can't predict for in-progress featureset.")
         fset = model.featureset
+        if fset.finished is None:
+            raise RuntimeError("Can't predict for in-progress model.")
         prediction_path = pjoin(cfg['paths']['predictions_folder'],
                                 '{}_prediction.nc'.format(uuid.uuid4()))
         prediction_file = m.File.create(uri=prediction_path)
@@ -528,6 +534,8 @@ def sklearn_models():
 @exception_as_error
 def PlotFeatures(featureset_id):
     fset = m.Featureset.get(m.Featureset.id == featureset_id)
+    if not fset.is_owned_by(get_username()):
+        raise RuntimeError("User not authorized")
     features_to_plot = sorted(fset.features_list)[0:4]
     data, layout = plot.feature_scatterplot(fset.file.uri, features_to_plot)
     return success({'data': data, 'layout': layout})
