@@ -10,6 +10,7 @@ import Expand from './Expand'
 import * as Action from './actions'
 import Plot from './Plot'
 import FoldableRow from './FoldableRow'
+import {reformatDatetime} from './utils'
 
 var Tab = ReactTabs.Tab;
 var Tabs = ReactTabs.Tabs;
@@ -183,13 +184,13 @@ export var FeatureTable = (props) => {
           </td>
         </tr>)
 
-      let status = done ? <td>Completed {featureset.finished}</td> : <td>In progress</td>
+      let status = done ? <td>Completed {reformatDatetime(featureset.finished)}</td> : <td>In progress</td>
 
       return (
         <FoldableRow key={idx}>
           <tr key={featureset.id}>
             <td>{featureset.name}</td>
-            <td>{featureset.created}</td>
+            <td>{reformatDatetime(featureset.created)}</td>
             {status}
             <td><DeleteFeatureset featuresetID={featureset.id}/></td>
           </tr>
