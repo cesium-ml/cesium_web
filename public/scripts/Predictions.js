@@ -7,7 +7,7 @@ import { FormComponent, TextInput, CheckBoxInput, SelectInput, SubmitButton,
 import * as Validate from './validate'
 import Expand from './Expand'
 import * as Action from './actions'
-import {objectType, contains} from './utils'
+import {objectType, contains, reformatDatetime} from './utils'
 import FoldableRow from './FoldableRow'
 
 
@@ -93,7 +93,7 @@ export var PredictionsTable = (props) => {
 
     {props.predictions.map((prediction, idx) => {
       let done = prediction.finished
-      let status = done ? <td>Completed {prediction.finished}</td> : <td>In progress</td>
+      let status = done ? <td>Completed {reformatDatetime(prediction.finished)}</td> : <td>In progress</td>
 
       let foldedContent = done && (
         <tr key={'pred' + idx}>
@@ -108,7 +108,7 @@ export var PredictionsTable = (props) => {
              <tr key={'row' + idx}>
                <td style={{textDecoration: 'underline'}}>{prediction.model_name}</td>
                <td>{prediction.dataset_name}</td>
-               <td>{prediction.created}</td>
+               <td>{reformatDatetime(prediction.created)}</td>
                {status}
                <td><DeletePrediction predictionID={prediction.id}/></td>
                <td></td>

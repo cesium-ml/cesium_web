@@ -9,6 +9,7 @@ import {FormComponent, Form, TextInput, FileInput, SubmitButton } from './Form'
 import * as Validate from './validate'
 import Expand from './Expand'
 import * as Action from './actions'
+import {reformatDatetime} from './utils'
 
 
 var DatasetsTab = (props) => {
@@ -94,7 +95,7 @@ export var DatasetTable = (props) => {
     {props.datasets.map(dataset => (
       <tr key={dataset.id}>
         <td>{dataset.name}</td>
-        <td>{dataset.created}</td>
+        <td>{reformatDatetime(dataset.created)}</td>
         <td><DeleteDataset datasetID={dataset.id}/></td>
       </tr>
     ))}

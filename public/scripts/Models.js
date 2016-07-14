@@ -6,7 +6,7 @@ import { FormComponent, TextInput, CheckBoxInput, SelectInput, SubmitButton, For
 import * as Validate from './validate'
 import * as Action from './actions'
 import Expand from './Expand'
-import { $try } from './utils'
+import { $try, reformatDatetime } from './utils'
 
 
 const ModelsTab = (props) => (
@@ -150,12 +150,12 @@ export var ModelTable = (props) => {
     {
       props.models.map(model => {
         let done = model.finished
-        let status = done ? <td>Completed {model.finished}</td> : <td>In progress</td>
+        let status = done ? <td>Completed {reformatDatetime(model.finished)}</td> : <td>In progress</td>
 
         return (
           <tr key={model.id}>
             <td>{model.name}</td>
-            <td>{model.created}</td>
+            <td>{reformatDatetime(model.created)}</td>
             {status}
             <td><DeleteModel modelID={model.id}/></td>
           </tr>

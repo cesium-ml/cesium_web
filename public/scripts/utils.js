@@ -13,3 +13,7 @@ export function $try(func) {
     return null
   }
 }
+
+export function reformatDatetime(dt_str) {
+  return new Date(dt_str).toString()
+}
