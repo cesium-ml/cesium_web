@@ -26,7 +26,7 @@ var DatasetsTab = (props) => {
 class DatasetForm extends FormComponent {
   render() {
     const {fields: {datasetName, headerFile, tarFile},
-           error, handleSubmit} = this.props;
+           error, handleSubmit, submitting} = this.props;
 
     let description = {
       fontStyle: 'italic',
@@ -47,7 +47,7 @@ class DatasetForm extends FormComponent {
           Format: zipfile or tarfile containing time series files, each of which is comma-separated with columns "time", "value", "error" (optional).
         </div>
 
-        <SubmitButton label="Upload Dataset"/>
+        <SubmitButton label="Upload Dataset" disabled={submitting}/>
       </Form>
     )
   }
@@ -62,9 +62,11 @@ let dsMapStateToProps = (state, ownProps) => {
   }
 }
 
-let dsMapDispatchToProps = (dispatch) => {
+let dsMapDispatchToProps = (dispatch, ownProps) => {
   return {
-    onSubmit: form => dispatch(Action.uploadDataset(form))
+    onSubmit: form => {
+      return dispatch(Action.uploadDataset(form))
+    }
   }
 }
 
@@ -121,7 +123,8 @@ export var DeleteDataset = (props) => {
     display: 'inline-block'
   }
   return (
-    <a style={style} onClick={() => {
+    <a style={style} onClick={(e) => {
+      e.stopPropagation();
       props.dispatch(Action.deleteDataset(props.datasetID))
     }}>Delete</a>
   )

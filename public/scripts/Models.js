@@ -191,7 +191,10 @@ export var DeleteModel = (props) => {
     display: 'inline-block'
   }
   return (
-    <a style={style} onClick={() => props.deleteModel(props.modelID)}>Delete</a>
+    <a style={style} onClick={(e) => {
+      e.stopPropagation();
+      props.deleteModel(props.modelID)
+    }}>Delete</a>
   )
 }
 

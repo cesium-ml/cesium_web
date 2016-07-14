@@ -38,7 +38,10 @@ export class FoldableRow extends Component {
 
     let row = children[0]
     row = React.cloneElement(row, {
-      onClick: () => this.toggleFold(),
+      onClick: (e) => {
+        e.stopPropagation();
+        this.toggleFold();
+      },
       style: this.state.folded ? {} : openStyleHeader
     })
 
