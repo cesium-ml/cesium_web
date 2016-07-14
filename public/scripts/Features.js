@@ -220,7 +220,8 @@ export var DeleteFeatureset = (props) => {
     display: 'inline-block'
   }
   return (
-    <a style={style} onClick={() => {
+    <a style={style} onClick={(e) => {
+      e.stopPropagation();
       props.dispatch(Action.deleteFeatureset(props.featuresetID))
     }}>Delete</a>
   )
