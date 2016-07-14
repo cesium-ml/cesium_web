@@ -38,12 +38,12 @@ class DatasetForm extends FormComponent {
         <FileInput label="Header File" {...headerFile}/>
 
         <div style={description}>
-          The header file is ...
+          Format: comma-separated with columns "filename" (of a time series from the uploaded archive), "target" (class label or regression target), and any metafeatures (floating point values).
         </div>
 
         <FileInput label="Data Tarball" {...tarFile}/>
         <div style={description}>
-          The data tarball should have the format...
+          Format: zipfile or tarfile containing time series files, each of which is comma-separated with columns "time", "value", "error" (optional).
         </div>
 
         <SubmitButton label="Upload Dataset"/>
