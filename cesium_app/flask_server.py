@@ -3,7 +3,7 @@
 import os
 from os.path import join as pjoin
 import tarfile
-import multiprocessing
+import time
 
 from flask import (
     Flask, request, session, Response, send_from_directory)
@@ -45,7 +45,16 @@ def get_username():
 
 @app.before_request
 def before_request():
-    m.db.connect()
+    N = 5
+    for i in range(1, N + 1):
+        try:
+            m.db.connect()
+        except Exception as e:
+            if (i == N):
+                raise e
+            else:
+              print('Error connecting to database -- sleeping for a while')
+              time.sleep(5)
 
 
 @app.after_request
