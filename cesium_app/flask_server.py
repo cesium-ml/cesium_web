@@ -134,14 +134,14 @@ def task_complete():
             prediction.finished = datetime.datetime.now()
             prediction.save()
             success(action='cesium/SHOW_NOTIFICATION',
-                    payload={"note": "Prediction ''/''"
+                    payload={"note": "Prediction '{}'/'{}'"
                              " finished.".format(prediction.dataset.name,
                                                 prediction.model.name)})
             return success({"id": prediction.id}, 'cesium/FETCH_PREDICTIONS')
         elif data['status'] == 'error':
             prediction.delete_instance()
             success(action='cesium/SHOW_NOTIFICATION',
-                    payload={"note": "Prediction ''/''" " failed. Please try"
+                    payload={"note": "Prediction '{}'/'{}'" " failed. Please try"
                              " again.".format(prediction.dataset.name,
                                             prediction.model.name),
                              "type": "error" })
