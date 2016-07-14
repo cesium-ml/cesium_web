@@ -23,6 +23,7 @@ RUN bash -c "source /cesium_env/bin/activate && \
 
 EXPOSE 5000
 
-CMD bash -c "source /cesium_env/bin/activate && \
-             supervisord -c conf/supervisord.conf"
+CMD bash -c "source /cesium_env/bin/activate && sleep 10 && \
+  PYTHONPATH=. python -c \"from cesium_app.models import create_tables as c; c()\" && \
+  supervisord -c conf/supervisord.conf"
 
