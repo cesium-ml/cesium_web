@@ -9,7 +9,7 @@ RUN apt-get update && \
                        libnetcdf-dev supervisor libpython3-dev supervisor \
                        nginx npm nodejs && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* &&
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     \
     python3 -m venv /cesium_env && \
     \
