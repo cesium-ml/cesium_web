@@ -41,27 +41,27 @@ class FeaturizeForm extends FormComponent {
           <b>Select Features to Compute</b>
           <Tabs>
             <TabList>
-              <Tab>Cadence/Error</Tab>
               <Tab>General</Tab>
+              <Tab>Cadence/Error</Tab>
               <Tab>Lomb Scargle (Periodic)</Tab>
               <Tab>Custom Features</Tab>
             </TabList>
-            <TabPanel>
-              <a href="#" onClick={() => {groupToggleCheckedFeatures("obs_")}}>Check/Uncheck All</a>
-              <ul>
-                {this.props.features.obs_features.map(feature => (
-                   <CheckBoxInput key={'obs_' + feature} label={feature}
-                                  {...fields['obs_' + feature]}/>
-                 ))
-                }
-              </ul>
-            </TabPanel>
             <TabPanel>
               <a href="#" onClick={() => {groupToggleCheckedFeatures("sci_")}}>Check/Uncheck All</a>
               <ul>
                 {this.props.features.sci_features.map(feature => (
                    <CheckBoxInput key={'sci_' + feature} label={feature}
                                   {...fields['sci_' + feature]}/>
+                 ))
+                }
+              </ul>
+            </TabPanel>
+            <TabPanel>
+              <a href="#" onClick={() => {groupToggleCheckedFeatures("obs_")}}>Check/Uncheck All</a>
+              <ul>
+                {this.props.features.obs_features.map(feature => (
+                   <CheckBoxInput key={'obs_' + feature} label={feature}
+                                  {...fields['obs_' + feature]}/>
                  ))
                 }
               </ul>
