@@ -46,6 +46,7 @@ class FeaturizeForm extends FormComponent {
             <TabList>
               <Tab>Observation Features</Tab>
               <Tab>Science Features</Tab>
+              <Tab>Lomb Scargle Features</Tab>
               <Tab>Custom Features</Tab>
             </TabList>
             <TabPanel>
@@ -69,6 +70,16 @@ class FeaturizeForm extends FormComponent {
               </ul>
             </TabPanel>
             <TabPanel>
+              <a href="#" onClick={() => {groupToggleCheckedFeatures("lmb_")}}>Check/Uncheck All</a>
+              <ul>
+                {this.props.features.lmb_features.map(feature => (
+                   <CheckBoxInput key={'lmb_' + feature} label={feature}
+                                  {...fields['lmb_' + feature]}/>
+                 ))
+                }
+              </ul>
+            </TabPanel>
+            <TabPanel>
               <TextareaInput label="Enter Python code defining custom features"
                              rows="10" cols="50" {...customFeatsCode}/>
             </TabPanel>
@@ -82,12 +93,15 @@ class FeaturizeForm extends FormComponent {
 let mapStateToProps = (state, ownProps) => {
   let obs_features = state.featuresets.features.obs_features;
   let sci_features = state.featuresets.features.sci_features;
+  let lmb_features = state.featuresets.features.lmb_features;
   let obs_fields = obs_features.map(f => 'obs_' + f)
   let sci_fields = sci_features.map(f => 'sci_' + f)
+  let lmb_fields = lmb_features.map(f => 'lmb_' + f)
 
   let initialValues = {}
   obs_fields.map((f, idx) => initialValues[f] = true)
   sci_fields.map((f, idx) => initialValues[f] = true)
+  lmb_fields.map((f, idx) => initialValues[f] = true)
 
   let filteredDatasets = state.datasets.filter(dataset =>
     (dataset.project == ownProps.selectedProject.id))
@@ -96,8 +110,8 @@ let mapStateToProps = (state, ownProps) => {
   return {
     features: state.featuresets.features,
     datasets: filteredDatasets,
-    fields: obs_fields.concat(sci_fields).concat(['datasetID', 'featuresetName',
-                                                  'customFeatsCode']),
+    fields: obs_fields.concat(sci_fields).concat(lmb_fields).concat(
+      ['datasetID', 'featuresetName', 'customFeatsCode']),
     initialValues: {...initialValues,
                     datasetID: zerothDataset ? zerothDataset.id.toString() : "",
                     customFeatsCode: ""}
