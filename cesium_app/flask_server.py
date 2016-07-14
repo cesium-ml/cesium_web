@@ -287,7 +287,8 @@ def Features(featureset_id=None):
         featureset_name = data.get('featuresetName', '')
         dataset_id = int(data['datasetID'])
         feature_fields = {feature: selected for (feature, selected) in
-                          data.items() if feature.startswith(('sci_', 'obs_'))}
+                          data.items() if feature.startswith(('sci_', 'obs_',
+                                                              'lmb_'))}
         feat_type_name = [feat.split('_', 1) for (feat, selected) in
                           feature_fields.items() if selected]
         features_to_use = [fname for (ftype, fname) in feat_type_name]
@@ -489,7 +490,9 @@ def get_features_list():
     if request.method == "GET":
         return success({
             "obs_features": oft.FEATURES_LIST,
-            "sci_features": sft.FEATURES_LIST})
+            "sci_features": [el for el in sft.FEATURES_LIST if el not in
+                             sft.LOMB_SCARGLE_FEATURES_LIST],
+            "lmb_features": sft.LOMB_SCARGLE_FEATURES_LIST})
 
 
 # !!!
