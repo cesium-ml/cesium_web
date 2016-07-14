@@ -41,9 +41,9 @@ class FeaturizeForm extends FormComponent {
           <b>Select Features to Compute</b>
           <Tabs>
             <TabList>
-              <Tab>Observation Features</Tab>
-              <Tab>Science Features</Tab>
-              <Tab>Lomb Scargle Features</Tab>
+              <Tab>Cadence/Error</Tab>
+              <Tab>General</Tab>
+              <Tab>Lomb Scargle (Periodic)</Tab>
               <Tab>Custom Features</Tab>
             </TabList>
             <TabPanel>
