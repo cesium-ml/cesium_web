@@ -4,7 +4,10 @@ import { reduxForm } from 'redux-form'
 
 import { FormComponent, TextInput, CheckBoxInput, SelectInput, SubmitButton,
          Form, Button } from './Form'
+
 import * as Validate from './validate'
+import {isEmpty} from './validate'
+
 import Expand from './Expand'
 import * as Action from './actions'
 import {objectType, contains} from './utils'
@@ -15,15 +18,18 @@ class PredictForm extends FormComponent {
   render() {
     const {fields: {modelID, datasetID}, handleSubmit, submitting, resetForm,
            error} = this.props;
+
     let datasets = this.props.datasets.map(ds => (
       {id: ds.id,
        label: ds.name}
     ));
 
-    let models = this.props.models.map(model => (
-      {id: model.id,
-       label: model.name}
-    ));
+    let models = this.props.models
+                     .filter(model => !isEmpty(model.finished))
+                     .map(model => (
+                       {id: model.id,
+                        label: model.name}
+                     ));
 
     return (
       <div>
