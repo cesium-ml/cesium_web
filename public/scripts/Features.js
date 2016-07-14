@@ -22,7 +22,7 @@ var TabPanel = ReactTabs.TabPanel;
 class FeaturizeForm extends FormComponent {
   render() {
     const {fields, fields: {datasetID, featuresetName, customFeatsCode, isTest},
-           handleSubmit, submitting, resetForm, error} = this.props;
+           handleSubmit, submitting, resetForm, error, groupToggleCheckedFeatures} = this.props;
     let datasets = this.props.datasets.map(ds => (
       {id: ds.id,
        label: ds.name}
@@ -47,6 +47,7 @@ class FeaturizeForm extends FormComponent {
               <Tab>Custom Features</Tab>
             </TabList>
             <TabPanel>
+              <a href="#" onClick={() => {groupToggleCheckedFeatures("obs_")}}>Check/Uncheck All</a>
               <ul>
                 {this.props.features.obs_features.map(feature => (
                    <CheckBoxInput key={'obs_' + feature} label={feature}
@@ -56,6 +57,7 @@ class FeaturizeForm extends FormComponent {
               </ul>
             </TabPanel>
             <TabPanel>
+              <a href="#" onClick={() => {groupToggleCheckedFeatures("sci_")}}>Check/Uncheck All</a>
               <ul>
                 {this.props.features.sci_features.map(feature => (
                    <CheckBoxInput key={'sci_' + feature} label={feature}
@@ -100,6 +102,12 @@ let mapStateToProps = (state, ownProps) => {
   }
 }
 
+let ffMapDispatchToProps = (dispatch) => {
+  return {
+    groupToggleCheckedFeatures: (prefix) => dispatch(Action.groupToggleCheckedFeatures(prefix))
+  }
+}
+
 const validate = Validate.createValidator({
   datasetID: [Validate.required],
   featuresetName: [Validate.required]
@@ -108,7 +116,7 @@ const validate = Validate.createValidator({
 FeaturizeForm = reduxForm({
   form: 'featurize',
   fields: ['']
-}, mapStateToProps)(FeaturizeForm);
+}, mapStateToProps, ffMapDispatchToProps)(FeaturizeForm);
 
 
 var FeaturesTab = (props) => {

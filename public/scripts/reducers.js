@@ -66,6 +66,17 @@ let myFormReducer = (theirFormReducer) => {
       case Action.SELECT_PROJECT:
         const {id} = action.payload;
         state.projectSelector.project.value = id ? id.toString() : "";
+      case Action.GROUP_TOGGLE_FEATURES:
+        let field_names = Object.keys(state.featurize).filter(
+          fn => fn.startsWith(action.payload))
+        let featurizeFormState = Object.assign({}, state.featurize)
+        let allAreChecked = (field_names.filter(
+          el => !featurizeFormState[el].value).length == 0);
+        for (var idx in field_names) {
+          featurizeFormState[field_names[idx]].value = !allAreChecked;
+        }
+        featurizeFormState["dummy_" + String(Math.random())] = null;
+        state.featurize = featurizeFormState;
     }
     return theirFormReducer(state, action);
   }
