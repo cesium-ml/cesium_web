@@ -119,15 +119,13 @@ NewModelForm = reduxForm({
 
 export var Model = (props) => {
   let style = {
-    border: '5px solid PowderBlue',
-    padding: '2em'
   }
 
   let model = props.model;
 
   return (
     <div style={style}>
-      <b>Name: {model.name}</b><br/>
+      <h3>{model.name}</h3>
     {model.params.map((param, idx) => {
       let pProps = props[param.name];
       if (param.type === 'bool') {

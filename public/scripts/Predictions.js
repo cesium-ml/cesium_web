@@ -7,7 +7,6 @@ import { FormComponent, TextInput, CheckBoxInput, SelectInput, SubmitButton,
 import * as Validate from './validate'
 import Expand from './Expand'
 import * as Action from './actions'
-import {plot_example} from './example_plot'
 import {objectType, contains} from './utils'
 import FoldableRow from './FoldableRow'
 
@@ -104,7 +103,7 @@ export var PredictionsTable = (props) => {
              </tr>
              <tr key={'pred' + idx}>
                <td colSpan={6}>
-                 <PredictionResults prediction={prediction} />
+                 <PredictionResults prediction={prediction}/>
                </td>
             </tr>
         </FoldableRow>
@@ -212,7 +211,6 @@ let dpMapDispatchToProps = (dispatch) => {
 
 DeletePrediction = connect(null, dpMapDispatchToProps)(DeletePrediction);
 
-
 class PredictTab extends Component {
   render() {
     let props = this.props;
@@ -225,13 +223,8 @@ class PredictTab extends Component {
         </Expand>
         <br/>
         <PredictionsTable selectedProject={props.selectedProject}/>
-        <br/>
-        <div id='plotly-div'></div>
       </div>
     );
-  }
-  componentDidMount() {
-    plot_example();
   }
 }
 

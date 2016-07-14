@@ -274,7 +274,8 @@ var MainContent = React.createClass({
             <DatasetsTab selectedProject={this.props.selectedProject}/>
           </TabPanel>
           <TabPanel style={style.tabPanel}>
-            <FeaturesTab selectedProject={this.props.selectedProject} />
+            <FeaturesTab selectedProject={this.props.selectedProject}
+                         featurePlotURL={location.protocol + '//' + this.props.root + 'plot_features'}/>
           </TabPanel>
           <TabPanel style={style.tabPanel}>
             <ModelsTab selectedProject={this.props.selectedProject}/>

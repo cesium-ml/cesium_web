@@ -62,6 +62,11 @@ export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION'
 let nextNotificationId = 0
 export function showNotification(note, type='info') {
   let thisId = nextNotificationId++;
+
+  if (type == 'error') {
+    console.error(note)
+  }
+
   return (dispatch) => {
     dispatch({
       type: SHOW_NOTIFICATION,
