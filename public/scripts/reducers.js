@@ -70,14 +70,8 @@ let myFormReducer = (theirFormReducer) => {
         let field_names = Object.keys(state.featurize).filter(
           fn => fn.startsWith(action.payload))
         let featurizeFormState = Object.assign({}, state.featurize)
-        let allAreChecked = (() => {
-          for (var idx in field_names) {
-            if (featurizeFormState[field_names[idx]].value == false) {
-              return false;
-            }
-            return true;
-          }
-        })()
+        let allAreChecked = (field_names.filter(
+          el => !featurizeFormState[el].value).length == 0);
         for (var idx in field_names) {
           featurizeFormState[field_names[idx]].value = !allAreChecked;
         }
