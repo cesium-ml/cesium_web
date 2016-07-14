@@ -451,11 +451,11 @@ def predictions(prediction_id=None):
 
         dataset = m.Dataset.get(m.Dataset.id == data["datasetID"])
         model = m.Model.get(m.Model.id == data["modelID"])
-        if fset.model is None:
-            raise RuntimeError("Can't predict for in-progress featureset.")
+        if model.finished is None:
+            raise RuntimeError("Can't predict for in-progress model.")
         fset = model.featureset
         if fset.finished is None:
-            raise RuntimeError("Can't predict for in-progress model.")
+            raise RuntimeError("Can't predict for in-progress featureset.")
         prediction_path = pjoin(cfg['paths']['predictions_folder'],
                                 '{}_prediction.nc'.format(uuid.uuid4()))
         prediction_file = m.File.create(uri=prediction_path)
