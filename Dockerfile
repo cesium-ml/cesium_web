@@ -4,7 +4,9 @@ RUN apt-get update && \
     apt-get -y upgrade && \
     apt-get install -y python3 python3-venv libpq-dev libhdf5-serial-dev \
                        libnetcdf-dev supervisor libpython3-dev supervisor \
-                       nginx npm nodejs
+                       nginx npm nodejs && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN python3 -m venv /cesium_env
 
@@ -17,7 +19,6 @@ RUN bash -c "source /cesium_env/bin/activate && \
     make paths && \
     make dependencies && \
     cp docker/cesium-docker.yaml . && \
-    cp docker/* . && \
     ln -s /usr/bin/nodejs /usr/bin/node"
 
 EXPOSE 5000
