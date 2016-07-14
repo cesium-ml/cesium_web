@@ -3,7 +3,10 @@ import { connect } from 'react-redux'
 import {reduxForm} from 'redux-form'
 
 import { FormComponent, TextInput, CheckBoxInput, SelectInput, SubmitButton, Form, Button } from './Form'
+
 import * as Validate from './validate'
+import { isEmpty } from './validate'
+
 import * as Action from './actions'
 import Expand from './Expand'
 import { $try } from './utils'
@@ -39,11 +42,14 @@ class NewModelForm extends FormComponent {
       }
     }
 
-    let featureSets = this.props.featureSets.map(fs => (
-      {
-        id: fs.id,
-        label: fs.name
-      }));
+    let featureSets = this.props.featureSets
+                          .filter(fs => !isEmpty(fs.finished))
+                          .map(fs => (
+                            {
+                              id: fs.id,
+                              label: fs.name
+                            }
+                          ))
 
     let chosenModel = this.props.models[modelType.value];
 
