@@ -133,7 +133,10 @@ export var DeleteProject = (props) => {
   }
 
   return (
-    <a style={style} onClick={() => props.deleteProject(props.projectId)}><span style={minusStyle}>- </span>Delete Project</a>
+    <a style={style} onClick={(e) => {
+      e.stopPropagation();
+      props.deleteProject(props.projectId)
+    }}><span style={minusStyle}>- </span>Delete Project</a>
   )
 }
 

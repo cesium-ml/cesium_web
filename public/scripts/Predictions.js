@@ -214,7 +214,10 @@ export var DeletePrediction = (props) => {
     display: 'inline-block'
   }
   return (
-    <a style={style} onClick={() => props.deletePrediction(props.predictionID)}>Delete</a>
+    <a style={style} onClick={(e) => {
+      e.stopPropagation();
+      props.deletePrediction(props.predictionID)
+    }}>Delete</a>
   )
 }
 
