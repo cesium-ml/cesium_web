@@ -157,27 +157,35 @@ export var FeatureTable = (props) => {
           <tr>
             <th style={{width: '15em'}}>Name</th>
             <th style={{width: '20em'}}>Created</th>
-            <th style={{width: '10em'}}>Debug</th>
+            <th style={{width: '10em'}}>Status</th>
             <th style={{width: '15em'}}>Actions</th>
             <th style={{width: 'auto'}}></th>{ /* extra column for spacing */ }
           </tr>
         </thead>
 
-        {props.featuresets.map((featureset, idx) => (
-          <FoldableRow key={idx}>
-            <tr key={featureset.id}>
-               <td>{featureset.name}</td>
-               <td>{featureset.created}</td>
-               <td>Project: {featureset.project}</td>
-               <td><DeleteFeatureset featuresetID={featureset.id}/></td>
-            </tr>
-            <tr key={"plot" + featureset.id}>
-              <td colSpan={4}>
-                <Plot url={props.featurePlotURL + '/' + featureset.id}/>
-              </td>
-            </tr>
-          </FoldableRow>
-        ))}
+    {props.featuresets.map((featureset, idx) => {
+
+      let done = featureset.finished
+      let foldedContent = done && (
+        <tr key={"plot" + featureset.id}>
+          <td colSpan={4}>
+            <Plot url={props.featurePlotURL + '/' + featureset.id}/>
+          </td>
+        </tr>)
+
+      let status = done ? <td>Completed {featureset.finished}</td> : <td>In progress</td>
+
+      return (
+        <FoldableRow key={idx}>
+          <tr key={featureset.id}>
+            <td>{featureset.name}</td>
+            <td>{featureset.created}</td>
+            {status}
+            <td><DeleteFeatureset featuresetID={featureset.id}/></td>
+          </tr>
+          {foldedContent}
+        </FoldableRow>
+      )})}
 
 
       </table>
