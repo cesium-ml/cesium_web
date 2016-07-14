@@ -42,7 +42,7 @@ export const FETCH_SKLEARN_MODELS = 'cesium/FETCH_SKLEARN_MODELS'
 export const RECEIVE_SKLEARN_MODELS = 'cesium/RECEIVE_SKLEARN_MODELS'
 
 export const SPIN_LOGO = 'cesium/SPIN_LOGO'
-export const CHECK_UNCHECK_FEATURES = '/cesium/CHECK_UNCHECK_FEATURES'
+export const GROUP_TOGGLE_FEATURES = 'cesium/GROUP_TOGGLE_FEATURES'
 
 
 import { showNotification, reduceNotifications } from './Notifications'
@@ -623,9 +623,9 @@ export function spinLogo() {
 }
 
 
-export function checkUncheckAllFeatures(prefix) {
+export function groupToggleCheckedFeatures(prefix) {
   return {
-    type: CHECK_UNCHECK_FEATURES,
+    type: GROUP_TOGGLE_FEATURES,
     payload: prefix
   }
 }

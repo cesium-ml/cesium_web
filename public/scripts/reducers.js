@@ -66,7 +66,7 @@ let myFormReducer = (theirFormReducer) => {
       case Action.SELECT_PROJECT:
         const {id} = action.payload;
         state.projectSelector.project.value = id ? id.toString() : "";
-      case Action.CHECK_UNCHECK_FEATURES:
+      case Action.GROUP_TOGGLE_FEATURES:
         let field_names = Object.keys(state.featurize).filter(
           fn => fn.startsWith(action.payload))
         let featurizeFormState = Object.assign({}, state.featurize)
