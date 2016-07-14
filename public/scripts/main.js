@@ -1,10 +1,7 @@
 import React from 'react'
 import { connect } from "react-redux"
 import ReactDOM from 'react-dom'
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
-import FileInput from 'react-file-input'
 import ReactTabs from 'react-tabs'
-import CheckboxGroup from 'react-checkbox-group'
 
 var Tab = ReactTabs.Tab;
 var Tabs = ReactTabs.Tabs;

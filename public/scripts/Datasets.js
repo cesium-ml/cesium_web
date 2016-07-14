@@ -2,9 +2,6 @@ import React from 'react'
 import { connect } from "react-redux"
 import {reduxForm} from 'redux-form'
 
-import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
-//import FileInput from 'react-file-input'
-
 import {FormComponent, Form, TextInput, FileInput, SubmitButton } from './Form'
 import * as Validate from './validate'
 import Expand from './Expand'
