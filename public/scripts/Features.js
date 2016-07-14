@@ -1,14 +1,10 @@
 import React from 'react'
 import { connect } from "react-redux"
 import {reduxForm} from 'redux-form'
-import { FormInputRow, FormSelectInput, SelectInput, FormTitleRow,
-         FormComponent, Form, TextInput, TextareaInput, FileInput, SubmitButton,
-         CheckBoxInput } from './Form'
-//import FileInput from 'react-file-input'
+import { FormComponent, Form, TextInput, TextareaInput, FileInput, SubmitButton,
+         CheckBoxInput, SelectInput } from './Form'
 import ReactTabs from 'react-tabs'
-import CheckboxGroup from 'react-checkbox-group'
-import _ from 'underscore'
-import filter from 'filter-values'
+
 import * as Validate from './validate'
 import Expand from './Expand'
 import * as Action from './actions'

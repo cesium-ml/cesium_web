@@ -1,6 +1,7 @@
 import datetime
 import inspect
 import sys
+import time
 
 import peewee as pw
 from playhouse.fields import ManyToManyField
@@ -210,9 +211,17 @@ models = [
 ]
 
 
-def create_tables():
-    db.create_tables(models, safe=True)
-
+def create_tables(retry=5):
+    for i in range(1, retry + 1):
+        try:
+            db.create_tables(models, safe=True)
+            return
+        except Exception as e:
+            if (i == retry):
+                raise e
+            else:
+                print('Could not connect to database...sleeping 5')
+                time.sleep(5)
 
 def drop_tables():
     db.drop_tables(models, safe=True, cascade=True)

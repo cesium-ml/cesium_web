@@ -1,0 +1,38 @@
+web:
+  image: cesium/web
+  ports:
+    - "9000:5000"
+  links:
+    - db
+    - celery
+  volumes:
+    - .:/home/cesium_app
+#  depends_on:
+#    - db
+#    - rabbit
+#    - celery
+
+db:
+  image: cesium/postgres
+#  volumes:
+#    - ./_postgres_data:/var/lib/postgresql/data/
+  environment:
+    - POSTGRES_USER=cesium
+    - POSTGRES_PASSWORD=
+    - POSTGRES_DB=cesium
+#    - PGDATA=/var/lib/postgresql/data/pgdata
+
+rabbit:
+  image: rabbitmq:3
+  ports:
+    - "5672:5672"
+
+celery:
+  image: celery
+#  depends_on:
+#    - rabbit
+  links:
+    - rabbit
+  environment:
+    - CELERY_BROKER=amqp://guest:guest@rabbit:5672/
+    - CELERY_BROKER_URL=amqp://guest:guest@rabbit:5672/
