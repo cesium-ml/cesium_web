@@ -190,4 +190,6 @@ export var DeleteFeatureset = (props) => {
   )
 }
 
+DeleteFeatureset = connect()(DeleteFeatureset)
+
 module.exports = FeaturesTab;
