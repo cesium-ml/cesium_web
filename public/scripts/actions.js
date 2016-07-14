@@ -16,6 +16,7 @@ export const HIDE_NEWPROJECT_FORM = 'cesium/HIDE_NEWPROJECT_FORM'
 export const FETCH_DATASETS = 'cesium/FETCH_DATASETS'
 export const RECEIVE_DATASETS = 'cesium/RECEIVE_DATASETS'
 export const UPLOAD_DATASET = 'cesium/UPLOAD_DATASET'
+export const DELETE_DATASET = 'cesium/DELETE_DATASET'
 
 export const FETCH_FEATURES = 'cesium/FETCH_FEATURES'
 export const FETCH_FEATURESETS = 'cesium/FETCH_FEATURESETS'
@@ -428,6 +429,28 @@ export function computeFeatures(form) {
         return json;
       })
     )
+}
+
+
+export function deleteDataset(id) {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      DELETE_DATASET,
+
+      fetch('/dataset/' + id, {method: 'DELETE'})
+        .then(response => response.json())
+        .then(json => {
+          if (json.status == 'success') {
+            dispatch(showNotification('Dataset successfully deleted'));
+          } else {
+            dispatch(
+              showNotification(
+                'Error deleting dataset ({})'.format(json.message)
+              ));
+          }
+        })
+  )
 }
 
 

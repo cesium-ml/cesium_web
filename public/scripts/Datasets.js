@@ -73,7 +73,7 @@ export var DatasetTable = (props) => {
     <table className="table">
       <thead>
         <tr>
-          <th>Name</th><th>Created</th><th>Debug (TODO remove)</th>
+          <th>Name</th><th>Created</th><th>Actions</th>
     </tr>
 
 
@@ -81,7 +81,7 @@ export var DatasetTable = (props) => {
       <tr key={dataset.id}>
         <td>{dataset.name}</td>
         <td>{dataset.created}</td>
-        <td>Project: {dataset.project}</td>
+        <td><DeleteDataset datasetID={dataset.id}/></td>
       </tr>
     ))}
 
@@ -102,5 +102,19 @@ function mapStateToProps(state, ownProps) {
 }
 
 DatasetTable = connect(mapStateToProps)(DatasetTable);
+
+
+export var DeleteDataset = (props) => {
+  let style = {
+    display: 'inline-block'
+  }
+  return (
+    <a style={style} onClick={() => {
+      props.dispatch(Action.deleteDataset(props.datasetID))
+    }}>Delete</a>
+  )
+}
+
+DeleteDataset = connect()(DeleteDataset)
 
 module.exports = DatasetsTab;
