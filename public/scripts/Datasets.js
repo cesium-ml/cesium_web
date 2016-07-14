@@ -30,11 +30,25 @@ class DatasetForm extends FormComponent {
     const {fields: {datasetName, headerFile, tarFile},
            error, handleSubmit} = this.props;
 
+    let description = {
+      fontStyle: 'italic',
+      paddingBottom: '1em'
+    }
+
     return (
       <Form onSubmit={handleSubmit} error={error}>
         <TextInput label="Dataset Name" {...datasetName}/>
         <FileInput label="Header File" {...headerFile}/>
+
+        <div style={description}>
+          The header file is ...
+        </div>
+
         <FileInput label="Data Tarball" {...tarFile}/>
+        <div style={description}>
+          The data tarball should have the format...
+        </div>
+
         <SubmitButton label="Upload Dataset"/>
       </Form>
     )
