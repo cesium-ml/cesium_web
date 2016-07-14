@@ -16,7 +16,7 @@ RUN bash -c "source /cesium_env/bin/activate && \
     export PIP_FIND_LINKS=http://wheels.scikit-image.org && \
     make paths && \
     make dependencies && \
-    cp docker/cesium_docker.yaml . && \
+    cp docker/cesium-docker.yaml . && \
     cp docker/* . && \
     ln -s /usr/bin/nodejs /usr/bin/node"
 
