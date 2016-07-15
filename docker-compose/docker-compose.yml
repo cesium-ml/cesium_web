@@ -7,6 +7,8 @@ web:
     - celery
   volumes:
     - .:/home/cesium_app
+  environment:
+    - CELERY_BROKER=amqp://guest:guest@rabbit:5672/
 #  depends_on:
 #    - db
 #    - rabbit
