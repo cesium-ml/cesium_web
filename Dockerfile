@@ -25,6 +25,7 @@ RUN apt-get update && \
 EXPOSE 5000
 
 CMD bash -c "source /cesium_env/bin/activate && \
+  make log & \
   PYTHONPATH=. python -c \"from cesium_app.models import create_tables as c; c()\" && \
   supervisord -c conf/supervisord.conf"
 
