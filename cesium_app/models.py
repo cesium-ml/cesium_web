@@ -13,8 +13,8 @@ from cesium_app.json_util import to_json
 from cesium_app.config import cfg
 
 
-db = pw.PostgresqlDatabase(**cfg['database'], autocommit=True,
-                           autorollback=True)
+db = pw.PostgresqlDatabase(autocommit=True, autorollback=True,
+                           **cfg['database'])
 
 
 class BaseModel(pw.Model):
