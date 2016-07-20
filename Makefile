@@ -57,4 +57,4 @@ celery:
 		PYTHONPATH="./cesium_app" celery worker -A cesium_app.celery_app -l info & \
 	else \
 		echo "[Celery] is already running"; \
-        fi
+	fi

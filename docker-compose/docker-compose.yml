@@ -4,15 +4,14 @@ web:
     - "9000:5000"
   links:
     - db
-    - celery
+    - rabbit
   volumes:
     - .:/home/cesium_app
   environment:
-    - CELERY_BROKER=amqp://guest:guest@rabbit:5672/
+    - CELERY_BROKER=amqp://guest:guest@rabbit:5672//
 #  depends_on:
 #    - db
 #    - rabbit
-#    - celery
 
 db:
   image: cesium/postgres
@@ -28,13 +27,3 @@ rabbit:
   image: rabbitmq:3
   ports:
     - "5672:5672"
-
-celery:
-  image: celery
-#  depends_on:
-#    - rabbit
-  links:
-    - rabbit
-  environment:
-    - CELERY_BROKER=amqp://guest:guest@rabbit:5672/
-    - CELERY_BROKER_URL=amqp://guest:guest@rabbit:5672/
