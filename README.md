@@ -2,16 +2,15 @@
 
 ## Running the app
 
-Initialize the RethinkDB database with `make db_init`, start the server with `make` and navigate to `localhost:4000` in a browser.
+Initialize the RethinkDB database with `make db_init`, start the server with
+`make` and navigate to `localhost:5000` in a browser.
 
 
 ## Dev
 
 `npm v^3.0.0` required.
 
-Run `make install` to install dependencies locally.
-
-Run `make bundle` to run `webpack`.
+Run `make` to install dependencies and launch the web server.
 
 See the above section to run the app from here.
 
