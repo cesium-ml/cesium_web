@@ -1,4 +1,4 @@
-# Mock Cesium App w/ React
+# Cesium Web Frontend
 
 ## Running the app
 
