@@ -11,3 +11,4 @@ pyjwt
 plotly
 simplejson
 celery
+distributed
