@@ -10,14 +10,10 @@ import time
 from distributed import Executor
 
 
+IP = '127.0.0.1'
 PORT = 63000
 PORT_SCHEDULER = 63500
 
-
-def report_result(result):
-    print("<Post result to db etc. on success here>")
-    print("Result is: {}".format(result))
-    print("---")
 
 
 def my_task(n):
@@ -40,14 +36,14 @@ class TaskHandler(tornado.web.RequestHandler):
 
         loop = tornado.ioloop.IOLoop.current()
 
-        ex = Executor('127.0.0.1:{}'.format(PORT_SCHEDULER), loop=loop,
-                      start=False)
+        ex = Executor('{}:{}'.format(IP, PORT_SCHEDULER),
+                      loop=loop, start=False)
         yield ex._start()
 
-        print('Submitting task')
         try:
             task = ex.submit(my_task, 2, pure=False)
         except Exception as e:
+            print('Exception raised while submitting task:')
             print(e)
             self.write({'status': 'error',
                         'message': 'Failed to submit task: {}'.format(e)})
@@ -57,14 +53,22 @@ class TaskHandler(tornado.web.RequestHandler):
                 'data': {'task_id': task.key}
                 })
 
-        loop.add_future(task, report_result)
+        loop.spawn_callback(self.report_result, task)
+
+    @tornado.gen.coroutine
+    def report_result(self, task):
+        result = yield task._result()
+        print("<Post result to db etc. on success here>")
+        print("Result is: {}".format(result))
+        print("---")
+
 
 
 def make_app():
     return tornado.web.Application([
         (r"/task/([0-9a-z]+)?", TaskHandler),
         (r"/task", TaskHandler),
-        ])
+        ], debug=True)
 
 
 if __name__ == "__main__":
