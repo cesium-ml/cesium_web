@@ -30,11 +30,9 @@ class TaskHandler(tornado.web.RequestHandler):
     @tornado.gen.coroutine
     def post(self):
         data = json.loads(self.request.body.decode('utf-8'))
-        print('Request received:')
+        print('--- Begin Request ---')
         print(data)
-        print('---')
-
-        loop = tornado.ioloop.IOLoop.current()
+        print('--- End Request ---')
 
         try:
             task = self.application.executor.submit(my_task, 2, pure=False)
@@ -59,13 +57,22 @@ class TaskHandler(tornado.web.RequestHandler):
         print("---")
 
 
+class Application(tornado.web.Application):
+    def __init__(self, *args, **kwargs):
+        loop = kwargs.pop('loop')
+        tornado.web.Application.__init__(self, *args, **kwargs)
 
-def make_app(executor):
-    app = tornado.web.Application([
-        (r"/task/([0-9a-z]+)?", TaskHandler, dict(executor=executor)),
+        self.executor = Executor('{}:{}'.format(IP, PORT_SCHEDULER),
+                                 loop=loop, start=False)
+
+        loop.add_future(self.executor._start(), None)
+
+
+def make_app(loop):
+    app = Application([
+        (r"/task/([0-9a-z]+)?", TaskHandler),
         (r"/task", TaskHandler),
-        ], debug=True)
-    app.executor = executor
+        ], debug=True, loop=loop)
 
     return app
 
@@ -83,15 +90,9 @@ if __name__ == "__main__":
     w.start(0)
     print('Single worker activated')
 
-    executor = Executor('{}:{}'.format(IP, PORT_SCHEDULER),
-                        loop=loop, start=False)
-    print('Executor started')
-
-    app = make_app(executor)
+    app = make_app(loop)
     app.listen(PORT)
     print('Task server listening on port {}'.format(PORT))
-
-    loop.add_future(executor._start(), None)
 
     print('Starting main loop...')
     loop.start()
