@@ -1,0 +1,55 @@
+import pytest
+from selenium import webdriver
+import uuid
+import os
+from os.path import join as pjoin
+from util import create_new_project, delete_current_project
+
+test_dataset_name = str(uuid.uuid4())
+
+
+@pytest.fixture(scope="module")
+def driver(request):
+    from selenium import webdriver
+
+    driver = webdriver.PhantomJS()
+    request.addfinalizer(lambda: driver.close())
+
+    return driver
+
+
+def test_add_new_dataset(driver):
+    driver.get("http://localhost:5000")
+    driver.set_window_size(1920,1080)
+    create_new_project(driver)
+
+    driver.find_element_by_id('react-tabs-2').click()
+    driver.find_element_by_partial_link_text('Upload new dataset').click()
+
+    dataset_name = driver.find_element_by_css_selector('[name=datasetName]')
+    dataset_name.send_keys(test_dataset_name)
+
+    header_file = driver.find_element_by_css_selector('[name=headerFile]')
+    header_file.send_keys(pjoin(os.path.dirname(__file__), 'data/asas_training_subset_classes.dat'))
+
+    tar_file = driver.find_element_by_css_selector('[name=tarFile]')
+    tar_file.send_keys(pjoin(os.path.dirname(__file__), 'data/asas_training_subset.tar.gz'))
+
+    driver.find_element_by_class_name('btn-primary').click()
+
+    driver.implicitly_wait(1)
+    status_td = driver.find_element_by_xpath(
+        "//div[contains(text(),'Successfully uploaded new dataset')]")
+    assert test_dataset_name in driver.page_source
+
+
+def test_delete_dataset(driver):
+    # Delete data set
+    driver.find_element_by_partial_link_text('Delete').click()
+    driver.implicitly_wait(1)
+    status_td = driver.find_element_by_xpath(
+        "//div[contains(text(),'Dataset successfully deleted')]")
+    driver.save_screenshot("/tmp/del_dset.png")
+    assert test_dataset_name not in driver.page_source
+
+    delete_current_project(driver)
