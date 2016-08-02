@@ -36,12 +36,8 @@ class TaskHandler(tornado.web.RequestHandler):
 
         loop = tornado.ioloop.IOLoop.current()
 
-        ex = Executor('{}:{}'.format(IP, PORT_SCHEDULER),
-                      loop=loop, start=False)
-        yield ex._start()
-
         try:
-            task = ex.submit(my_task, 2, pure=False)
+            task = self.application.executor.submit(my_task, 2, pure=False)
         except Exception as e:
             print('Exception raised while submitting task:')
             print(e)
@@ -64,11 +60,14 @@ class TaskHandler(tornado.web.RequestHandler):
 
 
 
-def make_app():
-    return tornado.web.Application([
-        (r"/task/([0-9a-z]+)?", TaskHandler),
+def make_app(executor):
+    app = tornado.web.Application([
+        (r"/task/([0-9a-z]+)?", TaskHandler, dict(executor=executor)),
         (r"/task", TaskHandler),
         ], debug=True)
+    app.executor = executor
+
+    return app
 
 
 if __name__ == "__main__":
@@ -84,8 +83,15 @@ if __name__ == "__main__":
     w.start(0)
     print('Single worker activated')
 
-    app = make_app()
+    executor = Executor('{}:{}'.format(IP, PORT_SCHEDULER),
+                        loop=loop, start=False)
+    print('Executor started')
+
+    app = make_app(executor)
     app.listen(PORT)
     print('Task server listening on port {}'.format(PORT))
 
+    loop.add_future(executor._start(), None)
+
+    print('Starting main loop...')
     loop.start()
