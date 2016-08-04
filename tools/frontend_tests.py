@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+
+import subprocess
+import os
+from os.path import join as pjoin
+import time
+
+
+def supervisor_status():
+    """
+    Return output from supervisorctl
+    """
+    return subprocess.check_output(['supervisorctl', 'status'],
+                                   cwd=web_client_path).split(b'\n')[:-1]
+
+
+def add_test_yaml():
+    print('Creating cesium-test.yaml')
+    with open('cesium-test.yaml', 'w') as f:
+        f.write('database:\n    database: test\n    user: cesium')
+
+
+def delete_test_yaml():
+    os.remove('cesium-test.yaml')
+
+
+if __name__ == '__main__':
+    add_test_yaml()
+    base_dir = os.path.abspath(pjoin(os.path.dirname(__file__), '..'))
+    web_client = subprocess.Popen(['make', 'debug'], cwd=base_dir)
+
+    print('[test_frontend] Waiting for supervisord to launch all server processes...')
+
+    try:
+        timeout = 0
+        while ((timeout < 5) and
+               (not all([b'RUNNING' in line for line in supervisor_status()]))):
+            time.sleep(1)
+            timeout += 1
+
+        if timeout == 5:
+            print('[test_frontend] Could not launch server processes; terminating')
+            sys.exit(-1)
+
+        for timeout in range(10):
+            conn = http.HTTPConnection("localhost", 5000)
+            try:
+                conn.request('HEAD', '/')
+                status = conn.getresponse().status
+                if status == 200:
+                    break
+            except socket.error:
+                pass
+            time.sleep(1)
+        else:
+            raise socket.error("Could not connect to localhost:5000.")
+
+        if status != 200:
+            print('[test_frontend] Server status is {} instead of 200'.format(
+                status))
+            sys.exit(-1)
+        else:
+            print('[test_frontend] Verified server availability')
+
+        print('[test_frontend] Launching pytest...')
+        test_dir = pjoin(base_dir, 'tests')
+        status = subprocess.call(['py.test', '--verbose'] + test_dir)
+    finally:
+        print('[test_frontend] Terminating supervisord...')
+        web_client.terminate()
+        delete_test_yaml()
+
+    sys.exit(status)
