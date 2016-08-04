@@ -3,16 +3,6 @@ from selenium import webdriver
 import uuid
 
 
-@pytest.fixture(scope="module")
-def driver(request):
-    from selenium import webdriver
-
-    driver = webdriver.PhantomJS()
-    request.addfinalizer(lambda: driver.close())
-
-    return driver
-
-
 def test_create_project(driver):
     driver.set_window_size(1920,1080)
 

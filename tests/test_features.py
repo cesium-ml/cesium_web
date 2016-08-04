@@ -10,16 +10,6 @@ import util
 test_featureset_name = str(uuid.uuid4())
 
 
-@pytest.fixture(scope="module")
-def driver(request):
-    from selenium import webdriver
-
-    driver = webdriver.PhantomJS()
-    request.addfinalizer(lambda: driver.close())
-
-    return driver
-
-
 def test_add_new_featureset(driver):
     driver.get('http://localhost:5000')
     driver.set_window_size(1920,1080)
@@ -32,6 +22,7 @@ def test_add_new_featureset(driver):
     featureset_name = driver.find_element_by_css_selector('[name=featuresetName]')
     featureset_name.send_keys(test_featureset_name)
 
+    # THE FOLLOWING DOES NOT WORK WITH PHANTOM JS
     # Test check/uncheck all features in group
     # amplitude = driver.find_element_by_css_selector('[name=sci_amplitude]')
     # assert amplitude.get_attribute('value') == 'true'

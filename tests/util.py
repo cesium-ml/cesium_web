@@ -6,7 +6,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 def create_new_project(driver):
-    driver.implicitly_wait(1)
+    driver.implicitly_wait(5)
+    driver.save_screenshot("/tmp/before_add_proj.png")
     driver.find_element_by_partial_link_text('Or click here to add a new one').click()
 
     project_name = driver.find_element_by_css_selector('[name=projectName]')

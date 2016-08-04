@@ -1,5 +1,6 @@
 import pytest
 from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import uuid
 import time
 import os
@@ -7,19 +8,9 @@ from os.path import join as pjoin
 import util
 
 
-@pytest.fixture(scope="module")
-def driver(request):
-    from selenium import webdriver
-
-    driver = webdriver.PhantomJS()
-    request.addfinalizer(lambda: driver.close())
-
-    return driver
-
-
 def test_add_prediction(driver):
     driver.get('http://localhost:5000')
-    driver.set_window_size(1920,1080)
+    driver.set_window_size(1920, 1080)
     util.create_new_project(driver)
     util.add_dataset(driver)
     util.add_featureset(driver)
@@ -44,19 +35,23 @@ def test_add_prediction(driver):
         raise
 
 
-# TODO - NOT WORKING!
-def TODO_test_click_prediction(driver):
-    driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
-    try:
-        driver.implicitly_wait(1)
-        driver.find_element_by_xpath("//td[contains(text(),'Mira')]")
-        driver.find_element_by_xpath("//th[contains(text(),'Time Series')]")
-    except:
-        driver.save_screenshot("/tmp/pred_click_tr_fail.png")
-        raise
+# THE FOLLOWING DOES NOT WORK WITH PHANTOM JS
+# def test_click_prediction(driver):
+#     driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
+#     try:
+#         import time; time.sleep(1)
+#         driver.implicitly_wait(1)
+#         driver.find_element_by_xpath("//td[contains(text(),'Mira')]")
+#         driver.find_element_by_xpath("//th[contains(text(),'Time Series')]")
+#     except:
+#         driver.save_screenshot("/tmp/pred_click_tr_fail.png")
+#         print(driver.get_log("client"))
+#         raise
 
 
 def test_delete_prediction(driver):
+    driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
+    import time; time.sleep(3)
     driver.find_element_by_partial_link_text('Delete').click()
     driver.implicitly_wait(1)
     status_td = driver.find_element_by_xpath(

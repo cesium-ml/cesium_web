@@ -13,18 +13,6 @@ def driver(request):
 
 
 def test_front_page(driver):
-    driver.get("http://localhost:4000")
+    driver.get("http://localhost:5000")
     assert 'localhost' in driver.current_url
-    assert 'Create a new project' in driver.find_element_by_tag_name('body').text
-
-
-def test_create_project(driver):
-    form = driver.find_element_by_css_selector('[data-test-name=newProjectForm]')
-
-    project_name = form.find_element_by_tag_name('input')
-    project_name.send_keys('Test Project')
-
-    form.find_element_by_class_name('submitButton').click()
-
-    driver.refresh()
-    assert 'Test Project' in driver.page_source
+    assert 'Choose your project here' in driver.find_element_by_tag_name('body').text

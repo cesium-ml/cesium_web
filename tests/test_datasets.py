@@ -8,16 +8,6 @@ from util import create_new_project, delete_current_project
 test_dataset_name = str(uuid.uuid4())
 
 
-@pytest.fixture(scope="module")
-def driver(request):
-    from selenium import webdriver
-
-    driver = webdriver.PhantomJS()
-    request.addfinalizer(lambda: driver.close())
-
-    return driver
-
-
 def test_add_new_dataset(driver):
     driver.get("http://localhost:5000")
     driver.set_window_size(1920,1080)

@@ -9,19 +9,8 @@ import util
 test_model_name = str(uuid.uuid4())
 
 
-@pytest.fixture(scope="module")
-def driver(request):
-    from selenium import webdriver
-
-    driver = webdriver.PhantomJS()
-    request.addfinalizer(lambda: driver.close())
-
-    return driver
-
-
 def test_add_model(driver):
     driver.get('http://localhost:5000')
-    driver.set_window_size(1920,1080)
     util.create_new_project(driver)
     util.add_dataset(driver)
     util.add_featureset(driver)
