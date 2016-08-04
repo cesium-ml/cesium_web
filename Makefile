@@ -51,3 +51,6 @@ attach:
 
 clean:
 	rm $(bundle)
+
+test:
+	./tools/frontend_tests.py
