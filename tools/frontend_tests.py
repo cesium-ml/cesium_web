@@ -2,16 +2,24 @@
 
 import subprocess
 import os
+import sys
 from os.path import join as pjoin
 import time
+import socket
+try:
+    import http.client as http
+except ImportError:
+    import httplib as http
 
+base_dir = os.path.abspath(pjoin(os.path.dirname(__file__), '..'))
 
 def supervisor_status():
     """
     Return output from supervisorctl
     """
-    return subprocess.check_output(['supervisorctl', 'status'],
-                                   cwd=web_client_path).split(b'\n')[:-1]
+    return subprocess.check_output(['supervisorctl', '-c',
+                                    'conf/supervisord_common.conf',
+                                    'status']).split(b'\n')[:-1]
 
 
 def add_test_yaml():
@@ -24,9 +32,16 @@ def delete_test_yaml():
     os.remove('cesium-test.yaml')
 
 
+def clear_db():
+    from cesium_app import models
+    models.drop_tables()
+    models.create_tables()
+
+
 if __name__ == '__main__':
     add_test_yaml()
-    base_dir = os.path.abspath(pjoin(os.path.dirname(__file__), '..'))
+    clear_db()
+    print("BASE DIR:", base_dir)
     web_client = subprocess.Popen(['make', 'debug'], cwd=base_dir)
 
     print('[test_frontend] Waiting for supervisord to launch all server processes...')
@@ -64,7 +79,9 @@ if __name__ == '__main__':
 
         print('[test_frontend] Launching pytest...')
         test_dir = pjoin(base_dir, 'tests')
-        status = subprocess.call(['py.test', '--verbose'] + test_dir)
+        status = subprocess.call(['py.test', '--verbose', test_dir])
+    except:
+        raise
     finally:
         print('[test_frontend] Terminating supervisord...')
         web_client.terminate()
