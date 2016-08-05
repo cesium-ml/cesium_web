@@ -12,6 +12,7 @@ from werkzeug.utils import secure_filename
 import jwt
 import datetime
 import traceback
+import requests
 
 from .config import cfg
 from cesium import obs_feature_tools as oft
@@ -23,8 +24,6 @@ from .json_util import to_json
 
 from . import models as m
 from .flow import Flow
-from .celery_tasks import (
-    featurize_and_notify, build_model_and_notify, predict_and_notify)
 from . import util
 from .ext.sklearn_models import (
     model_descriptions as sklearn_model_descriptions
@@ -33,8 +32,7 @@ from . import plot
 
 # Flask initialization
 app = Flask(__name__, static_url_path='', static_folder='../public')
-app.add_url_rule('/', 'root',
-                 lambda: app.send_static_file('index.html'))
+app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
 
 flow = Flow()
 
@@ -112,12 +110,12 @@ def task_complete():
             fset.finished = datetime.datetime.now()
             fset.save()
             success(action='cesium/SHOW_NOTIFICATION',
-                    payload={"note": "Featureset '{}'" " finished.".format(fset.name)})
+                    payload={"note": "Featureset '{}' finished.".format(fset.name)})
             return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
         elif data['status'] == 'error':
             fset.delete_instance()
             success(action='cesium/SHOW_NOTIFICATION',
-                    payload={"note": "Featureset '{}'" " failed. Please try"
+                    payload={"note": "Featureset '{}' failed. Please try"
                              " again".format(fset.name), "type": "error"})
             return success({"id": fset.id}, 'cesium/FETCH_FEATURESETS')
     elif 'model_id' in data:
@@ -127,7 +125,7 @@ def task_complete():
             model.finished = datetime.datetime.now()
             model.save()
             success(action='cesium/SHOW_NOTIFICATION',
-                    payload={"note": "Model '{}'" " finished.".format(model.name)})
+                    payload={"note": "Model '{}' finished.".format(model.name)})
             return success({"id": model.id}, 'cesium/FETCH_MODELS')
         elif data['status'] == 'error':
             model.delete_instance()
@@ -150,7 +148,7 @@ def task_complete():
         elif data['status'] == 'error':
             prediction.delete_instance()
             success(action='cesium/SHOW_NOTIFICATION',
-                    payload={"note": "Prediction '{}'/'{}'" " failed. Please try"
+                    payload={"note": "Prediction '{}'/'{}' failed. Please try"
                              " again.".format(prediction.dataset.name,
                                             prediction.model.name),
                              "type": "error" })
@@ -306,16 +304,16 @@ def Features(featureset_id=None):
 
         # Not working yet:
         if custom_feats_code and 0:
-            custom_script_path = pjoin(
+            custom_features_script = pjoin(
                 cfg['paths']['upload_folder'], "custom_feature_scripts",
                 str(uuid.uuid4()) + ".py")
-            with open(custom_script_path, 'w') as f:
+            with open(custom_features_script, 'w') as f:
                 f.write(custom_feats_code)
             # TODO: Extract list of custom features from code
             custom_features = [] # request.form.getlist("Custom Features List")
             features_to_use += custom_features
         else:
-            custom_script_path = None
+            custom_features_script = None
 
         fset_path = pjoin(cfg['paths']['features_folder'],
                           '{}_featureset.nc'.format(uuid.uuid4()))
@@ -326,11 +324,11 @@ def Features(featureset_id=None):
                                    file=m.File.create(uri=fset_path),
                                    project=dataset.project,
                                    features_list=features_to_use,
-                                   custom_features_script=custom_script_path)
+                                   custom_features_script=custom_features_script)
         res = featurize_and_notify(get_username(), fset.id, dataset.uris,
                                    features_to_use, fset_path,
-                                   custom_script_path).apply_async()
-        fset.task_id = res.task_id
+                                   custom_features_script)
+        fset.task_id = res
         fset.save()
 
         return success(fset, 'cesium/FETCH_FEATURESETS')
@@ -402,8 +400,8 @@ def Models(model_id=None):
         res = build_model_and_notify(get_username(), model.id, model_type,
                                      model_params, fset.file.uri,
                                      model_file.uri,
-                                     params_to_optimize).apply_async()
-        model.task_id = res.task_id
+                                     params_to_optimize)
+        model.task_id = res
         model.save()
 
         return success(data={'message': "We're working on your model"},
@@ -463,9 +461,9 @@ def predictions(prediction_id=None):
                                          project=dataset.project, model=model)
         res = predict_and_notify(get_username(), prediction.id, dataset.uris,
             fset.features_list, model.file.uri, prediction_path,
-            custom_features_script=fset.custom_features_script).apply_async()
+            custom_features_script=fset.custom_features_script)
 
-        prediction.task_id = res.task_id
+        prediction.task_id = res
         prediction.save()
 
         return success(prediction, 'cesium/FETCH_PREDICTIONS')
@@ -539,3 +537,55 @@ def PlotFeatures(featureset_id):
     features_to_plot = sorted(fset.features_list)[0:4]
     data, layout = plot.feature_scatterplot(fset.file.uri, features_to_plot)
     return success({'data': data, 'layout': layout})
+
+
+# TODO where do these belong? new module? here? inline above?
+# TODO where do task server params live?
+def featurize_and_notify(username, fset_id, ts_paths, features_to_use,
+                         fset_path, custom_features_script=None):
+    payload = {'type': 'featurize',
+               'params': {'ts_paths': ts_paths,
+                          'features_to_use': features_to_use,
+                          'output_path': fset_path},
+               'metadata': {'fset_id': fset_id, 'username': username}}
+    result = requests.post('http://127.0.0.1:63000/task',
+                           json=payload).json()
+    if result['status'] == 'success':
+        return result['data']['task_id']
+    else:
+        raise RuntimeError("Featurization failed: {}".format(result['message']))
+
+
+def build_model_and_notify(username, model_id, model_type, model_params,
+                           fset_path, model_path, params_to_optimize={}):
+    payload = {'type': 'build_model',
+               'params': {'model_type': model_type,
+                          'model_params': model_params,
+                          'fset_path': fset_path,
+                          'output_path': model_path,
+                          'params_to_optimize': params_to_optimize},
+               'metadata': {'model_id': model_id, 'username': username}}
+    r = requests.post('http://127.0.0.1:63000/task',
+                           json=payload)
+    result = r.json()
+    if result['status'] == 'success':
+        return result['data']['task_id']
+    else:
+        raise RuntimeError("Model building failed: {}".format(result['message']))
+
+
+def predict_and_notify(username, prediction_id, ts_paths, features_to_use,
+                       model_path, prediction_path,
+                       custom_features_script=None):
+    payload = {'type': 'predict',
+               'params': {'ts_paths': ts_paths,
+                          'features_to_use': features_to_use,
+                          'model_path': model_path,
+                          'output_path': prediction_path},
+               'metadata': {'prediction_id': prediction_id, 'username': username}}
+    result = requests.post('http://127.0.0.1:63000/task',
+                           json=payload).json()
+    if result['status'] == 'success':
+        return result['data']['task_id']
+    else:
+        raise RuntimeError("Prediction failed: {}".format(result['message']))
