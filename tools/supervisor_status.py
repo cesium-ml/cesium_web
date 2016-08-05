@@ -14,4 +14,4 @@ def supervisor_status():
 
 
 if __name__ == '__main__':
-    sys.stdout.buffer.write(b'\n'.join(supervisor_status()))
+    sys.stdout.buffer.write(b'\n'.join(supervisor_status()) + b'\n')
