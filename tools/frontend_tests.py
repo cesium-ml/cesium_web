@@ -6,20 +6,13 @@ import sys
 from os.path import join as pjoin
 import time
 import socket
+from tools.supervisor_status import supervisor_status
 try:
     import http.client as http
 except ImportError:
     import httplib as http
 
 base_dir = os.path.abspath(pjoin(os.path.dirname(__file__), '..'))
-
-def supervisor_status():
-    """
-    Return output from supervisorctl
-    """
-    return subprocess.check_output(['supervisorctl', '-c',
-                                    'conf/supervisord_common.conf',
-                                    'status']).split(b'\n')[:-1]
 
 
 def add_test_yaml():

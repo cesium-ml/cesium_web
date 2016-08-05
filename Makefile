@@ -54,3 +54,6 @@ clean:
 
 test:
 	./tools/frontend_tests.py
+
+status:
+	./tools/supervisor_status.py
