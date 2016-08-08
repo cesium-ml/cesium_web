@@ -21,14 +21,11 @@ def test_add_model(driver):
     model_name = driver.find_element_by_css_selector('[name=modelName]')
     model_name.send_keys(test_model_name)
 
-    driver.save_screenshot("/tmp/models_before_click.png")
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.save_screenshot("/tmp/models_after_click.png")
     driver.implicitly_wait(1)
     status_td = driver.find_element_by_xpath(
         "//div[contains(text(),'Model training begun')]")
-    driver.save_screenshot("/tmp/models_after_click2.png")
 
     try:
         driver.implicitly_wait(2)

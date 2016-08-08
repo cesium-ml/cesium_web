@@ -70,7 +70,6 @@ def test_delete_featureset(driver):
     except NoSuchElementException:
         pass
     else:
-        driver.save_screenshot("/tmp/after_fset_delete.png")
         raise Exception("Featureset still present in table after delete.")
 
     util.delete_dataset(driver)

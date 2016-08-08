@@ -39,7 +39,6 @@ def test_delete_dataset(driver):
     driver.implicitly_wait(1)
     status_td = driver.find_element_by_xpath(
         "//div[contains(text(),'Dataset successfully deleted')]")
-    driver.save_screenshot("/tmp/del_dset.png")
     assert test_dataset_name not in driver.page_source
 
     delete_current_project(driver)

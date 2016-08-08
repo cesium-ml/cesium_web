@@ -21,11 +21,9 @@ def test_add_prediction(driver):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.save_screenshot("/tmp/preds_after_click.png")
     driver.implicitly_wait(1)
     status_td = driver.find_element_by_xpath(
         "//div[contains(text(),'Model predictions begun')]")
-    driver.save_screenshot("/tmp/preds_after_click2.png")
 
     try:
         driver.implicitly_wait(10)

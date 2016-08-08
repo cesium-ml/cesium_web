@@ -7,7 +7,6 @@ from selenium.webdriver.support import expected_conditions as EC
 
 def create_new_project(driver):
     driver.implicitly_wait(5)
-    driver.save_screenshot("/tmp/before_add_proj.png")
     driver.find_element_by_partial_link_text('Or click here to add a new one').click()
 
     project_name = driver.find_element_by_css_selector('[name=projectName]')
@@ -18,7 +17,6 @@ def create_new_project(driver):
         driver.implicitly_wait(1)
         status_td = driver.find_element_by_xpath(
             "//div[contains(text(),'Successfully added new project')]")
-        driver.save_screenshot("/tmp/util_added_new_proj.png")
     except:
         driver.save_screenshot("/tmp/util_add_new_proj_fail.png")
         raise
@@ -52,7 +50,6 @@ def add_dataset(driver):
     status_td = driver.find_element_by_xpath(
         "//div[contains(text(),'Successfully uploaded new dataset')]")
     assert test_dset_name in driver.page_source
-    driver.save_screenshot("/tmp/util_added_new_dset.png")
 
 
 def delete_dataset(driver):
@@ -76,7 +73,6 @@ def add_featureset(driver):
     status_td = driver.find_element_by_xpath("//td[contains(text(),'In progress')]")
     driver.implicitly_wait(10)
     status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
-    driver.save_screenshot("/tmp/added_new_fset.png")
 
 
 def delete_featureset(driver):
@@ -95,14 +91,11 @@ def add_model(driver):
     model_name = driver.find_element_by_css_selector('[name=modelName]')
     model_name.send_keys(test_model_name)
 
-    driver.save_screenshot("/tmp/util_add_model_before_click.png")
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.save_screenshot("/tmp/util_add_model_after_click.png")
     driver.implicitly_wait(1)
     status_td = driver.find_element_by_xpath(
         "//div[contains(text(),'Model training begun')]")
-    driver.save_screenshot("/tmp/util_add_model_after_click2.png")
 
     try:
         driver.implicitly_wait(2)
