@@ -565,9 +565,8 @@ def build_model_and_notify(username, model_id, model_type, model_params,
                           'output_path': model_path,
                           'params_to_optimize': params_to_optimize},
                'metadata': {'model_id': model_id, 'username': username}}
-    r = requests.post('http://127.0.0.1:63000/task',
-                           json=payload)
-    result = r.json()
+    result = requests.post('http://127.0.0.1:63000/task',
+                           json=payload).json()
     if result['status'] == 'success':
         return result['data']['task_id']
     else:
