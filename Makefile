@@ -53,7 +53,7 @@ clean:
 	rm $(bundle)
 
 test:
-	PYTHONPATH='.' ./tools/frontend_tests.py
+	PYTHONPATH='.' xvfb-run ./tools/frontend_tests.py
 
 status:
 	PYTHONPATH='.' ./tools/supervisor_status.py
