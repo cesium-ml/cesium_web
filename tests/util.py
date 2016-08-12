@@ -6,8 +6,6 @@ from cesium_app import models as m
 from cesium import data_management
 from cesium.obs_feature_tools import FEATURES_LIST as obs_feats_list
 from cesium.science_feature_tools import FEATURES_LIST as sci_feats_list
-from cesium.science_feature_tools import LOMB_SCARGLE_FEATURES_LIST as \
-    lomb_feats_list
 from cesium_app.config import cfg
 import shutil
 import peewee
@@ -39,8 +37,7 @@ def test_dataset(project=None):
 
 @contextmanager
 def test_featureset(project=None):
-    features_to_use = obs_feats_list + sci_feats_list + \
-                      [x for x in lomb_feats_list if x not in sci_feats_list]
+    features_to_use = obs_feats_list + sci_feats_list
     fset_path = pjoin(os.path.dirname(__file__),
                     'data/asas_training_subset_featureset.nc')
     fset_path = shutil.copy2(fset_path, cfg['paths']['ts_data_folder'])
