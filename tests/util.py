@@ -1,110 +1,98 @@
 import uuid
 import os
 from os.path import join as pjoin
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from contextlib import contextmanager
+from cesium_app import models as m
+from cesium import data_management
+from cesium.obs_feature_tools import FEATURES_LIST as obs_feats_list
+from cesium.science_feature_tools import FEATURES_LIST as sci_feats_list
+from cesium.science_feature_tools import LOMB_SCARGLE_FEATURES_LIST as \
+    lomb_feats_list
+from cesium_app.config import cfg
+import shutil
+import peewee
+import datetime
 
 
-def create_new_project(driver):
-    driver.implicitly_wait(5)
-    driver.find_element_by_partial_link_text('Or click here to add a new one').click()
+@contextmanager
+def test_project():
+    p = m.Project.add_by('test_proj', 'test_desc', 'testuser@gmail.com')
+    yield p
+    p.delete_instance()
 
-    project_name = driver.find_element_by_css_selector('[name=projectName]')
-    test_proj_name = str(uuid.uuid4())
-    project_name.send_keys(test_proj_name)
-    driver.find_element_by_class_name('btn-primary').click()
+
+@contextmanager
+def test_dataset(project=None):
+    header = pjoin(os.path.dirname(__file__),
+                   'data/asas_training_subset_classes.dat')
+    tarball = pjoin(os.path.dirname(__file__),
+                    'data/asas_training_subset.tar.gz')
+    header = shutil.copy2(header, cfg['paths']['upload_folder'])
+    tarball = shutil.copy2(tarball, cfg['paths']['upload_folder'])
+    time_series = data_management.parse_and_store_ts_data(
+        tarball, cfg['paths']['ts_data_folder'], header)
+    ts_paths = [ts.path for ts in time_series]
+    d = m.Dataset.add(name='test_ds', project=project, file_uris=ts_paths)
+    yield d
+    d.delete_instance()
+
+
+@contextmanager
+def test_featureset(project=None):
+    features_to_use = obs_feats_list + sci_feats_list + \
+                      [x for x in lomb_feats_list if x not in sci_feats_list]
+    fset_path = pjoin(os.path.dirname(__file__),
+                    'data/asas_training_subset_featureset.nc')
+    fset_path = shutil.copy2(fset_path, cfg['paths']['ts_data_folder'])
     try:
-        driver.implicitly_wait(1)
-        status_td = driver.find_element_by_xpath(
-            "//div[contains(text(),'Successfully added new project')]")
-    except:
-        driver.save_screenshot("/tmp/util_add_new_proj_fail.png")
-        raise
+        f = m.File.create(uri=fset_path)
+    except peewee.IntegrityError:
+        f = m.File.get(m.File.uri == fset_path)
+    fset = m.Featureset.create(name='test_featureset',
+                               file=f,
+                               project=project,
+                               features_list=features_to_use,
+                               custom_features_script=None,
+                               finished=datetime.datetime.now())
+    yield fset
+    fset.delete_instance()
 
 
-def delete_current_project(driver):
-    driver.find_element_by_id('react-tabs-0').click()
-    driver.find_element_by_partial_link_text('Delete Project').click()
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
-        "//div[contains(text(),'Project successfully deleted')]")
-    driver.refresh()
+@contextmanager
+def test_model(fset=None):
+    model_path = pjoin(os.path.dirname(__file__),
+                    'data/test_rfc.nc')
+    model_path = shutil.copy2(model_path, cfg['paths']['models_folder'])
+    try:
+        f = m.File.create(uri=model_path)
+    except peewee.IntegrityError:
+        f = m.File.get(m.File.uri == model_path)
+    model = m.Model.create(name='test_model',
+                           file=f,
+                           featureset=fset,
+                           project=fset.project,
+                           params={},
+                           type='RandomForestClassifier',
+                           finished=datetime.datetime.now())
+    yield model
+    model.delete_instance()
 
 
-def add_dataset(driver):
-    driver.find_element_by_id('react-tabs-2').click()
-    driver.find_element_by_partial_link_text('Upload new dataset').click()
-
-    dataset_name = driver.find_element_by_css_selector('[name=datasetName]')
-    test_dset_name = str(uuid.uuid4())
-    dataset_name.send_keys(test_dset_name)
-
-    header_file = driver.find_element_by_css_selector('[name=headerFile]')
-    header_file.send_keys(pjoin(os.path.dirname(__file__), 'data/asas_training_subset_classes.dat'))
-
-    tar_file = driver.find_element_by_css_selector('[name=tarFile]')
-    tar_file.send_keys(pjoin(os.path.dirname(__file__), 'data/asas_training_subset.tar.gz'))
-
-    driver.find_element_by_class_name('btn-primary').click()
-    driver.implicitly_wait(2)
-    status_td = driver.find_element_by_xpath(
-        "//div[contains(text(),'Successfully uploaded new dataset')]")
-    assert test_dset_name in driver.page_source
-
-
-def delete_dataset(driver):
-    driver.find_element_by_id('react-tabs-2').click()
-    driver.find_element_by_partial_link_text('Delete').click()
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
-        "//div[contains(text(),'Dataset successfully deleted')]")
-
-
-def add_featureset(driver):
-    driver.find_element_by_id('react-tabs-4').click()
-    driver.find_element_by_partial_link_text('Compute New Features').click()
-    featureset_name = driver.find_element_by_css_selector('[name=featuresetName]')
-    test_fset_name = str(uuid.uuid4())
-    featureset_name.send_keys(test_fset_name)
-    driver.find_element_by_class_name('btn-primary').click()
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
-        "//div[contains(text(),'Feature computation begun')]")
-    status_td = driver.find_element_by_xpath("//td[contains(text(),'In progress')]")
-    driver.implicitly_wait(10)
-    status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
-
-
-def delete_featureset(driver):
-    driver.find_element_by_id('react-tabs-4').click()
-    driver.find_element_by_partial_link_text('Delete').click()
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
-        "//div[contains(text(),'Feature set successfully deleted')]")
-
-
-def add_model(driver):
-    driver.find_element_by_id('react-tabs-6').click()
-    driver.find_element_by_partial_link_text('Create New Model').click()
-
-    test_model_name = str(uuid.uuid4())
-    model_name = driver.find_element_by_css_selector('[name=modelName]')
-    model_name.send_keys(test_model_name)
-
-    driver.find_element_by_class_name('btn-primary').click()
-
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
-        "//div[contains(text(),'Model training begun')]")
+@contextmanager
+def test_prediction(ds=None, model=None):
+    f_path = pjoin(os.path.dirname(__file__),
+                    'data/asas_training_subset_featureset.nc')
+    f_path = shutil.copy2(f_path, cfg['paths']['ts_data_folder'])
 
     try:
-        driver.implicitly_wait(2)
-        status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
-    except:
-        driver.save_screenshot("/tmp/util_add_model_fail.png")
-        raise
+        f = m.File.create(uri=f_path)
+    except peewee.IntegrityError:
+        f = m.File.get(m.File.uri == f_path)
 
-
-def delete_model(driver):
-    driver.find_element_by_id('react-tabs-6').click()
-    driver.find_element_by_partial_link_text('Delete').click()
+    pred = m.Prediction.create(file=f,
+                               dataset=ds,
+                               project=ds.project,
+                               model=model,
+                               finished=datetime.datetime.now())
+    yield pred
+    pred.delete_instance()
