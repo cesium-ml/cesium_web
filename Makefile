@@ -53,7 +53,7 @@ clean:
 	rm $(bundle)
 
 test:
-	./tools/frontend_tests.py
+	PYTHONPATH='.' ./tools/frontend_tests.py
 
 status:
-	./tools/supervisor_status.py
+	PYTHONPATH='.' ./tools/supervisor_status.py
