@@ -26,30 +26,27 @@ def test_add_new_featureset(driver):
             featureset_name = driver.find_element_by_css_selector('[name=featuresetName]')
             featureset_name.send_keys(test_featureset_name)
 
-            # THE FOLLOWING DOES NOT WORK WITH PHANTOM JS
             # Test check/uncheck all features in group
-            # amplitude = driver.find_element_by_css_selector('[name=sci_amplitude]')
-            # assert amplitude.get_attribute('value') == 'true'
-            # driver.save_screenshot("/tmp/checked.png")
-            # driver.find_element_by_partial_link_text('Check/Uncheck All').click()
-            # time.sleep(0.3)
-            # driver.save_screenshot("/tmp/unchecked.png")
-            # assert amplitude.get_attribute('value') == 'false'
-            # driver.find_element_by_partial_link_text('Check/Uncheck All').click()
-            # time.sleep(0.1)
-            # assert amplitude.get_attribute('value') == 'true'
+            amplitude = driver.find_element_by_css_selector('[name=sci_amplitude]')
+            assert amplitude.get_attribute('value') == 'true'
+            driver.find_element_by_partial_link_text('Check/Uncheck All').click()
+            time.sleep(0.3)
+            assert amplitude.get_attribute('value') == 'false'
+            driver.find_element_by_partial_link_text('Check/Uncheck All').click()
+            time.sleep(0.1)
+            assert amplitude.get_attribute('value') == 'true'
 
-            # driver.find_element_by_id('react-tabs-14').click()
-            # n_epochs = driver.find_element_by_css_selector('[name=obs_n_epochs]')
-            # assert n_epochs.get_attribute('value') == 'true'
-            # driver.find_element_by_partial_link_text('Check/Uncheck All').click()
-            # time.sleep(0.1)
-            # assert n_epochs.get_attribute('value') == 'false'
+            driver.find_element_by_id('react-tabs-14').click()
+            n_epochs = driver.find_element_by_css_selector('[name=obs_n_epochs]')
+            assert n_epochs.get_attribute('value') == 'true'
+            driver.find_element_by_partial_link_text('Check/Uncheck All').click()
+            time.sleep(0.1)
+            assert n_epochs.get_attribute('value') == 'false'
 
-            # driver.find_element_by_id('react-tabs-16').click()
-            # driver.find_element_by_partial_link_text('Check/Uncheck All').click()
-            # assert driver.find_element_by_css_selector('[name=lmb_fold2P_slope_10percentile]')\
-            #              .get_attribute('value') == 'false'
+            driver.find_element_by_id('react-tabs-16').click()
+            driver.find_element_by_partial_link_text('Check/Uncheck All').click()
+            assert driver.find_element_by_css_selector(
+                '[name=lmb_fold2P_slope_10percentile]').get_attribute('value') == 'false'
 
 
             driver.find_element_by_class_name('btn-primary').click()
