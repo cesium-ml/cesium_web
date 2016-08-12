@@ -70,7 +70,7 @@ if __name__ == '__main__':
             print('[test_frontend] Verified server availability')
 
         print('[test_frontend] Launching pytest...')
-        test_dir = pjoin(base_dir, 'tests')
+        test_dir = pjoin(base_dir, 'cesium_app', 'tests')
         status = subprocess.call(['py.test', '--verbose', test_dir])
     except:
         raise
