@@ -23,7 +23,6 @@ def test_add_prediction(driver):
                     driver.find_element_by_id('react-tabs-8').click()
                     driver.find_element_by_partial_link_text('Predict Targets').click()
 
-                    driver.save_screenshot("/tmp/about_to_predict.png")
                     driver.find_element_by_class_name('btn-primary').click()
 
                     driver.implicitly_wait(1)
