@@ -71,6 +71,27 @@ def test_check_uncheck_features(driver):
                 '[name=lmb_fold2P_slope_10percentile]').get_attribute('value') == 'false'
 
 
+def test_plot_features(driver):
+    driver.get('http://localhost:5000')
+    driver.set_window_size(1920,1080)
+    with test_project() as p:
+        with test_dataset(p) as ds:
+            with test_featureset(p) as fs:
+                driver.refresh()
+                proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+                proj_select.select_by_value(str(p.id))
+
+                driver.find_element_by_id('react-tabs-4').click()
+
+                driver.implicitly_wait(1)
+                driver.find_element_by_xpath("//td[contains(text(),'{}')]".format(fs.name)).click()
+                driver.implicitly_wait(1)
+                driver.find_element_by_xpath("//b[contains(text(),'Please wait while we load your plotting data...')]")
+
+                driver.implicitly_wait(3)
+                driver.find_element_by_css_selector("[class=svg-container]")
+
+
 def test_delete_featureset(driver):
     driver.get('http://localhost:5000')
     driver.set_window_size(1920,1080)
