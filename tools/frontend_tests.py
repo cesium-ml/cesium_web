@@ -34,7 +34,8 @@ def clear_db():
 if __name__ == '__main__':
     add_test_yaml()
     clear_db()
-    web_client = subprocess.Popen(['make', 'debug'], cwd=base_dir)
+    env = os.environ.copy()
+    web_client = subprocess.Popen(['make'], cwd=base_dir, env=env)
 
     print('[test_frontend] Waiting for supervisord to launch all server processes...')
 
@@ -71,7 +72,7 @@ if __name__ == '__main__':
 
         print('[test_frontend] Launching pytest...')
         test_dir = pjoin(base_dir, 'cesium_app', 'tests')
-        status = subprocess.call(['py.test', '--verbose', test_dir])
+        status = subprocess.call(['py.test', '--verbose', test_dir], env=env)
     except:
         raise
     finally:

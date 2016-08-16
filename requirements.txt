@@ -12,3 +12,4 @@ plotly
 simplejson
 celery
 distributed
+selenium
