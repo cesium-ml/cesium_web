@@ -1,31 +1,25 @@
 import pytest
 import os
+import distutils.spawn
 
 
 @pytest.fixture(scope="module", autouse=True)
 def driver(request):
     from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    chrome_options = Options()
 
-    # Phantom JS
-    driver = webdriver.PhantomJS()
+    chromium = distutils.spawn.find_executable('chromium-browser')
 
-    # # Firefox marionette
-    # from pyvirtualdisplay import Display
-    # display = Display(visible=0, size=(1920, 1080))
-    # from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-    # caps = DesiredCapabilities.FIREFOX.copy()
-    # caps["marionette"] = True
-    # caps["binary"] = "/usr/bin/firefox"
-    # driver = webdriver.Firefox(capabilities=caps)
+    if chromium:
+        chrome_options.binary_location = chromium
 
-    # Chrome
-    # driver = webdriver.Chrome()
+    driver = webdriver.Chrome(chrome_options=chrome_options)
 
     driver.set_window_size(1920, 1080)
 
     def close():
         driver.close()
-        # display.close()
 
     request.addfinalizer(close)
 

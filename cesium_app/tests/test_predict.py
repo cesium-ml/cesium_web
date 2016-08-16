@@ -23,7 +23,6 @@ def test_add_prediction(driver):
                     driver.find_element_by_id('react-tabs-8').click()
                     driver.find_element_by_partial_link_text('Predict Targets').click()
 
-                    driver.save_screenshot("/tmp/about_to_predict.png")
                     driver.find_element_by_class_name('btn-primary').click()
 
                     driver.implicitly_wait(1)
@@ -38,18 +37,16 @@ def test_add_prediction(driver):
                         raise
 
 
-# THE FOLLOWING DOES NOT WORK WITH PHANTOM JS
-# def test_click_prediction(driver):
-#     driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
-#     try:
-#         import time; time.sleep(1)
-#         driver.implicitly_wait(1)
-#         driver.find_element_by_xpath("//td[contains(text(),'Mira')]")
-#         driver.find_element_by_xpath("//th[contains(text(),'Time Series')]")
-#     except:
-#         driver.save_screenshot("/tmp/pred_click_tr_fail.png")
-#         print(driver.get_log("client"))
-#         raise
+def test_click_prediction(driver):
+    driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
+    try:
+        import time; time.sleep(1)
+        driver.implicitly_wait(1)
+        driver.find_element_by_xpath("//td[contains(text(),'Mira')]")
+        driver.find_element_by_xpath("//th[contains(text(),'Time Series')]")
+    except:
+        driver.save_screenshot("/tmp/pred_click_tr_fail.png")
+        raise
 
 
 def test_delete_prediction(driver):
