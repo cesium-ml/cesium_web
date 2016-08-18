@@ -34,8 +34,7 @@ def clear_db():
 if __name__ == '__main__':
     add_test_yaml()
     clear_db()
-    env = os.environ.copy()
-    web_client = subprocess.Popen(['make'], cwd=base_dir, env=env)
+    web_client = subprocess.Popen(['make'], cwd=base_dir)
 
     print('[test_frontend] Waiting for supervisord to launch all server processes...')
 
