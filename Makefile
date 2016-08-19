@@ -15,7 +15,7 @@ dependencies:
 	@./tools/install_npm_deps.py package.json
 
 db_init:
-	-./tools/db_create.sh
+	./tools/db_create.sh
 
 db_drop:
 	PYTHONPATH=. ./tools/db_drop.py

@@ -8,7 +8,6 @@ var Tabs = ReactTabs.Tabs;
 var TabList = ReactTabs.TabList;
 var TabPanel = ReactTabs.TabPanel;
 
-import _ from 'underscore'
 import filter from 'filter-values'
 
 import 'bootstrap-css'
