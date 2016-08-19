@@ -7,6 +7,7 @@ try:
     dockerpy_installed = True
 except ImportError:
     dockerpy_installed = False
+import pytest
 
 
 def test_robust_literal_eval():
@@ -38,36 +39,21 @@ def test_check_model_param_types():
     util.check_model_param_types(model_type, params)
 
     params = {"n_estimators": 100.1}
-    try:
-        util.check_model_param_types(model_type, params)
-    except ValueError:
-        pass
-    else:
-        raise Exception("check_model_param_types did not error when it should have")
+    pytest.raises(ValueError, util.check_model_param_types, model_type, params)
 
     model_type = "RandomForestClassifier"
     params = {"max_features": 150}
     util.check_model_param_types(model_type, params)
 
     params = {"max_depth": 100.1}
-    try:
-        util.check_model_param_types(model_type, params)
-    except ValueError:
-        pass
-    else:
-        raise Exception("check_model_param_types did not error when it should have")
+    pytest.raises(ValueError, util.check_model_param_types, model_type, params)
 
     model_type = "RandomForestClassifier"
     params = {"max_features": 150.3}
     util.check_model_param_types(model_type, params)
 
     params = {"max_depth": False}
-    try:
-        util.check_model_param_types(model_type, params)
-    except ValueError:
-        pass
-    else:
-        raise Exception("check_model_param_types did not error when it should have")
+    pytest.raises(ValueError, util.check_model_param_types, model_type, params)
 
     model_type = "LinearSGDClassifier"
     params = {"class_weight": {'a': 0.2, 'b': 0.8},
@@ -75,12 +61,7 @@ def test_check_model_param_types():
     util.check_model_param_types(model_type, params)
 
     params = {"average": 20.3}
-    try:
-        util.check_model_param_types(model_type, params)
-    except ValueError:
-        pass
-    else:
-        raise Exception("check_model_param_types did not error when it should have")
+    pytest.raises(ValueError, util.check_model_param_types, model_type, params)
 
     model_type = "LinearSGDClassifier"
     params = {"class_weight": "some_str",
@@ -88,12 +69,7 @@ def test_check_model_param_types():
     util.check_model_param_types(model_type, params)
 
     params = {"average": [20]}
-    try:
-        util.check_model_param_types(model_type, params)
-    except ValueError:
-        pass
-    else:
-        raise Exception("check_model_param_types did not error when it should have")
+    pytest.raises(ValueError, util.check_model_param_types, model_type, params)
 
     model_type = "RidgeClassifierCV"
     params = {"alphas": [0.1, 2.1, 6.2]}
@@ -106,22 +82,12 @@ def test_check_model_param_types():
                                  all_as_lists=True)
 
     params_to_optimize = {"n_estimators": [20.3, 15.2]}
-    try:
-        util.check_model_param_types(model_type, params_to_optimize,
-                                     all_as_lists=True)
-    except ValueError:
-        pass
-    else:
-        raise Exception("check_model_param_types did not error when it should have")
+    pytest.raises(ValueError, util.check_model_param_types, model_type,
+                  params_to_optimize, all_as_lists=True)
 
     model_type = "RandomForestClassifier"
     params = {"invalid_param_name": "some_value"}
-    try:
-        util.check_model_param_types(model_type, params)
-    except ValueError:
-        pass
-    else:
-        raise Exception("check_model_param_types did not error when it should have")
+    pytest.raises(ValueError, util.check_model_param_types, model_type, params)
 
 
 def test_make_list():
