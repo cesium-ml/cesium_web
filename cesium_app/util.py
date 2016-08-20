@@ -66,9 +66,7 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
             if p["name"] == k:
                 param_entry = p
                 break
-        try:
-            param_entry
-        except NameError:
+        else:
             raise ValueError("Parameter name not found in model description.")
 
         # Combine logic for params with one type and multiple types
