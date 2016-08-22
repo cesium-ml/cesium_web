@@ -2,7 +2,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 import uuid
-from util import test_project
+from util import create_test_project
 
 
 def test_create_project(driver):
@@ -35,7 +35,7 @@ def test_create_project(driver):
 
 
 def test_edit_project(driver):
-    with test_project() as p:
+    with create_test_project() as p:
         driver.refresh()
         proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
         proj_select.select_by_value(str(p.id))
@@ -58,7 +58,7 @@ def test_edit_project(driver):
 
 
 def test_delete_project(driver):
-    with test_project() as p:
+    with create_test_project() as p:
         driver.refresh()
         proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
         proj_select.select_by_value(str(p.id))

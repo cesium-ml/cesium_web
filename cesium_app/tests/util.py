@@ -13,14 +13,14 @@ import datetime
 
 
 @contextmanager
-def test_project():
+def create_test_project():
     p = m.Project.add_by('test_proj', 'test_desc', 'testuser@gmail.com')
     yield p
     p.delete_instance()
 
 
 @contextmanager
-def test_dataset(project=None):
+def create_test_dataset(project=None):
     header = pjoin(os.path.dirname(__file__),
                    'data/asas_training_subset_classes.dat')
     tarball = pjoin(os.path.dirname(__file__),
@@ -36,7 +36,7 @@ def test_dataset(project=None):
 
 
 @contextmanager
-def test_featureset(project=None):
+def create_test_featureset(project=None):
     features_to_use = obs_feats_list + sci_feats_list
     fset_path = pjoin(os.path.dirname(__file__),
                     'data/asas_training_subset_featureset.nc')
@@ -56,7 +56,7 @@ def test_featureset(project=None):
 
 
 @contextmanager
-def test_model(fset=None):
+def create_test_model(fset=None):
     model_path = pjoin(os.path.dirname(__file__),
                     'data/test_rfc.nc')
     model_path = shutil.copy2(model_path, cfg['paths']['models_folder'])
@@ -76,10 +76,10 @@ def test_model(fset=None):
 
 
 @contextmanager
-def test_prediction(ds=None, model=None):
+def create_test_prediction(ds=None, model=None):
     f_path = pjoin(os.path.dirname(__file__),
-                    'data/asas_training_subset_featureset.nc')
-    f_path = shutil.copy2(f_path, cfg['paths']['ts_data_folder'])
+                    'data/asas_training_subset_prediction.nc')
+    f_path = shutil.copy2(f_path, cfg['paths']['predictions_folder'])
 
     try:
         f = m.File.create(uri=f_path)
