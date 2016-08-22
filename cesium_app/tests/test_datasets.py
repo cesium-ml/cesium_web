@@ -39,14 +39,13 @@ def test_add_new_dataset(driver):
 
 def test_delete_dataset(driver):
     # Delete data set
-    with create_test_project() as p:
-        with create_test_dataset(p) as ds:
-            driver.refresh()
-            proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
-            proj_select.select_by_value(str(p.id))
-            driver.find_element_by_id('react-tabs-2').click()
-            driver.find_element_by_partial_link_text('Delete').click()
-            driver.implicitly_wait(1)
-            status_td = driver.find_element_by_xpath(
-                "//div[contains(text(),'Dataset successfully deleted')]")
-            assert test_dataset_name not in driver.page_source
+    with create_test_project() as p, create_test_dataset(p) as ds:
+        driver.refresh()
+        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+        proj_select.select_by_value(str(p.id))
+        driver.find_element_by_id('react-tabs-2').click()
+        driver.find_element_by_partial_link_text('Delete').click()
+        driver.implicitly_wait(1)
+        status_td = driver.find_element_by_xpath(
+            "//div[contains(text(),'Dataset successfully deleted')]")
+        assert test_dataset_name not in driver.page_source
