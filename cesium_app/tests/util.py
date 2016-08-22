@@ -78,8 +78,8 @@ def create_test_model(fset=None):
 @contextmanager
 def create_test_prediction(ds=None, model=None):
     f_path = pjoin(os.path.dirname(__file__),
-                    'data/asas_training_subset_featureset.nc')
-    f_path = shutil.copy2(f_path, cfg['paths']['ts_data_folder'])
+                    'data/asas_training_subset_prediction.nc')
+    f_path = shutil.copy2(f_path, cfg['paths']['predictions_folder'])
 
     try:
         f = m.File.create(uri=f_path)
