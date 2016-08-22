@@ -5,7 +5,8 @@ import uuid
 import time
 import os
 from os.path import join as pjoin
-from util import test_project, test_dataset, test_featureset, test_model
+from util import create_test_project, create_test_dataset, \
+    create_test_featureset, create_test_model
 
 test_model_name = str(uuid.uuid4())
 
@@ -13,9 +14,9 @@ test_model_name = str(uuid.uuid4())
 def test_add_model(driver):
     driver.get('http://localhost:5000')
     driver.set_window_size(1920,1080)
-    with test_project() as p:
-        with test_dataset(p) as ds:
-            with test_featureset(p) as fs:
+    with create_test_project() as p:
+        with create_test_dataset(p) as ds:
+            with create_test_featureset(p) as fs:
                 driver.refresh()
                 proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
                 proj_select.select_by_value(str(p.id))
@@ -43,10 +44,10 @@ def test_add_model(driver):
 def test_delete_model(driver):
     driver.get('http://localhost:5000')
     driver.set_window_size(1920,1080)
-    with test_project() as p:
-        with test_dataset(p) as ds:
-            with test_featureset(p) as fs:
-                with test_model(fs) as m:
+    with create_test_project() as p:
+        with create_test_dataset(p) as ds:
+            with create_test_featureset(p) as fs:
+                with create_test_model(fs) as m:
                     driver.refresh()
                     proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
                     proj_select.select_by_value(str(p.id))

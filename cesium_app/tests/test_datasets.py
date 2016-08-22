@@ -4,7 +4,7 @@ from selenium.webdriver.support.ui import Select
 import uuid
 import os
 from os.path import join as pjoin
-from util import test_project, test_dataset
+from util import create_test_project, create_test_dataset
 
 test_dataset_name = str(uuid.uuid4())
 
@@ -13,7 +13,7 @@ def test_add_new_dataset(driver):
     driver.get("http://localhost:5000")
     driver.set_window_size(1920,1080)
 
-    with test_project() as p:
+    with create_test_project() as p:
         driver.refresh()
         proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
         proj_select.select_by_value(str(p.id))
@@ -39,8 +39,8 @@ def test_add_new_dataset(driver):
 
 def test_delete_dataset(driver):
     # Delete data set
-    with test_project() as p:
-        with test_dataset(p) as ds:
+    with create_test_project() as p:
+        with create_test_dataset(p) as ds:
             driver.refresh()
             proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
             proj_select.select_by_value(str(p.id))
