@@ -89,7 +89,7 @@ model_descriptions = [
 
     {"name": "BayesianRidgeRegressor",
      "params": [
-         {"name": "n_inter", "type": int, "default": 300},
+         {"name": "n_iter", "type": int, "default": 300},
          {"name": "tol", "type": float, "default": 0.001},
          {"name": "alpha_1", "type": float, "default": 1.e-06},
          {"name": "alpha_2", "type": float, "default": 1.e-06},
