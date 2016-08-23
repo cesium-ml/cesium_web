@@ -278,34 +278,6 @@ function receiveFeaturesets(featuresets) {
 }
 
 
-// POST new featureset form
-export function submitNewFeatureset(formdata) {
-  return dispatch => (
-    fetch('/features',
-          {
-            method: 'POST',
-            headers: new Headers({
-              'Content-Type': 'application/json'
-            }),
-            body: JSON.stringify(formdata)
-          }
-    ).then(response => response.json())
-     .then(json => {
-       console.log('Added new feature set');
-       return json;
-     }
-     ).catch(ex => console.log('submitNewFeatureset', ex))
-  )
-}
-
-// Clear features form after submit
-function clearFeaturesForm() {
-  return {
-    type: CLEAR_FEATURES_FORM
-  }
-}
-
-
 export function createModel(form) {
   return dispatch =>
     promiseAction(
