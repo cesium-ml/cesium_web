@@ -302,6 +302,9 @@ def Features(featureset_id=None):
 
         custom_feats_code = data['customFeatsCode'].strip()
 
+        if not features_to_use:
+            return error("At least one feature must be selected.")
+
         # Not working yet:
         if custom_feats_code and 0:
             custom_features_script = pjoin(
