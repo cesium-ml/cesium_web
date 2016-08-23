@@ -12,6 +12,7 @@ import Expand from './Expand'
 import * as Action from './actions'
 import {objectType, contains, reformatDatetime} from './utils'
 import FoldableRow from './FoldableRow'
+import Delete from './Delete'
 
 
 class PredictForm extends FormComponent {
@@ -116,7 +117,7 @@ export var PredictionsTable = (props) => {
                <td>{prediction.dataset_name}</td>
                <td>{reformatDatetime(prediction.created)}</td>
                {status}
-               <td><DeletePrediction predictionID={prediction.id}/></td>
+               <td><DeletePrediction ID={prediction.id}/></td>
                <td></td>
             </tr>
             {foldedContent}
@@ -209,25 +210,13 @@ let ptMapStateToProps = (state, ownProps) => {
 
 PredictionsTable = connect(ptMapStateToProps)(PredictionsTable);
 
-export var DeletePrediction = (props) => {
-  let style = {
-    display: 'inline-block'
-  }
-  return (
-    <a style={style} onClick={(e) => {
-      e.stopPropagation();
-      props.deletePrediction(props.predictionID)
-    }}>Delete</a>
-  )
-}
-
 let dpMapDispatchToProps = (dispatch) => {
   return (
-    {deletePrediction: (id) => dispatch(Action.deletePrediction(id))}
+    {delete: (id) => dispatch(Action.deletePrediction(id))}
   );
 }
 
-DeletePrediction = connect(null, dpMapDispatchToProps)(DeletePrediction);
+var DeletePrediction = connect(null, dpMapDispatchToProps)(Delete);
 
 class PredictTab extends Component {
   render() {
