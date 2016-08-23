@@ -1,5 +1,7 @@
 # Cesium Web Frontend
 
+[![Build Status](https://travis-ci.org/cesium-ml/cesium_web.svg?branch=master)](https://travis-ci.org/cesium-ml/cesium_web)
+
 ## Running the app
 
 Initialize the RethinkDB database with `make db_init`, start the server with
