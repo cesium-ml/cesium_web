@@ -68,11 +68,8 @@ def test_check_model_param_types():
                 "average": 2}
     util.check_model_param_types(model_type, params)
 
-    params = {"average": [20]}
-    pytest.raises(ValueError, util.check_model_param_types, model_type, params)
-
     model_type = "RidgeClassifierCV"
-    params = {"alphas": [0.1, 2.1, 6.2]}
+    params = {"alphas": [[0.1, 2.1, 6.2]]}
     util.check_model_param_types(model_type, params)
 
     # Test parameter grid for optimization input
