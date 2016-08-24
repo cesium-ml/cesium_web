@@ -9,6 +9,7 @@ import { isEmpty } from './validate'
 
 import * as Action from './actions'
 import Expand from './Expand'
+import Delete from './Delete'
 import { $try, reformatDatetime } from './utils'
 
 
@@ -163,7 +164,7 @@ export var ModelTable = (props) => {
             <td>{model.name}</td>
             <td>{reformatDatetime(model.created)}</td>
             {status}
-            <td><DeleteModel modelID={model.id}/></td>
+            <td><DeleteModel ID={model.id}/></td>
           </tr>
         )})
       }
@@ -186,25 +187,13 @@ let mtMapStateToProps = (state, ownProps) => {
 ModelTable = connect(mtMapStateToProps)(ModelTable)
 
 
-export var DeleteModel = (props) => {
-  let style = {
-    display: 'inline-block'
-  }
-  return (
-    <a style={style} onClick={(e) => {
-      e.stopPropagation();
-      props.deleteModel(props.modelID)
-    }}>Delete</a>
-  )
-}
-
 let dmMapDispatchToProps = (dispatch) => {
   return (
-    {deleteModel: (id) => dispatch(Action.deleteModel(id))}
+    {delete: (id) => dispatch(Action.deleteModel(id))}
   );
 }
 
-DeleteModel = connect(null, dmMapDispatchToProps)(DeleteModel);
+var DeleteModel = connect(null, dmMapDispatchToProps)(Delete);
 
 
 export default ModelsTab;

@@ -9,6 +9,7 @@ import {reduxForm} from 'redux-form'
 import * as Validate from './validate'
 import Expand from './Expand'
 import * as Action from './actions.js'
+import Delete from './Delete'
 import {colorScheme as cs} from './colorscheme'
 
 
@@ -80,7 +81,7 @@ export var ProjectTab = (props) => {
                           projectId: p.id}}
         />
 
-        <DeleteProject projectId={props.selectedProject.id}/>
+        <DeleteProject ID={props.selectedProject.id} typeName="Project"/>
       </div>
     )
 }
@@ -122,31 +123,13 @@ let mapDispatchToProps = (dispatch) => {
 AddProject = connect(null, mapDispatchToProps)(AddProject)
 
 
-export var DeleteProject = (props) => {
-  let minusStyle = {
-    fontSize: '200%',
-    fontWeight: 'bold'
-  }
-
-  let style = {
-    display: 'inline-block'
-  }
-
-  return (
-    <a style={style} onClick={(e) => {
-      e.stopPropagation();
-      props.deleteProject(props.projectId)
-    }}><span style={minusStyle}>- </span>Delete Project</a>
-  )
-}
-
 mapDispatchToProps = (dispatch) => {
   return (
-    {deleteProject: (id) => dispatch(Action.deleteProject(id))}
+    {delete: (id) => dispatch(Action.deleteProject(id))}
   );
 }
 
-DeleteProject = connect(null, mapDispatchToProps)(DeleteProject);
+var DeleteProject = connect(null, mapDispatchToProps)(Delete);
 
 export class ProjectSelector extends FormComponent {
   render() {

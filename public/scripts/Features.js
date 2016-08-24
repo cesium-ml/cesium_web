@@ -11,6 +11,7 @@ import * as Action from './actions'
 import Plot from './Plot'
 import FoldableRow from './FoldableRow'
 import {reformatDatetime} from './utils'
+import Delete from './Delete'
 
 var Tab = ReactTabs.Tab;
 var Tabs = ReactTabs.Tabs;
@@ -192,7 +193,7 @@ export var FeatureTable = (props) => {
             <td>{featureset.name}</td>
             <td>{reformatDatetime(featureset.created)}</td>
             {status}
-            <td><DeleteFeatureset featuresetID={featureset.id}/></td>
+            <td><DeleteFeatureset ID={featureset.id}/></td>
           </tr>
           {foldedContent}
         </FoldableRow>
@@ -215,19 +216,12 @@ let ftMapStateToProps = (state, ownProps) => {
 
 FeatureTable = connect(ftMapStateToProps)(FeatureTable)
 
-
-export var DeleteFeatureset = (props) => {
-  let style = {
-    display: 'inline-block'
-  }
+let mapDispatchToProps = (dispatch) => {
   return (
-    <a style={style} onClick={(e) => {
-      e.stopPropagation();
-      props.dispatch(Action.deleteFeatureset(props.featuresetID))
-    }}>Delete</a>
-  )
+    {delete: (id) => dispatch(Action.deleteFeatureset(id))}
+  );
 }
 
-DeleteFeatureset = connect()(DeleteFeatureset)
+var DeleteFeatureset = connect(null, mapDispatchToProps)(Delete)
 
 module.exports = FeaturesTab;

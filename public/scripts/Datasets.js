@@ -5,6 +5,7 @@ import {reduxForm} from 'redux-form'
 import {FormComponent, Form, TextInput, FileInput, SubmitButton } from './Form'
 import * as Validate from './validate'
 import Expand from './Expand'
+import Delete from './Delete'
 import * as Action from './actions'
 import {reformatDatetime} from './utils'
 
@@ -95,7 +96,7 @@ export var DatasetTable = (props) => {
       <tr key={dataset.id}>
         <td>{dataset.name}</td>
         <td>{reformatDatetime(dataset.created)}</td>
-        <td><DeleteDataset datasetID={dataset.id}/></td>
+        <td><DeleteDataset ID={dataset.id}/></td>
       </tr>
     ))}
 
@@ -117,19 +118,12 @@ function mapStateToProps(state, ownProps) {
 
 DatasetTable = connect(mapStateToProps)(DatasetTable);
 
-
-export var DeleteDataset = (props) => {
-  let style = {
-    display: 'inline-block'
-  }
+let mapDispatchToProps = (dispatch) => {
   return (
-    <a style={style} onClick={(e) => {
-      e.stopPropagation();
-      props.dispatch(Action.deleteDataset(props.datasetID))
-    }}>Delete</a>
-  )
+    {delete: (id) => dispatch(Action.deleteDataset(id))}
+  );
 }
 
-DeleteDataset = connect()(DeleteDataset)
+var DeleteDataset = connect(null, mapDispatchToProps)(Delete)
 
 module.exports = DatasetsTab;
