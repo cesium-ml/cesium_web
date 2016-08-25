@@ -1,6 +1,7 @@
 import pytest
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 import uuid
 from util import create_test_project
 
@@ -66,3 +67,15 @@ def test_delete_project(driver):
         driver.implicitly_wait(1)
         status_td = driver.find_element_by_xpath(
             "//div[contains(text(),'Project successfully deleted')]")
+
+
+def test_main_content_disabled_no_project(driver):
+    driver.refresh()
+
+    proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+    try:
+        proj_select.first_selected_option
+    except NoSuchElementException:
+        pytest.raises(WebDriverException, driver.find_element_by_id('react-tabs-2').click)
+    else:
+        print("This is not a clean database, so cannot test this functionality.")

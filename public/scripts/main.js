@@ -61,6 +61,9 @@ var MainContent = React.createClass({
         marginBottom: 0,
         marginRight: 'auto',
 
+        pointerEvents: !this.props.selectedProject.id ? 'none' : 'auto',
+        opacity: 1.0 - 0.5*(!this.props.selectedProject.id ? 1 : 0),
+
         selectors: {
           paddingLeft: '2em',
           marginBottom: '1em',
