@@ -183,6 +183,10 @@ var MainContent = React.createClass({
         paddingTop: '1em',
         paddingLeft: '1em',
       },
+      disableable: {
+        pointerEvents: !this.props.selectedProject.id ? 'none' : 'auto',
+        opacity: 1.0 - 0.5*(!this.props.selectedProject.id ? 1 : 0)
+      },
       tabPanel: {
         background: 'white',
         height: 'auto',
@@ -254,11 +258,11 @@ var MainContent = React.createClass({
 
         <Tabs>
           <TabList style={style.tabs}>
-            <Tab>Project</Tab>
-            <Tab>Data</Tab>
-            <Tab>Features</Tab>
-            <Tab>Models</Tab>
-            <Tab>Predict</Tab>
+            <Tab style={style.disableable}>Project</Tab>
+            <Tab style={style.disableable}>Data</Tab>
+            <Tab style={style.disableable}>Features</Tab>
+            <Tab style={style.disableable}>Models</Tab>
+            <Tab style={style.disableable}>Predict</Tab>
             <Tab>
               <WebSocket url={'ws://' + this.props.root + 'websocket'}
                          auth_url={location.protocol + '//' + this.props.root + 'socket_auth_token'}
