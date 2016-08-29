@@ -1,50 +1,50 @@
-import React from 'react'
-import { connect } from "react-redux"
-import ReactDOM from 'react-dom'
-import ReactTabs from 'react-tabs'
+import React from 'react';
+import { connect, Provider } from 'react-redux';
+import ReactDOM from 'react-dom';
+import ReactTabs from 'react-tabs';
 
-var Tab = ReactTabs.Tab;
-var Tabs = ReactTabs.Tabs;
-var TabList = ReactTabs.TabList;
-var TabPanel = ReactTabs.TabPanel;
+import 'bootstrap-css';
+import 'bootstrap';
 
-import filter from 'filter-values'
-
-import 'bootstrap-css'
-import 'bootstrap'
-
-import { Provider } from 'react-redux'
-
-import configureStore from './configureStore'
-const store = configureStore()
-
+import configureStore from './configureStore';
 import * as Action from './actions';
+import WebSocket from './WebSocket';
+import MessageHandler from './MessageHandler';
+import { ProjectSelector, AddProject, ProjectTab } from './Projects';
+import DatasetsTab from './Datasets';
+import FeaturesTab from './Features';
+import ModelsTab from './Models';
+import PredictTab from './Predictions';
+import { Notifications } from './Notifications';
+import { colorScheme as cs } from './colorscheme';
+import Progress from './Progress';
 
-import WebSocket from './WebSocket'
-import MessageHandler from './MessageHandler'
+let Tab = ReactTabs.Tab;
+let Tabs = ReactTabs.Tabs;
+let TabList = ReactTabs.TabList;
+let TabPanel = ReactTabs.TabPanel;
+
+const store = configureStore();
+
 let messageHandler = (new MessageHandler(store.dispatch)).handle;
 
-import { ProjectSelector, AddProject, ProjectTab } from './Projects'
-import DatasetsTab from './Datasets'
-import FeaturesTab from './Features'
-import ModelsTab from './Models'
-import PredictTab from './Predictions'
-import { FormInputRow, FormSelectInput, FormTitleRow } from './Form'
-import { Notifications } from './Notifications'
-import { colorScheme as cs } from './colorscheme'
-import Progress from './Progress'
 
-
-var MainContent = React.createClass({
-  componentDidMount: function() {
+let MainContent = class MainContent extends React.Component {
+  static propTypes = {
+    selectedProject: React.PropTypes.object.isRequired,
+    root: React.PropTypes.string.isRequired,
+    logoSpinAngle: React.PropTypes.string.isRequired,
+    spinLogo: React.PropTypes.func
+  }
+  componentDidMount() {
     store.dispatch(Action.hydrate());
-  },
-  render: function() {
+  }
+  render() {
     let config = {
       sidebar: 300,
       topbar: '4em',
       footer: '4em'
-    }
+    };
 
     let style = {
       main: {
@@ -145,7 +145,7 @@ var MainContent = React.createClass({
         position: 'relative'
       },
       addProject: {
-        a: {color: 'white'},
+        a: { color: 'white' },
         paddingTop: '-2em',
         paddingBottom: '1em',
         dot: {
@@ -165,7 +165,6 @@ var MainContent = React.createClass({
         margin: 0,
         padding: 0,
         fontSize: '180%',
-        width: '100%',
         marginBottom: '1em',
         paddingTop: 0,
         paddingRight: '1em',
@@ -182,7 +181,7 @@ var MainContent = React.createClass({
       },
       disableable: {
         pointerEvents: !this.props.selectedProject.id ? 'none' : 'auto',
-        opacity: 1.0 - 0.5*(!this.props.selectedProject.id ? 1 : 0)
+        opacity: 1.0 - (0.5*(!this.props.selectedProject.id ? 1 : 0))
       },
       tabPanel: {
         background: 'white',
@@ -194,8 +193,8 @@ var MainContent = React.createClass({
       progress: {
         height: '4em'
       },
-    }
-    let rotate = 'rotate(' + this.props.logoSpinAngle + 'deg)'
+    };
+    let rotate = `rotate(${this.props.logoSpinAngle}deg)`;
     let rotateStyle = {
       WebkitTransition: 'all 1.0s ease-in-out',
       MozTransition: 'all 1.0s ease-in-out',
@@ -206,7 +205,7 @@ var MainContent = React.createClass({
       msTransform: rotate,
       OTransform: rotate,
       transform: rotate
-    }
+    };
     return (
       <div>
 
@@ -214,93 +213,99 @@ var MainContent = React.createClass({
           <div style={style.topbar.text}>
             <div style={style.topbar.header}>
               Cesium &nbsp;
-                <img src='images/cesium-blue-dark.png'
-                     onClick={this.props.spinLogo}
-                     style={{...(style.logo.img), ...rotateStyle}}/>
+              <img
+                src="images/cesium-blue-dark.png"
+                alt="Cesium Logo"
+                onClick={this.props.spinLogo}
+                style={{ ...(style.logo.img), ...rotateStyle }}
+              />
             </div>
 
           </div>
         </div>
 
-      <div style={style.sidebar}>
-        <div style={style.topic}>Project</div>
+        <div style={style.sidebar}>
+          <div style={style.topic}>Project</div>
 
-        <div style={style.sidebarContent}>
-          <ProjectSelector label='Choose your project here:' style={style.projectSelector}/>
-          <AddProject id='newProjectExpander' label='Or click here to add a new one' style={style.addProject}/>
+          <div style={style.sidebarContent}>
+            <ProjectSelector label="Choose your project here:" style={style.projectSelector} />
+            <AddProject id="newProjectExpander" label="Or click here to add a new one" style={style.addProject} />
+          </div>
+
+          <div style={style.topic}>Progress</div>
+
+          <div style={style.sidebarContent}>
+            <div style={style.progress}>
+              <Progress type="data" />
+            </div>
+            <div style={style.progress}>
+              <Progress type="features" />
+            </div>
+            <div style={style.progress}>
+              <Progress type="models" />
+            </div>
+            <div style={style.progress}>
+              <Progress type="predict" />
+            </div>
+          </div>
+
         </div>
 
-        <div style={style.topic}>Progress</div>
+        <div className="mainContent" style={style.main}>
 
-        <div style={style.sidebarContent}>
-          <div style={style.progress}>
-            <Progress type="data"/>
+          <Notifications style={style.notifications} />
+
+          <Tabs>
+            <TabList style={style.tabs}>
+              <Tab style={style.disableable}>Project</Tab>
+              <Tab style={style.disableable}>Data</Tab>
+              <Tab style={style.disableable}>Features</Tab>
+              <Tab style={style.disableable}>Models</Tab>
+              <Tab style={style.disableable}>Predict</Tab>
+              <Tab>
+                <WebSocket
+                  url={`ws://${this.props.root}websocket`}
+                  auth_url={`${location.protocol}//${this.props.root}socket_auth_token`}
+                  messageHandler={messageHandler}
+                />
+              </Tab>
+            </TabList>
+            <TabPanel style={style.tabPanel}>
+              <ProjectTab selectedProject={this.props.selectedProject} />
+            </TabPanel>
+            <TabPanel style={style.tabPanel}>
+              <DatasetsTab selectedProject={this.props.selectedProject} />
+            </TabPanel>
+            <TabPanel style={style.tabPanel}>
+              <FeaturesTab
+                selectedProject={this.props.selectedProject}
+                featurePlotURL={`${location.protocol}//${this.props.root}plot_features`}
+              />
+            </TabPanel>
+            <TabPanel style={style.tabPanel}>
+              <ModelsTab selectedProject={this.props.selectedProject} />
+            </TabPanel>
+            <TabPanel style={style.tabPanel}>
+              <PredictTab selectedProject={this.props.selectedProject} />
+            </TabPanel>
+            <TabPanel style={style.tabPanel}>
+              <h3>System Status</h3>
+            </TabPanel>
+          </Tabs>
+          <div style={style.footer}>
+            Cesium is an open source Machine Learning Time-Series Platform
+            &middot;
+            Follow the <a style={style.footer.a} href="http://cesium.ml">Cesium project</a> on <a style={style.footer.a} href="https://github.com/cesium-ml">GitHub</a>
           </div>
-          <div style={style.progress}>
-            <Progress type="features"/>
-          </div>
-          <div style={style.progress}>
-            <Progress type="models"/>
-          </div>
-          <div style={style.progress}>
-            <Progress type="predict"/>
-          </div>
+
         </div>
-
-      </div>
-
-      <div className='mainContent' style={style.main}>
-
-        <Notifications style={style.notifications}/>
-
-        <Tabs>
-          <TabList style={style.tabs}>
-            <Tab style={style.disableable}>Project</Tab>
-            <Tab style={style.disableable}>Data</Tab>
-            <Tab style={style.disableable}>Features</Tab>
-            <Tab style={style.disableable}>Models</Tab>
-            <Tab style={style.disableable}>Predict</Tab>
-            <Tab>
-              <WebSocket url={'ws://' + this.props.root + 'websocket'}
-                         auth_url={location.protocol + '//' + this.props.root + 'socket_auth_token'}
-                         messageHandler={messageHandler}
-               />
-             </Tab>
-          </TabList>
-          <TabPanel style={style.tabPanel}>
-            <ProjectTab selectedProject={this.props.selectedProject}/>
-          </TabPanel>
-          <TabPanel style={style.tabPanel}>
-            <DatasetsTab selectedProject={this.props.selectedProject}/>
-          </TabPanel>
-          <TabPanel style={style.tabPanel}>
-            <FeaturesTab selectedProject={this.props.selectedProject}
-                         featurePlotURL={location.protocol + '//' + this.props.root + 'plot_features'}/>
-          </TabPanel>
-          <TabPanel style={style.tabPanel}>
-            <ModelsTab selectedProject={this.props.selectedProject}/>
-          </TabPanel>
-          <TabPanel style={style.tabPanel}>
-            <PredictTab selectedProject={this.props.selectedProject}/>
-          </TabPanel>
-          <TabPanel style={style.tabPanel}>
-            <h3>System Status</h3>
-          </TabPanel>
-        </Tabs>
-        <div style={style.footer}>
-          Cesium is an open source Machine Learning Time-Series Platform
-          &middot;
-          Follow the <a style={style.footer.a} href="http://cesium.ml">Cesium project</a> on <a style={style.footer.a} href="https://github.com/cesium-ml">GitHub</a>
-        </div>
-
-      </div>
 
       </div>
     );
   }
-});
+};
 
-var mapStateToProps = function(state) {
+let mapStateToProps = function (state) {
   // This can be improved by using
   // http://redux-form.com/6.0.0-alpha.13/docs/api/FormValueSelector.md/
   let projectSelector = state.form.projectSelector;
@@ -309,7 +314,7 @@ var mapStateToProps = function(state) {
     p => (p.id == selectedProjectId)
   );
 
-  let firstProject = state.projects[0] || {'id': '', label: '', description: ''};
+  let firstProject = state.projects[0] || { id: '', label: '', description: '' };
 
   if (selectedProject.length > 0) {
     selectedProject = selectedProject[0];
@@ -321,13 +326,13 @@ var mapStateToProps = function(state) {
     projects: state.projects.projectList,
     datasets: state.datasets,
     featuresets: state.featuresets,
-    selectedProject: selectedProject,
+    selectedProject,
     logoSpinAngle: state.misc.logoSpinAngle
   };
-}
+};
 
-var mapDispatchToProps = (dispatch) => {
-  return {
+let mapDispatchToProps = (dispatch) => (
+  {
     handleSubmitModelClick: (form) => {
       dispatch(Action.createModel(form));
     },
@@ -335,14 +340,14 @@ var mapDispatchToProps = (dispatch) => {
       dispatch(Action.spinLogo());
     }
   }
-}
+);
 
 MainContent = connect(mapStateToProps, mapDispatchToProps)(MainContent);
 
 
 ReactDOM.render(
   <Provider store={store}>
-  <MainContent root={ location.host + location.pathname }/>
+    <MainContent root={location.host + location.pathname} />
   </Provider>,
   document.getElementById('content')
 );
