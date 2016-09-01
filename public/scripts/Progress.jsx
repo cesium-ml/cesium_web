@@ -1,27 +1,31 @@
-import React from 'react'
+import React from 'react';
 
-export var Progress = (props) => {
-  let response = ''
+const Progress = (props) => {
+  let response = '';
   switch (props.type) {
     case 'data':
-      response = 'Get a dataset'
-      break
+      response = 'Get a dataset';
+      break;
     case 'features':
-      response = 'Compute features on it'
-      break
+      response = 'Compute features on it';
+      break;
     case 'models':
-      response = 'Train a model'
-      break
+      response = 'Train a model';
+      break;
     case 'predict':
-      response = 'Do some predictions'
-      break
+      response = 'Do some predictions';
+      break;
     default:
-      break
+      break;
   }
 
   return (
     <b>{response}</b>
-  )
-}
+  );
+};
 
-export {Progress as default}
+Progress.propTypes = {
+  type: React.PropTypes.string.isRequired
+};
+
+export default Progress;

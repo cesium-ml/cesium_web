@@ -1,4 +1,4 @@
-export function post(url, data) {
+function post(url, data) {
   return fetch(url, {
     method: 'POST',
     mode: 'cors',
@@ -6,6 +6,8 @@ export function post(url, data) {
       'Accept': 'Application/JSON, text/plain',
       'Content-Type': 'x-www-urlencoded'
     },
-    body: body,
+    data,
   });
 }
+
+export default post;

@@ -1,9 +1,18 @@
-import React from 'react'
-import {connect} from 'react-redux'
-import {promiseAction} from './action_tools'
+import React from 'react';
+import { connect } from 'react-redux';
 
 
-export var Notifications = (props) => {
+export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION';
+export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION';
+
+export function hideNotification(id) {
+  return {
+    type: HIDE_NOTIFICATION,
+    payload: { id }
+  };
+}
+
+export let Notifications = (props) => {
   let style = {
     position: 'fixed',
     zIndex: 20000,
@@ -25,46 +34,47 @@ export var Notifications = (props) => {
       MozBoxShadow: '0 0 5px black',
       boxShadow: '0 0 5px black'
     }
-  }
+  };
 
 
-  let note_color = {
-    'error': 'Crimson',
-    'info': 'MediumAquaMarine'
-  }
+  const noteColor = {
+    error: 'Crimson',
+    info: 'MediumAquaMarine'
+  };
 
   return (
     (props.notifications.length > 0) &&
       <div style={style}>
-        {props.notifications.map((notification, idx) => (
-          <div key={notification.id}
-               style={{...style.note, background: note_color[notification.type]}}
-               onClick={() => props.dispatch(hideNotification(notification.id))}>
-            {notification.note}
-          </div>
-        ))}
+        {
+          props.notifications.map((notification, idx) => (
+            <div
+              key={notification.id}
+              style={{ ...style.note, background: noteColor[notification.type] }}
+              onClick={() => props.dispatch(hideNotification(notification.id))}
+            >
+              {notification.note}
+            </div>
+          ))
+        }
       </div>
   );
-}
+};
 
-var mapStateToProps = (state) => {
-  return {
+const mapStateToProps = (state) => (
+  {
     notifications: state.notifications.notes
   }
-}
+);
 
 Notifications = connect(mapStateToProps)(Notifications);
 
 
-export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION'
-export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION'
-
-let nextNotificationId = 0
+let nextNotificationId = 0;
 export function showNotification(note, type='info') {
-  let thisId = nextNotificationId++;
+  const thisId = nextNotificationId++;
 
-  if (type == 'error') {
-    console.error(note)
+  if (type === 'error') {
+    console.error(note);
   }
 
   return (dispatch) => {
@@ -75,30 +85,24 @@ export function showNotification(note, type='info') {
         note,
         type
       }
-    })
+    });
     setTimeout(() => dispatch(hideNotification(thisId)), 3000);
-  }
+  };
 }
 
-export function hideNotification(id) {
-  return {
-    type: HIDE_NOTIFICATION,
-    payload: {id}
-  }
-}
-
-export function reducer(state={notes: []}, action) {
+export function reducer(state={ notes: [] }, action) {
   switch (action.type) {
-    case SHOW_NOTIFICATION:
-      let {id, note, type} = action.payload;
+    case SHOW_NOTIFICATION: {
+      let { id, note, type } = action.payload;
       return {
-        notes: state.notes.concat({id, note, type})
-      }
+        notes: state.notes.concat({ id, note, type })
+      };
+    }
     case HIDE_NOTIFICATION:
       return {
-        notes: state.notes.filter(n => (n.id != action.payload.id))
-      }
+        notes: state.notes.filter(n => (n.id !== action.payload.id))
+      };
     default:
-      return state
+      return state;
   }
 }

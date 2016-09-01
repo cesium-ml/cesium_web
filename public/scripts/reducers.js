@@ -1,16 +1,16 @@
-import { combineReducers } from 'redux'
-import {reducer as formReducer} from 'redux-form'
+import { combineReducers } from 'redux';
+import { reducer as formReducer } from 'redux-form';
 
-import * as Action from './actions'
-import { reducer as notifications } from './Notifications'
+import * as Action from './actions';
+import { reducer as notifications } from './Notifications';
 
 
-function projects(state={projectList: []}, action) {
+function projects(state={ projectList: [] }, action) {
   switch (action.type) {
     case Action.RECEIVE_PROJECTS:
-      return {...state, projectList: action.payload}
+      return { ...state, projectList: action.payload };
     default:
-      return state
+      return state;
   }
 }
 
@@ -18,23 +18,23 @@ function projects(state={projectList: []}, action) {
 function datasets(state = [], action) {
   switch (action.type) {
     case Action.RECEIVE_DATASETS:
-      return action.payload
+      return action.payload;
     default:
-      return state
+      return state;
   }
 }
 
 
-function featuresets(state={featuresetList: [],
-                            featuresList: []}, action) {
+function featuresets(state={ featuresetList: [],
+                            featuresList: [] }, action) {
   switch (action.type) {
     case Action.RECEIVE_FEATURESETS:
       // {obs_features, sci_features}
-      return {...state, featuresetList: action.payload}
+      return { ...state, featuresetList: action.payload };
     case Action.RECEIVE_FEATURES:
-      return {...state, features: action.payload}
+      return { ...state, features: action.payload };
     default:
-      return state
+      return state;
   }
 }
 
@@ -42,9 +42,9 @@ function featuresets(state={featuresetList: [],
 function models(state = [], action) {
   switch (action.type) {
     case Action.RECEIVE_MODELS:
-      return action.payload
+      return action.payload;
     default:
-      return state
+      return state;
   }
 }
 
@@ -52,40 +52,42 @@ function models(state = [], action) {
 function predictions(state = [], action) {
   switch (action.type) {
     case Action.RECEIVE_PREDICTIONS:
-      return action.payload
+      return action.payload;
     default:
-      return state
+      return state;
   }
 }
 
 
-let myFormReducer = (theirFormReducer) => {
-  return function(state, action) {
-    var state = {...state};
+const myFormReducer = (theirFormReducer) => (
+  function (initialState, action) {
+    const state = { ...initialState };
     switch (action.type) {
-      case Action.SELECT_PROJECT:
-        const {id} = action.payload;
+      case Action.SELECT_PROJECT: {
+        const { id } = action.payload;
         state.projectSelector.project.value = id ? id.toString() : "";
-      case Action.GROUP_TOGGLE_FEATURES:
-        let field_names = Object.keys(state.featurize).filter(
-          fn => fn.startsWith(action.payload))
-        let featurizeFormState = Object.assign({}, state.featurize)
-        let allAreChecked = (field_names.filter(
-          el => !featurizeFormState[el].value).length == 0);
-        for (var idx in field_names) {
+      }
+      case Action.GROUP_TOGGLE_FEATURES: {
+        const field_names = Object.keys(state.featurize).filter(
+          fn => fn.startsWith(action.payload));
+        const featurizeFormState = Object.assign({}, state.featurize);
+        const allAreChecked = (field_names.filter(
+          el => !featurizeFormState[el].value).length === 0);
+        for (const idx in field_names) {
           featurizeFormState[field_names[idx]].value = !allAreChecked;
         }
-        featurizeFormState["dummy_" + String(Math.random())] = null;
+        featurizeFormState[`dummy_${String(Math.random())}`] = null;
         state.featurize = featurizeFormState;
+      }
     }
     return theirFormReducer(state, action);
   }
-}
+);
 
 
-function expander(state={opened: {}}, action) {
-  let id = action.payload ? action.payload.id : null;
-  let newState = {...state};
+function expander(state={ opened: {} }, action) {
+  const id = action.payload ? action.payload.id : null;
+  const newState = { ...state };
 
   if (!id) {
     return state;
@@ -102,29 +104,29 @@ function expander(state={opened: {}}, action) {
       newState.opened[id] = true;
       return newState;
     default:
-      return state
+      return state;
   }
 }
 
 function sklearnModels(state={}, action) {
   switch (action.type) {
     case Action.RECEIVE_SKLEARN_MODELS:
-      return {...(action.payload)}
+      return { ...(action.payload) };
     default:
-      return state
+      return state;
   }
 }
 
 
-function misc(state={logoSpinAngle: 0}, action) {
+function misc(state={ logoSpinAngle: 0 }, action) {
   switch (action.type) {
     case Action.SPIN_LOGO:
       return {
         ...state,
         logoSpinAngle: (state.logoSpinAngle + 360) % 720
-      }
+      };
     default:
-      return state
+      return state;
   }
 }
 
@@ -140,6 +142,6 @@ const rootReducer = combineReducers({
   sklearnModels,
   form: myFormReducer(formReducer),
   misc
-})
+});
 
-export default rootReducer
+export default rootReducer;

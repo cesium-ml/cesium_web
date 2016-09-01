@@ -29,24 +29,18 @@ const store = configureStore();
 let messageHandler = (new MessageHandler(store.dispatch)).handle;
 
 
-let MainContent = class MainContent extends React.Component {
-  static propTypes = {
-    selectedProject: React.PropTypes.object.isRequired,
-    root: React.PropTypes.string.isRequired,
-    logoSpinAngle: React.PropTypes.string.isRequired,
-    spinLogo: React.PropTypes.func
-  }
+class MainContent extends React.Component {
   componentDidMount() {
     store.dispatch(Action.hydrate());
   }
   render() {
-    let config = {
+    const config = {
       sidebar: 300,
       topbar: '4em',
       footer: '4em'
     };
 
-    let style = {
+    const style = {
       main: {
         background: 'white',
         zIndex: 5,
@@ -194,8 +188,8 @@ let MainContent = class MainContent extends React.Component {
         height: '4em'
       },
     };
-    let rotate = `rotate(${this.props.logoSpinAngle}deg)`;
-    let rotateStyle = {
+    const rotate = `rotate(${this.props.logoSpinAngle}deg)`;
+    const rotateStyle = {
       WebkitTransition: 'all 1.0s ease-in-out',
       MozTransition: 'all 1.0s ease-in-out',
       OTransition: 'all 1.0s ease-in-out',
@@ -303,18 +297,24 @@ let MainContent = class MainContent extends React.Component {
       </div>
     );
   }
+}
+MainContent.propTypes = {
+  selectedProject: React.PropTypes.object.isRequired,
+  root: React.PropTypes.string.isRequired,
+  logoSpinAngle: React.PropTypes.number.isRequired,
+  spinLogo: React.PropTypes.func
 };
 
-let mapStateToProps = function (state) {
+const mapStateToProps = function (state) {
   // This can be improved by using
   // http://redux-form.com/6.0.0-alpha.13/docs/api/FormValueSelector.md/
-  let projectSelector = state.form.projectSelector;
-  let selectedProjectId = projectSelector ? projectSelector.project.value : "";
+  const projectSelector = state.form.projectSelector;
+  const selectedProjectId = projectSelector ? projectSelector.project.value : "";
   let selectedProject = state.projects.projectList.filter(
     p => (p.id == selectedProjectId)
   );
 
-  let firstProject = state.projects[0] || { id: '', label: '', description: '' };
+  const firstProject = state.projects[0] || { id: '', label: '', description: '' };
 
   if (selectedProject.length > 0) {
     selectedProject = selectedProject[0];
@@ -331,7 +331,7 @@ let mapStateToProps = function (state) {
   };
 };
 
-let mapDispatchToProps = (dispatch) => (
+const mapDispatchToProps = (dispatch) => (
   {
     handleSubmitModelClick: (form) => {
       dispatch(Action.createModel(form));

@@ -1,12 +1,14 @@
 // From https://github.com/erikras/react-redux-universal-hot-example/blob/master/src/utils/validation.js
 
 export const isEmpty = value => value === undefined || value === null || value === '';
-const join = (rules) => (value, data) => rules.map(rule => rule(value, data)).filter(error => !!error)[0 /* first error */ ];
+const join = (rules) => (value, data) => rules.map(rule => rule(value, data)).filter(error => !!error)[0]; /* first error */
 
 export function email(value) {
   // Let's not start a debate on email regex. This is just for an example app!
   if (!isEmpty(value) && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
     return 'Invalid email address';
+  } else {
+    return;
   }
 }
 
@@ -58,7 +60,7 @@ export function match(field) {
 
 export function oneFile(field) {
   if ((field === undefined) || (!field[0]) || !(field[0].size > 0)) {
-    return 'Required'
+    return 'Required';
   }
 }
 

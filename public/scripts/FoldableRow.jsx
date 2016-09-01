@@ -8,59 +8,65 @@
  * The second element can be, e.g., another row in the table.
  * */
 
-import React, { Component } from 'react'
-import {colorScheme as cs} from './colorscheme'
+import React, { Component, PropTypes } from 'react';
+import { colorScheme as cs } from './colorscheme';
 
-export class FoldableRow extends Component {
+class FoldableRow extends Component {
   constructor(props) {
-    super(props)
-    this.state = {folded: true}
-    this.toggleFold = this.toggleFold.bind(this)
+    super(props);
+    this.state = { folded: true };
+    this.toggleFold = this.toggleFold.bind(this);
   }
 
   toggleFold() {
-    this.setState({folded: !this.state.folded})
+    this.setState({ folded: !this.state.folded });
   }
 
   render() {
-    let children = React.Children.toArray(this.props.children)
+    const children = React.Children.toArray(this.props.children);
 
-    let openStyleHeader = {
-      //fontWeight: 'bold'
+    const openStyleHeader = {
+      // fontWeight: 'bold'
       background: cs.blue,
       color: 'white'
-    }
+    };
 
-    let openStyleContent = {
+    const openStyleContent = {
       background: cs.lightGray,
       fontSize: '80%'
-    }
+    };
 
-    let row = children[0]
+    let row = children[0];
     row = React.cloneElement(row, {
       onClick: (e) => {
         e.stopPropagation();
         this.toggleFold();
       },
       style: this.state.folded ? {} : openStyleHeader
-    })
+    });
 
-    let expanded = children.slice(1)
+    let expanded = children.slice(1);
     expanded = expanded.map((e, idx) => (
       React.cloneElement(
         e, {
           style: this.state.folded ? {} : openStyleContent,
           key: idx
         })
-    ))
+    ));
 
     return (
       <tbody>
         {row}
         {(!this.state.folded) && expanded}
       </tbody>
-    )
+    );
   }
 }
+FoldableRow.propTypes = {
+  children: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.oneOfType([
+      PropTypes.node, PropTypes.element])),
+    PropTypes.node, PropTypes.element])
+};
 
-export { FoldableRow as default }
+export default FoldableRow;

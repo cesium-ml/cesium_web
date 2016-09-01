@@ -22,7 +22,8 @@
     "redux-logger": "latest",
     "whatwg-fetch": "latest",
     "redux-form": "latest",
-    "plotly.js": "latest"
+    "plotly.js": "latest",
+    "webpack": "latest"
   },
   "devDependencies": {
     "babel": "latest",
@@ -45,7 +46,6 @@
     "ify-loader": "latest",
     "imports-loader": "latest",
     "style-loader": "latest",
-    "webpack": "latest",
     "webpack-dev-server": "latest"
   },
   "browserify": {
