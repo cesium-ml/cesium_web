@@ -20,5 +20,15 @@
         "prefer-const": 1,
         "eqeqeq": 1,
         "import/imports-first": 1,
+        "consistent-return": 0,
+        "import/no-mutable-exports": 0,
+        "no-class-assign": 0,
+        "jsx-a11y/label-has-for": 0,
+        "jsx-a11y/href-no-hash": 1,
+        "camelcase": 1,
+        "no-fallthrough": 0,
+        "no-restricted-syntax": 1,
+        "guard-for-in": 1,
+        "array-callback-return": 1,
     }
 }
