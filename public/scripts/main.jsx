@@ -16,13 +16,14 @@ import FeaturesTab from './Features';
 import ModelsTab from './Models';
 import PredictTab from './Predictions';
 import { Notifications } from './Notifications';
-import { colorScheme as cs } from './colorscheme';
+import colorScheme from './colorscheme';
 import Progress from './Progress';
 
 let Tab = ReactTabs.Tab;
 let Tabs = ReactTabs.Tabs;
 let TabList = ReactTabs.TabList;
 let TabPanel = ReactTabs.TabPanel;
+const cs = colorScheme;
 
 const store = configureStore();
 
@@ -34,6 +35,7 @@ class MainContent extends React.Component {
     store.dispatch(Action.hydrate());
   }
   render() {
+    console.log("MainContent this.props:", this.props);
     const config = {
       sidebar: 300,
       topbar: '4em',

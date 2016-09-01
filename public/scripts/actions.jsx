@@ -47,8 +47,8 @@ export const GROUP_TOGGLE_FEATURES = 'cesium/GROUP_TOGGLE_FEATURES'
 
 
 import { showNotification, reduceNotifications } from './Notifications'
-import {promiseAction} from './action_tools'
-import {objectType} from './utils'
+import promiseAction from './action_tools'
+import { objectType } from './utils'
 
 // Refactor this into a utility function
 String.prototype.format = function () {

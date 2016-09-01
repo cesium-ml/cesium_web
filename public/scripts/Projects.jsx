@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
 
@@ -7,26 +7,25 @@ import * as Validate from './validate';
 import Expand from './Expand';
 import * as Action from './actions';
 import Delete from './Delete';
-import { colorScheme as cs } from './colorscheme';
+import colorScheme from './colorscheme';
 
+const cs = colorScheme;
 
-class ProjectForm extends FormComponent {
-  render() {
-    const { fields: { projectName, projectDescription },
-           error, resetForm, submitting, handleSubmit } = this.props;
+let ProjectForm = (props) => {
+  const { fields: { projectName, projectDescription },
+          error, resetForm, submitting, handleSubmit } = props;
 
-    return (
-      <Form onSubmit={handleSubmit} error={error}>
-        <TextInput label="Project Name" {...projectName} />
-        <TextInput label="Project Description" {...projectDescription} />
-        <SubmitButton
-          label={this.props.label}
+  return (
+    <Form onSubmit={handleSubmit} error={error}>
+      <TextInput label="Project Name" {...projectName} />
+      <TextInput label="Project Description" {...projectDescription} />
+      <SubmitButton
+          label={props.label}
           submitting={submitting} resetForm={resetForm}
-        />
-      </Form>
-    );
-  }
-}
+      />
+    </Form>
+  );
+};
 
 const validate = Validate.createValidator({
   projectName: [Validate.required],
@@ -45,7 +44,7 @@ let EditProjectForm = reduxForm({
 })(ProjectForm);
 
 
-export let ProjectTab = (props) => {
+let ProjectTab = (props) => {
   let p = props.selectedProject;
   let style = {
     marginLeft: '0em',
@@ -87,8 +86,8 @@ export let ProjectTab = (props) => {
 };
 
 ProjectTab.propTypes = {
-  selectedProject: React.PropTypes.object.isRequired,
-  updateProject: React.PropTypes.func.isRequired
+  selectedProject: PropTypes.object.isRequired,
+  updateProject: PropTypes.func.isRequired
 };
 
 const ptMapDispatchToProps = (dispatch) => (
@@ -99,8 +98,10 @@ const ptMapDispatchToProps = (dispatch) => (
 
 ProjectTab = connect(null, ptMapDispatchToProps)(ProjectTab);
 
+export { ProjectTab };
 
-export let AddProject = (props) => {
+
+let AddProject = (props) => {
   let expandBoxStyle = {
     zIndex: 1000,
     position: 'relative',
@@ -122,10 +123,10 @@ export let AddProject = (props) => {
 };
 
 AddProject.propTypes = {
-  id: React.PropTypes.string.isRequired,
-  label: React.PropTypes.string,
-  addProject: React.PropTypes.func.isRequired,
-  style: React.PropTypes.object
+  id: PropTypes.string.isRequired,
+  label: PropTypes.string,
+  addProject: PropTypes.func.isRequired,
+  style: PropTypes.object
 };
 
 let mapDispatchToProps = (dispatch) => (
@@ -136,6 +137,7 @@ let mapDispatchToProps = (dispatch) => (
 
 AddProject = connect(null, mapDispatchToProps)(AddProject);
 
+export { AddProject };
 
 mapDispatchToProps = (dispatch) => (
   { delete: (id) => dispatch(Action.deleteProject(id)) }
@@ -143,7 +145,7 @@ mapDispatchToProps = (dispatch) => (
 
 let DeleteProject = connect(null, mapDispatchToProps)(Delete);
 
-export let ProjectSelector = (props) => {
+let ProjectSelector = (props) => {
   const { fields: { project } } = props;
 
   let projects = props.projects.map(proj => (
@@ -166,10 +168,10 @@ export let ProjectSelector = (props) => {
   );
 };
 ProjectSelector.propTypes = {
-  fields: React.PropTypes.object.isRequired,
-  projects: React.PropTypes.arrayOf(React.PropTypes.object),
-  style: React.PropTypes.object,
-  label: React.PropTypes.string
+  fields: PropTypes.array,
+  projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  style: PropTypes.object,
+  label: PropTypes.string
 };
 
 const psMapStateToProps = (state) => {
@@ -187,11 +189,14 @@ const psMapStateToProps = (state) => {
   };
 };
 
+ProjectSelector = connect(psMapStateToProps)(ProjectSelector);
+
 ProjectSelector = reduxForm({
   form: 'projectSelector',
-  fields: ['project'],
-}, psMapStateToProps)(ProjectSelector);
+  fields: ['project']
+})(ProjectSelector);
 
+export { ProjectSelector };
 
 export const CurrentProject = (props) => {
   let style = {
@@ -208,5 +213,5 @@ export const CurrentProject = (props) => {
 };
 
 CurrentProject.propTypes = {
-  selectedProject: React.PropTypes.object
+  selectedProject: PropTypes.object
 };

@@ -1,6 +1,7 @@
 import React from 'react';
-import { colorScheme as cs } from './colorscheme';
+import colorScheme  from './colorscheme';
 
+const cs = colorScheme;
 
 const Dot = (props) => {
   let value = props.value;

@@ -1,4 +1,4 @@
-function promiseAction(dispatch, action_type, promise) {
+export default function promiseAction(dispatch, action_type, promise) {
   dispatch({
     type: action_type,
     payload: {
@@ -7,5 +7,3 @@ function promiseAction(dispatch, action_type, promise) {
   });
   return promise;
 }
-
-export default promiseAction;

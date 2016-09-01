@@ -60,10 +60,10 @@ let Expand = (props) => {
 };
 Expand.propTypes = {
   expandBoxStyle: PropTypes.object,
-  style: PropTypes.object.isRequired,
-  label: PropTypes.string.isRequired,
-  toggle: PropTypes.func.isRequired,
-  opened: PropTypes.bool.isRequired,
+  style: PropTypes.object,
+  label: PropTypes.string,
+  toggle: PropTypes.func,
+  opened: PropTypes.bool,
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.oneOfType([
       PropTypes.node, PropTypes.element])),

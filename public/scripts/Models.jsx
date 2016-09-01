@@ -22,7 +22,7 @@ const ModelsTab = (props) => (
   </div>
 );
 ModelsTab.propTypes = {
-  selectedProject: PropTypes.string
+  selectedProject: PropTypes.object
 };
 
 class NewModelForm extends FormComponent {

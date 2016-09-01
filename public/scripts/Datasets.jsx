@@ -25,34 +25,32 @@ DatasetsTab.propTypes = {
   selectedProject: React.PropTypes.object
 };
 
-class DatasetForm extends FormComponent {
-  render() {
-    const { fields: { datasetName, headerFile, tarFile },
-           error, handleSubmit, submitting } = this.props;
+let DatasetForm = (props) => {
+  const { fields: { datasetName, headerFile, tarFile },
+          error, handleSubmit, submitting } = props;
 
-    let description = {
-      fontStyle: 'italic',
-      paddingBottom: '1em'
-    };
+  let description = {
+    fontStyle: 'italic',
+    paddingBottom: '1em'
+  };
 
-    return (
-      <Form onSubmit={handleSubmit} error={error}>
-        <TextInput label="Dataset Name" {...datasetName} />
-        <FileInput label="Header File" {...headerFile} />
+  return (
+    <Form onSubmit={handleSubmit} error={error}>
+      <TextInput label="Dataset Name" {...datasetName} />
+      <FileInput label="Header File" {...headerFile} />
 
-        <div style={description}>
-          Format: comma-separated with columns "filename" (of a time series from the uploaded archive), "target" (class label or regression target), and any metafeatures (floating point values).
-        </div>
+      <div style={description}>
+        Format: comma-separated with columns "filename" (of a time series from the uploaded archive), "target" (class label or regression target), and any metafeatures (floating point values).
+      </div>
 
-        <FileInput label="Data Tarball" {...tarFile} />
-        <div style={description}>
-          Format: zipfile or tarfile containing time series files, each of which is comma-separated with columns "time", "value", "error" (optional).
-        </div>
+      <FileInput label="Data Tarball" {...tarFile} />
+      <div style={description}>
+        Format: zipfile or tarfile containing time series files, each of which is comma-separated with columns "time", "value", "error" (optional).
+      </div>
 
-        <SubmitButton label="Upload Dataset" disabled={submitting} />
-      </Form>
-    );
-  }
+      <SubmitButton label="Upload Dataset" disabled={submitting} />
+    </Form>
+  );
 }
 
 const dsMapStateToProps = (state, ownProps) => (
