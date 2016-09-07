@@ -40,12 +40,12 @@ if __name__ == '__main__':
 
     try:
         timeout = 0
-        while ((timeout < 5) and
+        while ((timeout < 10) and
                (not all([b'RUNNING' in line for line in supervisor_status()]))):
             time.sleep(1)
             timeout += 1
 
-        if timeout == 5:
+        if timeout == 10:
             print('[test_frontend] Could not launch server processes; terminating')
             sys.exit(-1)
 
