@@ -11,7 +11,7 @@ import traceback
 
 from distributed import Executor
 
-import joblib
+from sklearn.externals import joblib
 import xarray as xr
 from cesium import featurize, build_model, predict, time_series
 from cesium_app.config import cfg
