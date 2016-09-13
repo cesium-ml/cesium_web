@@ -1,5 +1,5 @@
 import React from 'react';
-import colorScheme  from './colorscheme';
+import colorScheme from './colorscheme';
 
 const cs = colorScheme;
 
@@ -14,7 +14,7 @@ const Dot = (props) => {
     height = '1em';
   }
 
-  let style = {
+  const style = {
     display: 'inline-block',
     padding: 0,
     margin: 0,

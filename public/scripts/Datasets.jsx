@@ -10,7 +10,7 @@ import * as Action from './actions';
 import { reformatDatetime } from './utils';
 
 
-const DatasetsTab = (props) => (
+const DatasetsTab = props => (
   <div className="datasetsTab">
 
     <Expand label="Upload new dataset" id="newDatasetExpander">
@@ -29,7 +29,7 @@ let DatasetForm = (props) => {
   const { fields: { datasetName, headerFile, tarFile },
           error, handleSubmit, submitting } = props;
 
-  let description = {
+  const description = {
     fontStyle: 'italic',
     paddingBottom: '1em'
   };
@@ -88,7 +88,7 @@ DatasetForm = reduxForm({
 }, dsMapStateToProps, dsMapDispatchToProps)(DatasetForm);
 
 
-export let DatasetTable = (props) => (
+export let DatasetTable = props => (
   <table className="table">
     <thead>
       <tr>
@@ -123,10 +123,10 @@ const mapStateToProps = (state, ownProps) => (
 
 DatasetTable = connect(mapStateToProps)(DatasetTable);
 
-const mapDispatchToProps = (dispatch) => (
-  { delete: (id) => dispatch(Action.deleteDataset(id)) }
+const mapDispatchToProps = dispatch => (
+  { delete: id => dispatch(Action.deleteDataset(id)) }
 );
 
-let DeleteDataset = connect(null, mapDispatchToProps)(Delete);
+const DeleteDataset = connect(null, mapDispatchToProps)(Delete);
 
 export default DatasetsTab;

@@ -11,7 +11,7 @@ import colorScheme from './colorscheme';
 
 const cs = colorScheme;
 
-let ProjectForm = (props) => {
+const ProjectForm = (props) => {
   const { fields: { projectName, projectDescription },
           error, resetForm, submitting, handleSubmit } = props;
 
@@ -20,24 +20,32 @@ let ProjectForm = (props) => {
       <TextInput label="Project Name" {...projectName} />
       <TextInput label="Project Description" {...projectDescription} />
       <SubmitButton
-          label={props.label}
-          submitting={submitting} resetForm={resetForm}
+        label={props.label}
+        submitting={submitting} resetForm={resetForm}
       />
     </Form>
   );
+};
+ProjectForm.propTypes = {
+  fields: React.PropTypes.object.isRequired,
+  label: React.PropTypes.string.isRequired,
+  error: React.PropTypes.string,
+  handleSubmit: React.PropTypes.func.isRequired,
+  submitting: React.PropTypes.bool.isRequired,
+  resetForm: React.PropTypes.func.isRequired
 };
 
 const validate = Validate.createValidator({
   projectName: [Validate.required],
 });
 
-let NewProjectForm = reduxForm({
+const NewProjectForm = reduxForm({
   form: 'newProject',
   fields: ['projectName', 'projectDescription'],
   validate
 })(ProjectForm);
 
-let EditProjectForm = reduxForm({
+const EditProjectForm = reduxForm({
   form: 'editProject',
   fields: ['projectName', 'projectDescription', 'projectId'],
   validate
@@ -45,13 +53,13 @@ let EditProjectForm = reduxForm({
 
 
 let ProjectTab = (props) => {
-  let p = props.selectedProject;
-  let style = {
+  const p = props.selectedProject;
+  const style = {
     marginLeft: '0em',
     paddingLeft: '2em',
   };
 
-  let newCesiumStyle = {
+  const newCesiumStyle = {
     marginTop: '2em',
     background: 'white',
     width: '20em',
@@ -90,9 +98,9 @@ ProjectTab.propTypes = {
   updateProject: PropTypes.func.isRequired
 };
 
-const ptMapDispatchToProps = (dispatch) => (
+const ptMapDispatchToProps = dispatch => (
   {
-    updateProject: (form) => dispatch(Action.updateProject(form))
+    updateProject: form => dispatch(Action.updateProject(form))
   }
 );
 
@@ -102,7 +110,7 @@ export { ProjectTab };
 
 
 let AddProject = (props) => {
-  let expandBoxStyle = {
+  const expandBoxStyle = {
     zIndex: 1000,
     position: 'relative',
     width: 500,
@@ -129,9 +137,9 @@ AddProject.propTypes = {
   style: PropTypes.object
 };
 
-let mapDispatchToProps = (dispatch) => (
+let mapDispatchToProps = dispatch => (
   {
-    addProject: (form) => dispatch(Action.addProject(form)),
+    addProject: form => dispatch(Action.addProject(form)),
   }
 );
 
@@ -139,16 +147,16 @@ AddProject = connect(null, mapDispatchToProps)(AddProject);
 
 export { AddProject };
 
-mapDispatchToProps = (dispatch) => (
-  { delete: (id) => dispatch(Action.deleteProject(id)) }
+mapDispatchToProps = dispatch => (
+  { delete: id => dispatch(Action.deleteProject(id)) }
 );
 
-let DeleteProject = connect(null, mapDispatchToProps)(Delete);
+const DeleteProject = connect(null, mapDispatchToProps)(Delete);
 
 let ProjectSelector = (props) => {
   const { fields: { project } } = props;
 
-  let projects = props.projects.map(proj => (
+  const projects = props.projects.map(proj => (
     {
       id: proj.id,
       label: proj.name
@@ -199,7 +207,7 @@ ProjectSelector = reduxForm({
 export { ProjectSelector };
 
 export const CurrentProject = (props) => {
-  let style = {
+  const style = {
   };
 
   const project = props.selectedProject;

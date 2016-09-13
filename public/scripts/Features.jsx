@@ -13,16 +13,16 @@ import FoldableRow from './FoldableRow';
 import { reformatDatetime } from './utils';
 import Delete from './Delete';
 
-let Tab = ReactTabs.Tab;
-let Tabs = ReactTabs.Tabs;
-let TabList = ReactTabs.TabList;
-let TabPanel = ReactTabs.TabPanel;
+const Tab = ReactTabs.Tab;
+const Tabs = ReactTabs.Tabs;
+const TabList = ReactTabs.TabList;
+const TabPanel = ReactTabs.TabPanel;
 
 
 let FeaturizeForm = (props) => {
   const { fields, fields: { datasetID, featuresetName, customFeatsCode },
           handleSubmit, submitting, resetForm, error, groupToggleCheckedFeatures } = props;
-  let datasets = props.datasets.map(ds => (
+  const datasets = props.datasets.map(ds => (
     { id: ds.id,
       label: ds.name }
   ));
@@ -160,9 +160,9 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-const ffMapDispatchToProps = (dispatch) => (
+const ffMapDispatchToProps = dispatch => (
   {
-    groupToggleCheckedFeatures: (prefix) => dispatch(Action.groupToggleCheckedFeatures(prefix))
+    groupToggleCheckedFeatures: prefix => dispatch(Action.groupToggleCheckedFeatures(prefix))
   }
 );
 
@@ -179,7 +179,7 @@ FeaturizeForm = reduxForm({
 
 
 let FeaturesTab = (props) => {
-  let { featurePlotURL } = props;
+  const { featurePlotURL } = props;
   return (
     <div>
       <div>
@@ -205,15 +205,15 @@ FeaturesTab.propTypes = {
   selectedProject: React.PropTypes.string
 };
 
-const ftMapDispatchToProps = (dispatch) => (
+const ftMapDispatchToProps = dispatch => (
   {
-    computeFeatures: (form) => dispatch(Action.computeFeatures(form))
+    computeFeatures: form => dispatch(Action.computeFeatures(form))
   }
 );
 
 FeaturesTab = connect(null, ftMapDispatchToProps)(FeaturesTab);
 
-export let FeatureTable = (props) => (
+export let FeatureTable = props => (
   <div>
     <table className="table">
       <thead>
@@ -229,14 +229,14 @@ export let FeatureTable = (props) => (
       {
         props.featuresets.map((featureset, idx) => {
           const done = featureset.finished;
-          let foldedContent = done && (
+          const foldedContent = done && (
             <tr key={`plot${featureset.id}`}>
               <td colSpan={4}>
                 <Plot url={`${props.featurePlotURL}/${featureset.id}`} />
               </td>
             </tr>);
 
-          let status = done ? <td>Completed {reformatDatetime(featureset.finished)}</td> : <td>In progress</td>;
+          const status = done ? <td>Completed {reformatDatetime(featureset.finished)}</td> : <td>In progress</td>;
 
           return (
             <FoldableRow key={idx}>
@@ -270,10 +270,10 @@ const ftMapStateToProps = (state, ownProps) => (
 
 FeatureTable = connect(ftMapStateToProps)(FeatureTable);
 
-const mapDispatchToProps = (dispatch) => (
-  { delete: (id) => dispatch(Action.deleteFeatureset(id)) }
+const mapDispatchToProps = dispatch => (
+  { delete: id => dispatch(Action.deleteFeatureset(id)) }
 );
 
-let DeleteFeatureset = connect(null, mapDispatchToProps)(Delete);
+const DeleteFeatureset = connect(null, mapDispatchToProps)(Delete);
 
 export default FeaturesTab;

@@ -34,5 +34,10 @@
         "jsx-a11y/no-static-element-interactions": 1,
         "react/forbid-prop-types": 1,
         "arrow-parens": 1,
+        "no-bitwise": 1,
+        "no-plusplus": 1,
+        "no-extend-native": 1,
+        "no-use-before-define": 1,
+        "no-unused-expressions": 1,
     }
 }

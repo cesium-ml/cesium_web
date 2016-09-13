@@ -11,8 +11,8 @@ FormComponent.propTypes = {
 };
 
 
-export let Error = (props) => {
-  let errorStyle = {
+export const Error = (props) => {
+  const errorStyle = {
     color: 'darkred',
     fontStyle: 'italic'
   };
@@ -30,7 +30,7 @@ Error.propTypes = {
 };
 
 export const Form = (props) => {
-  let style = {
+  const style = {
     paddingRight: '2em',
     error: {
       color: 'Red',
@@ -51,7 +51,6 @@ export const Form = (props) => {
   );
 };
 Form.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
   error: PropTypes.string,
   children: PropTypes.oneOfType([
     PropTypes.element,
@@ -61,7 +60,7 @@ Form.propTypes = {
 };
 
 export const TextInput = (props) => {
-  let textInputStyle = {
+  const textInputStyle = {
     paddingTop: 10,
   };
 
@@ -86,7 +85,7 @@ TextInput.propTypes = {
 };
 
 export const TextareaInput = (props) => {
-  let textareaInputStyle = {
+  const textareaInputStyle = {
     paddingTop: 10,
   };
 
@@ -108,7 +107,7 @@ TextareaInput.propTypes = {
   value: PropTypes.string
 };
 
-export const CheckBoxInput = (props) => (
+export const CheckBoxInput = props => (
   <div className="checkbox">
     <input type="checkbox" {...props} /> {props.label}
   </div>
@@ -118,7 +117,7 @@ CheckBoxInput.propTypes = {
 };
 
 export const SelectInput = (props) => {
-  let selectInputStyle = {
+  const selectInputStyle = {
     paddingTop: 10
   };
 
@@ -147,18 +146,19 @@ export const SelectInput = (props) => {
 };
 SelectInput.propTypes = {
   label: PropTypes.string,
+  /* eslint-disable react/no-unused-prop-types */
   options: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.oneOfType([
       PropTypes.number,
-      PropTypes.string]).isRequired,
+      PropTypes.string]),
     label: PropTypes.string.isRequired
-  })),
-  value: PropTypes.any  // array of individual value
+  }))
+  /* eslint-enable react/no-unused-prop-types */
 };
 
 
 export const SubmitButton = (props) => {
-  let submitButtonStyle = {
+  const submitButtonStyle = {
     paddingTop: 10
   };
 
@@ -181,7 +181,7 @@ SubmitButton.propTypes = {
 
 
 export const FileInput = (props) => {
-  let fileInputStyle = {
+  const fileInputStyle = {
   };
 
   const { value: _, ...otherProps } = props;
@@ -199,70 +199,4 @@ export const FileInput = (props) => {
 FileInput.propTypes = {
   label: PropTypes.string,
   value: PropTypes.string
-};
-
-
-export const FormInputRow = (props) => (
-  <div>
-    <div style={{ width: 320, float: 'left', marginTop: 5 }}>
-      {props.inputName}
-    </div>
-    <div style={{ marginLeft: 340, marginTop: 5 }}>
-      <props.inputTag
-        type={props.inputType}
-        value={props.value}
-        onChange={props.handleInputChange}
-      />
-    </div>
-  </div>
-);
-FormInputRow.propTypes = {
-  inputName: PropTypes.string,
-  inputTag: PropTypes.string,
-  inputType: PropTypes.string,
-  value: PropTypes.string,
-  handleInputChange: PropTypes.func
-};
-
-
-export const FormSelectInput = (props) => {
-  let selectOptions = props.optionsList.map(option => (
-    <option value={option.id} key={option.id}>
-      {option.name}
-    </option>
-  ).bind(this));
-  return (
-    <div>
-      <div style={{ width: 320, float: 'left', marginTop: 5 }}>
-        {props.inputName}
-      </div>
-      <div style={{ marginLeft: 340, marginTop: 5 }}>
-        <select
-          value={props.value}
-          onLoad={props.handleInputChange}
-          onChange={props.handleInputChange}
-        >
-          {selectOptions}
-        </select>
-      </div>
-    </div>
-  );
-};
-FormSelectInput.propTypes = {
-  optionsList: PropTypes.arrayOf(PropTypes.object),
-  inputName: PropTypes.string,
-  value: PropTypes.string,
-  handleInputChange: PropTypes.func
-};
-
-
-export const FormTitleRow = (props) => (
-  <div style={{ marginTop: 30 }}>
-    <h3>
-      {props.formTitle}
-    </h3>
-  </div>
-);
-FormTitleRow.propTypes = {
-  formTitle: PropTypes.string
 };

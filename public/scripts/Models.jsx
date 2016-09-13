@@ -12,7 +12,7 @@ import Delete from './Delete';
 import { $try, reformatDatetime } from './utils';
 
 
-const ModelsTab = (props) => (
+const ModelsTab = props => (
   <div>
     <Expand label="Create New Model" id="newModelExpander">
       <NewModelForm selectedProject={props.selectedProject} />
@@ -31,7 +31,7 @@ let NewModelForm = (props) => {
           error, handleSubmit } = props;
 
   const skModels = props.models;
-  let selectModels = [];
+  const selectModels = [];
 
   for (const key in skModels) {
     if ({}.hasOwnProperty.call(skModels, key)) {
@@ -43,7 +43,7 @@ let NewModelForm = (props) => {
     }
   }
 
-  let featureSets = props.featureSets
+  const featureSets = props.featureSets
                         .filter(fs => !Validate.isEmpty(fs.finished))
                         .map(fs => (
                           {
@@ -52,7 +52,7 @@ let NewModelForm = (props) => {
                           }
                         ));
 
-  let chosenModel = props.models[modelType.value];
+  const chosenModel = props.models[modelType.value];
 
   return (
     <Form onSubmit={handleSubmit} error={error}>
@@ -95,7 +95,7 @@ const mapStateToProps = function (state, ownProps) {
   fields = fields.concat(modelFields);
 
   const paramDefaults = {};
-  currentModel.params.map(param => {
+  currentModel.params.map((param) => {
     paramDefaults[param.name] = (param.default === null) ? "None" : param.default;
   });
 
@@ -116,9 +116,9 @@ const mapStateToProps = function (state, ownProps) {
   };
 };
 
-const mapDispatchToProps = (dispatch) => (
+const mapDispatchToProps = dispatch => (
   {
-    onSubmit: (form) => dispatch(Action.createModel(form))
+    onSubmit: form => dispatch(Action.createModel(form))
   }
 );
 
@@ -134,8 +134,8 @@ NewModelForm = reduxForm({
 }, mapStateToProps, mapDispatchToProps)(NewModelForm);
 
 
-export let Model = (props) => {
-  let style = {
+export const Model = (props) => {
+  const style = {
   };
 
   const model = props.model;
@@ -159,7 +159,7 @@ Model.propTypes = {
 };
 
 
-export let ModelTable = (props) => (
+export let ModelTable = props => (
   <table className="table">
     <thead>
       <tr>
@@ -167,9 +167,9 @@ export let ModelTable = (props) => (
       </tr>
 
       {
-        props.models.map(model => {
+        props.models.map((model) => {
           const done = model.finished;
-          let status = done ? <td>Completed {reformatDatetime(model.finished)}</td> : <td>In progress</td>;
+          const status = done ? <td>Completed {reformatDatetime(model.finished)}</td> : <td>In progress</td>;
 
           return (
             <tr key={model.id}>
@@ -198,11 +198,11 @@ const mtMapStateToProps = (state, ownProps) => (
 ModelTable = connect(mtMapStateToProps)(ModelTable);
 
 
-const dmMapDispatchToProps = (dispatch) => (
-  { delete: (id) => dispatch(Action.deleteModel(id)) }
+const dmMapDispatchToProps = dispatch => (
+  { delete: id => dispatch(Action.deleteModel(id)) }
 );
 
-let DeleteModel = connect(null, dmMapDispatchToProps)(Delete);
+const DeleteModel = connect(null, dmMapDispatchToProps)(Delete);
 
 
 export default ModelsTab;

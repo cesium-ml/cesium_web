@@ -18,12 +18,12 @@ let PredictForm = (props) => {
   const { fields: { modelID, datasetID }, handleSubmit, submitting, resetForm,
           error } = props;
 
-  let datasets = props.datasets.map(ds => (
+  const datasets = props.datasets.map(ds => (
     { id: ds.id,
       label: ds.name }
   ));
 
-  let models = props.models
+  const models = props.models
                    .filter(model => !Validate.isEmpty(model.finished))
                    .map(model => (
                      { id: model.id,
@@ -97,7 +97,7 @@ PredictForm = reduxForm({
 }, mapStateToProps)(PredictForm);
 
 
-let PredictionsTable = (props) => (
+let PredictionsTable = props => (
   <table className="table">
     <thead>
       <tr>
@@ -113,9 +113,9 @@ let PredictionsTable = (props) => (
     {
       props.predictions.map((prediction, idx) => {
         const done = prediction.finished;
-        let status = done ? <td>Completed {reformatDatetime(prediction.finished)}</td> : <td>In progress</td>;
+        const status = done ? <td>Completed {reformatDatetime(prediction.finished)}</td> : <td>In progress</td>;
 
-        let foldedContent = done && (
+        const foldedContent = done && (
           <tr key={`pred${idx}`}>
             <td colSpan={6}>
               <PredictionResults prediction={prediction} />
@@ -145,7 +145,7 @@ PredictionsTable.propTypes = {
 };
 
 
-let PredictionResults = (props) => {
+const PredictionResults = (props) => {
   const modelType = props.prediction.model_type;
   const results = props.prediction.results;
 
@@ -163,7 +163,7 @@ let PredictionResults = (props) => {
                                 modelType);
   const modelHasClass = contains(['RidgeClassifierCV'], modelType);
 
-  const hasTrueTargetLabel = (p) => (p && p.target);
+  const hasTrueTargetLabel = p => (p && p.target);
 
   return (
     <table className="table">
@@ -229,13 +229,13 @@ const ptMapStateToProps = (state, ownProps) => {
 
 PredictionsTable = connect(ptMapStateToProps)(PredictionsTable);
 
-const dpMapDispatchToProps = (dispatch) => (
-    { delete: (id) => dispatch(Action.deletePrediction(id)) }
+const dpMapDispatchToProps = dispatch => (
+    { delete: id => dispatch(Action.deletePrediction(id)) }
 );
 
-let DeletePrediction = connect(null, dpMapDispatchToProps)(Delete);
+const DeletePrediction = connect(null, dpMapDispatchToProps)(Delete);
 
-let PredictTab = (props) => (
+let PredictTab = props => (
   <div>
     <Expand label="Predict Targets" id="predictFormExpander">
       <PredictForm
@@ -253,9 +253,9 @@ PredictTab.propTypes = {
 };
 
 
-const mapDispatchToProps = (dispatch) => (
+const mapDispatchToProps = dispatch => (
   {
-    doPrediction: (form) => dispatch(Action.doPrediction(form))
+    doPrediction: form => dispatch(Action.doPrediction(form))
   }
 );
 

@@ -59,7 +59,7 @@ function predictions(state = [], action) {
 }
 
 
-const myFormReducer = (theirFormReducer) => (
+const myFormReducer = theirFormReducer => (
   function (initialState, action) {
     const state = { ...initialState };
     switch (action.type) {

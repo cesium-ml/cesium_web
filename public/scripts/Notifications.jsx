@@ -13,7 +13,7 @@ export function hideNotification(id) {
 }
 
 export let Notifications = (props) => {
-  let style = {
+  const style = {
     position: 'fixed',
     zIndex: 20000,
     top: '4.5em',
@@ -60,7 +60,7 @@ export let Notifications = (props) => {
   );
 };
 
-const mapStateToProps = (state) => (
+const mapStateToProps = state => (
   {
     notifications: state.notifications.notes
   }

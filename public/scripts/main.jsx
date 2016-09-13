@@ -19,15 +19,15 @@ import { Notifications } from './Notifications';
 import colorScheme from './colorscheme';
 import Progress from './Progress';
 
-let Tab = ReactTabs.Tab;
-let Tabs = ReactTabs.Tabs;
-let TabList = ReactTabs.TabList;
-let TabPanel = ReactTabs.TabPanel;
+const Tab = ReactTabs.Tab;
+const Tabs = ReactTabs.Tabs;
+const TabList = ReactTabs.TabList;
+const TabPanel = ReactTabs.TabPanel;
 const cs = colorScheme;
 
 const store = configureStore();
 
-let messageHandler = (new MessageHandler(store.dispatch)).handle;
+const messageHandler = (new MessageHandler(store.dispatch)).handle;
 
 
 class MainContent extends React.Component {
@@ -333,7 +333,7 @@ const mapStateToProps = function (state) {
   };
 };
 
-const mapDispatchToProps = (dispatch) => (
+const mapDispatchToProps = dispatch => (
   {
     handleSubmitModelClick: (form) => {
       dispatch(Action.createModel(form));

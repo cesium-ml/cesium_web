@@ -1,80 +1,70 @@
 // Action format:
 // https://github.com/acdlite/flux-standard-action
 
-import {reset as resetForm} from 'redux-form';
+import { reset as resetForm } from 'redux-form';
 
-export const HYDRATE = 'cesium/HYDRATE'
+export const HYDRATE = 'cesium/HYDRATE';
 
-export const FETCH_PROJECTS = 'cesium/FETCH_PROJECTS'
-export const RECEIVE_PROJECTS = 'cesium/RECEIVE_PROJECTS'
-export const ADD_PROJECT = 'cesium/ADD_PROJECT'
-export const DELETE_PROJECT = 'cesium/DELETE_PROJECT'
-export const SELECT_PROJECT = 'cesium/SELECT_PROJECT'
-export const UPDATE_PROJECT = 'cesium/UPDATE_PROJECT'
-export const HIDE_NEWPROJECT_FORM = 'cesium/HIDE_NEWPROJECT_FORM'
+export const FETCH_PROJECTS = 'cesium/FETCH_PROJECTS';
+export const RECEIVE_PROJECTS = 'cesium/RECEIVE_PROJECTS';
+export const ADD_PROJECT = 'cesium/ADD_PROJECT';
+export const DELETE_PROJECT = 'cesium/DELETE_PROJECT';
+export const SELECT_PROJECT = 'cesium/SELECT_PROJECT';
+export const UPDATE_PROJECT = 'cesium/UPDATE_PROJECT';
+export const HIDE_NEWPROJECT_FORM = 'cesium/HIDE_NEWPROJECT_FORM';
 
-export const FETCH_DATASETS = 'cesium/FETCH_DATASETS'
-export const RECEIVE_DATASETS = 'cesium/RECEIVE_DATASETS'
-export const UPLOAD_DATASET = 'cesium/UPLOAD_DATASET'
-export const DELETE_DATASET = 'cesium/DELETE_DATASET'
+export const FETCH_DATASETS = 'cesium/FETCH_DATASETS';
+export const RECEIVE_DATASETS = 'cesium/RECEIVE_DATASETS';
+export const UPLOAD_DATASET = 'cesium/UPLOAD_DATASET';
+export const DELETE_DATASET = 'cesium/DELETE_DATASET';
 
-export const FETCH_FEATURES = 'cesium/FETCH_FEATURES'
-export const FETCH_FEATURESETS = 'cesium/FETCH_FEATURESETS'
-export const RECEIVE_FEATURES = 'cesium/RECEIVE_FEATURES'
-export const RECEIVE_FEATURESETS = 'cesium/RECEIVE_FEATURESETS'
-export const COMPUTE_FEATURES = 'cesium/COMPUTE_FEATURES'
-export const DELETE_FEATURESET = 'cesium/DELETE_FEATURESET'
+export const FETCH_FEATURES = 'cesium/FETCH_FEATURES';
+export const FETCH_FEATURESETS = 'cesium/FETCH_FEATURESETS';
+export const RECEIVE_FEATURES = 'cesium/RECEIVE_FEATURES';
+export const RECEIVE_FEATURESETS = 'cesium/RECEIVE_FEATURESETS';
+export const COMPUTE_FEATURES = 'cesium/COMPUTE_FEATURES';
+export const DELETE_FEATURESET = 'cesium/DELETE_FEATURESET';
 
-export const FETCH_MODELS = 'cesium/FETCH_MODELS'
-export const RECEIVE_MODELS = 'cesium/RECEIVE_MODELS'
-export const CREATE_MODEL = 'cesium/CREATE_MODEL'
-export const DELETE_MODEL = 'cesium/DELETE_MODEL'
+export const FETCH_MODELS = 'cesium/FETCH_MODELS';
+export const RECEIVE_MODELS = 'cesium/RECEIVE_MODELS';
+export const CREATE_MODEL = 'cesium/CREATE_MODEL';
+export const DELETE_MODEL = 'cesium/DELETE_MODEL';
 
-export const FETCH_PREDICTIONS = 'cesium/FETCH_PREDICTIONS'
-export const RECEIVE_PREDICTIONS = 'cesium/RECEIVE_PREDICTIONS'
-export const DO_PREDICTION = 'cesium/DO_PREDICTION'
-export const DELETE_PREDICTION = 'cesium/DELETE_PREDICTION'
+export const FETCH_PREDICTIONS = 'cesium/FETCH_PREDICTIONS';
+export const RECEIVE_PREDICTIONS = 'cesium/RECEIVE_PREDICTIONS';
+export const DO_PREDICTION = 'cesium/DO_PREDICTION';
+export const DELETE_PREDICTION = 'cesium/DELETE_PREDICTION';
 
-export const TOGGLE_EXPANDER = 'cesium/TOGGLE_EXPANDER'
-export const HIDE_EXPANDER = 'cesium/HIDE_EXPANDER'
-export const SHOW_EXPANDER = 'cesium/SHOW_EXPANDER'
+export const TOGGLE_EXPANDER = 'cesium/TOGGLE_EXPANDER';
+export const HIDE_EXPANDER = 'cesium/HIDE_EXPANDER';
+export const SHOW_EXPANDER = 'cesium/SHOW_EXPANDER';
 
-export const FETCH_SKLEARN_MODELS = 'cesium/FETCH_SKLEARN_MODELS'
-export const RECEIVE_SKLEARN_MODELS = 'cesium/RECEIVE_SKLEARN_MODELS'
+export const FETCH_SKLEARN_MODELS = 'cesium/FETCH_SKLEARN_MODELS';
+export const RECEIVE_SKLEARN_MODELS = 'cesium/RECEIVE_SKLEARN_MODELS';
 
-export const SPIN_LOGO = 'cesium/SPIN_LOGO'
-export const GROUP_TOGGLE_FEATURES = 'cesium/GROUP_TOGGLE_FEATURES'
+export const SPIN_LOGO = 'cesium/SPIN_LOGO';
+export const GROUP_TOGGLE_FEATURES = 'cesium/GROUP_TOGGLE_FEATURES';
 
 
-import { showNotification, reduceNotifications } from './Notifications'
-import promiseAction from './action_tools'
-import { objectType } from './utils'
+import { showNotification, reduceNotifications } from './Notifications';
+import promiseAction from './action_tools';
+import { objectType } from './utils';
 
 // Refactor this into a utility function
-String.prototype.format = function () {
-  var i = 0, args = arguments;
-  return this.replace(/{}/g, function () {
-    return typeof args[i] != 'undefined' ? args[i++] : '';
-  });
+String.prototype.format = function (...args) {
+  let i = 0;
+  return this.replace(/{}/g, () => (
+    typeof args[i] != 'undefined' ? args[i++] : ''
+  ));
 };
 
 
-export function hydrate() {
-  return dispatch => {
-    dispatch(fetchProjects())
-      .then(proj => {
-        Promise.all([
-          dispatch(fetchDatasets()),
-          dispatch(fetchFeaturesets()),
-          dispatch(fetchFeatures()),
-          dispatch(fetchModels()),
-          dispatch(fetchPredictions())
-        ]).then(() => {
-          dispatch(spinLogo());
-        });
-      })
-    dispatch(fetchSklearnModels());
-  }
+// Receive list of projects
+function receiveProjects(projects) {
+  return {
+    type: RECEIVE_PROJECTS,
+    payload: projects
+  };
 }
 
 
@@ -87,9 +77,9 @@ export function fetchProjects() {
 
       fetch('/project')
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
-            dispatch(receiveProjects(json.data))
+            dispatch(receiveProjects(json.data));
           } else {
             dispatch(
               showNotification(
@@ -99,8 +89,9 @@ export function fetchProjects() {
           return json;
         }
         ).catch(ex => console.log('fetchProjects exception:', ex))
-      )
+      );
 }
+
 
 // Add a new project
 export function addProject(form) {
@@ -110,23 +101,23 @@ export function addProject(form) {
       ADD_PROJECT,
 
       fetch('/project',
-            {method: 'POST',
+            { method: 'POST',
              body: JSON.stringify(form),
              headers: new Headers({
                'Content-Type': 'application/json'
-             })})
+             }) })
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
             dispatch(resetForm('newProject'));
-            dispatch(showNotification('Successfully added new project'))
+            dispatch(showNotification('Successfully added new project'));
             dispatch(selectProject(json.data.id));
           } else {
-            return Promise.reject({_error: json.message});
+            return Promise.reject({ _error: json.message });
           }
           return json;
         })
-  )
+  );
 }
 
 
@@ -138,22 +129,22 @@ export function updateProject(form) {
       UPDATE_PROJECT,
 
       fetch('/project/{}'.format(form.projectId),
-            {method: 'PUT',
+            { method: 'PUT',
              body: JSON.stringify(form),
              headers: new Headers({
                'Content-Type': 'application/json'
-             })})
+             }) })
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
             dispatch(resetForm('newProject'));
-            dispatch(showNotification('Successfully updated project'))
+            dispatch(showNotification('Successfully updated project'));
           } else {
-            return Promise.reject({_error: json.message});
+            return Promise.reject({ _error: json.message });
           }
           return json;
         })
-  )
+  );
 }
 
 
@@ -163,9 +154,9 @@ export function deleteProject(id) {
       dispatch,
       DELETE_PROJECT,
 
-      fetch('/project/' + id, {method: 'DELETE'})
+      fetch(`/project/${id}`, { method: 'DELETE' })
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
             dispatch(showNotification('Project successfully deleted'));
             dispatch(selectProject());
@@ -176,28 +167,18 @@ export function deleteProject(id) {
               ));
           }
         })
-  )
-}
-
-
-
-// Receive list of projects
-function receiveProjects(projects) {
-  return {
-    type: RECEIVE_PROJECTS,
-    payload: projects
-  }
+  );
 }
 
 
 export function uploadDataset(form) {
-  let formData = new FormData();
+  const formData = new FormData();
 
-  for (let key in form) {
+  for (const key in form) {
     if (form[key] && objectType(form[key][0]) === 'File') {
-      formData.append(key, form[key][0])
+      formData.append(key, form[key][0]);
     } else {
-      formData.append(key, form[key])
+      formData.append(key, form[key]);
     }
   }
 
@@ -206,19 +187,19 @@ export function uploadDataset(form) {
       dispatch,
       UPLOAD_DATASET,
 
-      fetch('/dataset', {method: 'POST', body: formData})
+      fetch('/dataset', { method: 'POST', body: formData })
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
-            dispatch(showNotification('Successfully uploaded new dataset'))
+            dispatch(showNotification('Successfully uploaded new dataset'));
             dispatch(hideExpander('newDatasetExpander'));
             dispatch(resetForm('newDataset'));
           } else {
-            return Promise.reject({_error: json.message});
+            return Promise.reject({ _error: json.message });
           }
           return json;
         })
-  )
+  );
 }
 
 // Download datasets
@@ -230,11 +211,11 @@ export function fetchDatasets() {
 
       fetch('/dataset')
         .then(response => response.json())
-        .then(json => {
-          return dispatch(receiveDatasets(json.data))
-        }
+        .then((json) => (
+          dispatch(receiveDatasets(json.data))
+        )
         ).catch(ex => console.log('fetchDatasets', ex))
-    )
+    );
 }
 
 // Receive list of projects
@@ -242,7 +223,7 @@ function receiveDatasets(datasets) {
   return {
     type: RECEIVE_DATASETS,
     payload: datasets
-  }
+  };
 }
 
 
@@ -255,9 +236,9 @@ export function fetchFeaturesets() {
 
       fetch('/features')
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
-            return dispatch(receiveFeaturesets(json.data))
+            return dispatch(receiveFeaturesets(json.data));
           } else {
             return dispatch(
               showNotification(
@@ -266,7 +247,7 @@ export function fetchFeaturesets() {
           }
         }
         ).catch(ex => console.log('fetchFeaturesets', ex))
-  )
+  );
 }
 
 // Receive list of featuresets
@@ -274,7 +255,7 @@ function receiveFeaturesets(featuresets) {
   return {
     type: RECEIVE_FEATURESETS,
     payload: featuresets
-  }
+  };
 }
 
 
@@ -285,23 +266,23 @@ export function createModel(form) {
       CREATE_MODEL,
 
       fetch('/models',
-            {method: 'POST',
+            { method: 'POST',
              body: JSON.stringify(form),
              headers: new Headers({
                'Content-Type': 'application/json'
-             })})
+             }) })
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
             dispatch(resetForm('newModel'));
             dispatch(hideExpander('newModelExpander'));
             dispatch(showNotification('Model training begun.'));
           } else {
-            return Promise.reject({_error: json.message});
+            return Promise.reject({ _error: json.message });
           }
           return json;
         })
-  )
+  );
 }
 
 
@@ -309,39 +290,39 @@ export function hideExpander(id) {
   return {
     type: HIDE_EXPANDER,
     payload: {
-      id: id
+      id
     }
-  }
+  };
 }
 
 export function showExpander(id) {
   return {
     type: SHOW_EXPANDER,
     payload: {
-      id: id
+      id
     }
-  }
+  };
 }
 
 export function toggleExpander(id) {
   return {
     type: TOGGLE_EXPANDER,
     payload: {
-      id: id
+      id
     }
-  }
+  };
 }
 
 // Currently, used upon creation of a new project to switch to that project
 export function selectProject(id=null) {
-  return dispatch => {
+  return (dispatch) => {
     dispatch(hideExpander('newProjectExpander'));
 
     return dispatch({
       type: SELECT_PROJECT,
-      payload: {id}
-    })
-  }
+      payload: { id }
+    });
+  };
 }
 
 
@@ -353,9 +334,9 @@ export function fetchFeatures() {
 
       fetch('/features_list')
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
-            dispatch(receiveFeatures(json.data))
+            dispatch(receiveFeatures(json.data));
           } else {
             dispatch(
               showNotification(
@@ -365,7 +346,7 @@ export function fetchFeatures() {
           return json;
         }
         ).catch(ex => console.log('fetchFeatures exception:', ex))
-    )
+    );
 }
 
 // Receive list of featuresets
@@ -373,7 +354,7 @@ function receiveFeatures(features) {
   return {
     type: RECEIVE_FEATURES,
     payload: features,
-  }
+  };
 }
 
 
@@ -384,23 +365,23 @@ export function computeFeatures(form) {
       COMPUTE_FEATURES,
 
       fetch('/features',
-            {method: 'POST',
+            { method: 'POST',
              body: JSON.stringify(form),
              headers: new Headers({
                'Content-Type': 'application/json'
-             })}
+             }) }
       ).then(response => response.json()
-      ).then(json => {
+      ).then((json) => {
         if (json.status == 'success') {
           dispatch(resetForm('featurize'));
           dispatch(showNotification('Feature computation begun.'));
           dispatch(hideExpander('featsetFormExpander'));
         } else {
-          return Promise.reject({_error: json.message});
+          return Promise.reject({ _error: json.message });
         }
         return json;
       })
-    )
+    );
 }
 
 
@@ -410,9 +391,9 @@ export function deleteDataset(id) {
       dispatch,
       DELETE_DATASET,
 
-      fetch('/dataset/' + id, {method: 'DELETE'})
+      fetch(`/dataset/${id}`, { method: 'DELETE' })
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
             dispatch(showNotification('Dataset successfully deleted'));
           } else {
@@ -422,7 +403,7 @@ export function deleteDataset(id) {
               ));
           }
         })
-  )
+  );
 }
 
 
@@ -432,9 +413,9 @@ export function deleteFeatureset(id) {
       dispatch,
       DELETE_FEATURESET,
 
-      fetch('/features/' + id, {method: 'DELETE'})
+      fetch(`/features/${id}`, { method: 'DELETE' })
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
             dispatch(showNotification('Feature set successfully deleted'));
           } else {
@@ -444,7 +425,7 @@ export function deleteFeatureset(id) {
               ));
           }
         })
-  )
+  );
 }
 
 
@@ -456,9 +437,9 @@ export function fetchSklearnModels() {
 
       fetch('/sklearn_models')
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
-            dispatch(receiveSklearnModels(json.data))
+            dispatch(receiveSklearnModels(json.data));
           } else {
             dispatch(
               showNotification(
@@ -468,14 +449,14 @@ export function fetchSklearnModels() {
           return json;
         }
         ).catch(ex => console.log('fetchSklearnModels exception:', ex))
-      )
+      );
 }
 
 function receiveSklearnModels(sklearn_models) {
   return {
     type: RECEIVE_SKLEARN_MODELS,
     payload: sklearn_models
-  }
+  };
 }
 
 
@@ -488,9 +469,9 @@ export function fetchModels() {
 
       fetch('/models')
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
-            return dispatch(receiveModels(json.data))
+            return dispatch(receiveModels(json.data));
           } else {
             return dispatch(
               showNotification(
@@ -499,7 +480,7 @@ export function fetchModels() {
           }
         }
         ).catch(ex => console.log('fetchModels', ex))
-    )
+    );
 }
 
 // Receive list of models
@@ -507,7 +488,7 @@ function receiveModels(models) {
   return {
     type: RECEIVE_MODELS,
     payload: models
-  }
+  };
 }
 
 
@@ -517,9 +498,9 @@ export function deleteModel(id) {
       dispatch,
       DELETE_MODEL,
 
-      fetch('/models/' + id, {method: 'DELETE'})
+      fetch(`/models/${id}`, { method: 'DELETE' })
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
             dispatch(showNotification('Model successfully deleted'));
           } else {
@@ -529,7 +510,7 @@ export function deleteModel(id) {
               ));
           }
         })
-  )
+  );
 }
 
 
@@ -540,23 +521,23 @@ export function doPrediction(form) {
       DO_PREDICTION,
 
       fetch('/predictions',
-            {method: 'POST',
+            { method: 'POST',
              body: JSON.stringify(form),
              headers: new Headers({
                'Content-Type': 'application/json'
-             })}
+             }) }
       ).then(response => response.json()
-      ).then(json => {
+      ).then((json) => {
         if (json.status == 'success') {
           dispatch(resetForm('predict'));
           dispatch(showNotification('Model predictions begun.'));
           dispatch(hideExpander('predictFormExpander'));
         } else {
-          return Promise.reject({_error: json.message});
+          return Promise.reject({ _error: json.message });
         }
         return json;
       })
-    )
+    );
 }
 
 
@@ -566,9 +547,9 @@ export function deletePrediction(id) {
       dispatch,
       DELETE_PREDICTION,
 
-      fetch('/predictions/' + id, {method: 'DELETE'})
+      fetch(`/predictions/${id}`, { method: 'DELETE' })
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
             dispatch(showNotification('Prediction successfully deleted'));
           } else {
@@ -578,7 +559,7 @@ export function deletePrediction(id) {
               ));
           }
         })
-    )
+    );
 }
 
 
@@ -591,15 +572,15 @@ export function fetchPredictions() {
 
       fetch('/predictions')
         .then(response => response.json())
-        .then(json => {
+        .then((json) => {
           if (json.status == 'success') {
-            return dispatch(receivePredictions(json.data))
+            return dispatch(receivePredictions(json.data));
           } else {
             return dispatch(showNotification(json.message));
           }
         }
         ).catch(ex => console.log('fetchPredictions', ex))
-    )
+    );
 }
 
 // Receive list of predictions
@@ -607,14 +588,14 @@ export function receivePredictions(preds) {
   return {
     type: RECEIVE_PREDICTIONS,
     payload: preds
-  }
+  };
 }
 
 
 export function spinLogo() {
   return {
     type: SPIN_LOGO
-  }
+  };
 }
 
 
@@ -622,5 +603,24 @@ export function groupToggleCheckedFeatures(prefix) {
   return {
     type: GROUP_TOGGLE_FEATURES,
     payload: prefix
-  }
+  };
+}
+
+
+export function hydrate() {
+  return (dispatch) => {
+    dispatch(fetchProjects())
+      .then((proj) => {
+        Promise.all([
+          dispatch(fetchDatasets()),
+          dispatch(fetchFeaturesets()),
+          dispatch(fetchFeatures()),
+          dispatch(fetchModels()),
+          dispatch(fetchPredictions())
+        ]).then(() => {
+          dispatch(spinLogo());
+        });
+      });
+    dispatch(fetchSklearnModels());
+  };
 }
