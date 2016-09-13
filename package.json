@@ -21,7 +21,7 @@
     "redux-thunk": "latest",
     "redux-logger": "latest",
     "whatwg-fetch": "latest",
-    "redux-form": "latest",
+    "redux-form": "^5.3.3",
     "plotly.js": "latest",
     "webpack": "latest"
   },
