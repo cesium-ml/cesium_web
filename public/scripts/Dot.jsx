@@ -1,19 +1,20 @@
-import React from 'react'
-import {colorScheme as cs} from './colorscheme'
+import React from 'react';
+import colorScheme from './colorscheme';
 
+const cs = colorScheme;
 
-export var Dot = (props) => {
+const Dot = (props) => {
   let value = props.value;
   if (value === undefined) {
-    value = '···'
+    value = '···';
   }
 
-  let height = props.height
+  let height = props.height;
   if (height === undefined) {
-    height = '1em'
+    height = '1em';
   }
 
-  let style = {
+  const style = {
     display: 'inline-block',
     padding: 0,
     margin: 0,
@@ -24,16 +25,21 @@ export var Dot = (props) => {
     borderRadius: '50%',
     border: '2px solid gray',
     position: 'relative',
-    height: height,
+    height,
     width: height,
     lineHeight: height,
     fontSize: '150%',
     ...(props.style)
-  }
+  };
 
   return (
     <div style={style}>{value}</div>
-  )
-}
+  );
+};
+Dot.propTypes = {
+  value: React.PropTypes.string.isRequired,
+  style: React.PropTypes.object,
+  height: React.PropTypes.string
+};
 
-export { Dot as default }
+export default Dot;

@@ -1,7 +1,7 @@
 import * as Action from './actions';
 import { SHOW_NOTIFICATION, showNotification } from './Notifications';
 
-export class MessageHandler {
+class MessageHandler {
   constructor(dispatch) {
     this.dispatch = dispatch;
     this.handle = this.handle.bind(this);
@@ -11,31 +11,31 @@ export class MessageHandler {
     switch (message.action) {
       case Action.FETCH_PROJECTS:
         this.dispatch(Action.fetchProjects());
-        break
-      case Action.FETCH_FEATURESETS:
-        this.dispatch(Action.fetchFeaturesets());
-        break
+        break;
+      case Action.FETCH_FEATURES:
+        this.dispatch(Action.fetchFeatures());
+        break;
       case Action.FETCH_DATASETS:
         this.dispatch(Action.fetchDatasets());
-        break
+        break;
       case Action.FETCH_FEATURESETS:
         this.dispatch(Action.fetchFeaturesets());
-        break
+        break;
       case Action.FETCH_MODELS:
         this.dispatch(Action.fetchModels());
-        break
+        break;
       case Action.FETCH_PREDICTIONS:
         this.dispatch(Action.fetchPredictions());
-        break
+        break;
       case SHOW_NOTIFICATION:
         this.dispatch(showNotification(message.payload.note,
                                        message.payload.type));
-        break
+        break;
       default:
         console.log('Unknown message received through flow:',
-                    message)
+                    message);
     }
   }
 }
 
-module.exports = MessageHandler;
+export default MessageHandler;
