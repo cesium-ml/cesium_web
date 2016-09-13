@@ -316,7 +316,7 @@ const mapStateToProps = function (state) {
     p => (p.id == selectedProjectId)
   );
 
-  const firstProject = state.projects[0] || { id: '', label: '', description: '' };
+  const firstProject = state.projects.projectList[0] || { id: '', label: '', description: '' };
 
   if (selectedProject.length > 0) {
     selectedProject = selectedProject[0];
