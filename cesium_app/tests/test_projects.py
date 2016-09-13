@@ -27,6 +27,11 @@ def test_create_project(driver):
     status_td = driver.find_element_by_xpath(
         "//div[contains(text(),'Successfully added new project')]")
     assert test_proj_name in driver.page_source
+
+    proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+    proj_select.select_by_visible_text(test_proj_name)
+    import time; time.sleep(0.1)
+
     assert driver.find_element_by_css_selector('[name=projectDescription]').\
         get_attribute("value") == "Test Description"
 
