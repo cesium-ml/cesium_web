@@ -13,3 +13,4 @@ simplejson
 celery
 distributed
 selenium
+joblib
