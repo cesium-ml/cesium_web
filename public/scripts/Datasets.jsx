@@ -51,7 +51,13 @@ let DatasetForm = (props) => {
       <SubmitButton label="Upload Dataset" disabled={submitting} />
     </Form>
   );
-}
+};
+DatasetForm.propTypes = {
+  fields: React.PropTypes.object.isRequired,
+  error: React.PropTypes.string,
+  handleSubmit: React.PropTypes.func.isRequired,
+  submitting: React.PropTypes.bool.isRequired
+};
 
 const dsMapStateToProps = (state, ownProps) => (
   {

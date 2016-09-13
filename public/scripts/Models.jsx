@@ -25,59 +25,64 @@ ModelsTab.propTypes = {
   selectedProject: PropTypes.object
 };
 
-class NewModelForm extends FormComponent {
-  render() {
-    const { fields,
-           fields: { modelName, featureSet, modelType },
-           error, handleSubmit } = this.props;
+let NewModelForm = (props) => {
+  const { fields,
+          fields: { modelName, featureSet, modelType },
+          error, handleSubmit } = props;
 
-    const skModels = this.props.models;
-    let selectModels = [];
+  const skModels = props.models;
+  let selectModels = [];
 
-    for (const key in skModels) {
-      if ({}.hasOwnProperty.call(skModels, key)) {
-        const model = skModels[key];
-        selectModels.push({
-          id: key,
-          label: model.name
-        });
-      }
+  for (const key in skModels) {
+    if ({}.hasOwnProperty.call(skModels, key)) {
+      const model = skModels[key];
+      selectModels.push({
+        id: key,
+        label: model.name
+      });
     }
-
-    let featureSets = this.props.featureSets
-                          .filter(fs => !Validate.isEmpty(fs.finished))
-                          .map(fs => (
-                            {
-                              id: fs.id,
-                              label: fs.name
-                            }
-                          ));
-
-    let chosenModel = this.props.models[modelType.value];
-
-    return (
-      <Form onSubmit={handleSubmit} error={error}>
-        <TextInput label="Model name (choose your own)" {...modelName} />
-
-        <SelectInput
-          label="Feature Set"
-          options={featureSets} {...featureSet}
-        />
-
-        <SelectInput
-          label="Model Type"
-          options={selectModels} {...modelType}
-        />
-
-        <Expand label="Choose Model Parameters" id="modelParameterExpander">
-          <Model model={chosenModel} {...fields} />
-        </Expand>
-
-        <SubmitButton label="Create Model" />
-      </Form>
-    );
   }
-}
+
+  let featureSets = props.featureSets
+                        .filter(fs => !Validate.isEmpty(fs.finished))
+                        .map(fs => (
+                          {
+                            id: fs.id,
+                            label: fs.name
+                          }
+                        ));
+
+  let chosenModel = props.models[modelType.value];
+
+  return (
+    <Form onSubmit={handleSubmit} error={error}>
+      <TextInput label="Model name (choose your own)" {...modelName} />
+
+      <SelectInput
+        label="Feature Set"
+        options={featureSets} {...featureSet}
+      />
+
+      <SelectInput
+        label="Model Type"
+        options={selectModels} {...modelType}
+      />
+
+      <Expand label="Choose Model Parameters" id="modelParameterExpander">
+        <Model model={chosenModel} {...fields} />
+      </Expand>
+
+      <SubmitButton label="Create Model" />
+    </Form>
+  );
+};
+NewModelForm.propTypes = {
+  fields: React.PropTypes.object.isRequired,
+  error: React.PropTypes.string,
+  handleSubmit: React.PropTypes.func.isRequired,
+  featureSets: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+  models: React.PropTypes.object.isRequired
+};
 
 const mapStateToProps = function (state, ownProps) {
   const formState = state.form.newModel;
@@ -148,6 +153,9 @@ export let Model = (props) => {
     })}
     </div>
   );
+};
+Model.propTypes = {
+  model: React.PropTypes.object.isRequired
 };
 
 

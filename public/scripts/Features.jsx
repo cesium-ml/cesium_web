@@ -19,108 +19,118 @@ let TabList = ReactTabs.TabList;
 let TabPanel = ReactTabs.TabPanel;
 
 
-class FeaturizeForm extends FormComponent {
-  render() {
-    const { fields, fields: { datasetID, featuresetName, customFeatsCode },
-           handleSubmit, submitting, resetForm, error, groupToggleCheckedFeatures } = this.props;
-    let datasets = this.props.datasets.map(ds => (
-      { id: ds.id,
-       label: ds.name }
-    ));
+let FeaturizeForm = (props) => {
+  const { fields, fields: { datasetID, featuresetName, customFeatsCode },
+          handleSubmit, submitting, resetForm, error, groupToggleCheckedFeatures } = props;
+  let datasets = props.datasets.map(ds => (
+    { id: ds.id,
+      label: ds.name }
+  ));
 
-    return (
-      <div>
-        <Form onSubmit={handleSubmit} error={error}>
-          <SubmitButton
-            label="Compute Selected Features"
-            submiting={submitting}
-            resetForm={resetForm}
-          />
-          <TextInput label="Feature Set Name" {...featuresetName} />
-          <SelectInput
-            label="Select Dataset to Featurize"
-            key={this.props.selectedProject.id}
-            options={datasets}
-            {...datasetID}
-          />
-          <b>Select Features to Compute</b>
-          <Tabs>
-            <TabList>
-              <Tab>General</Tab>
-              <Tab>Cadence/Error</Tab>
-              <Tab>Lomb Scargle (Periodic)</Tab>
-              <Tab>Custom Features</Tab>
-            </TabList>
-            <TabPanel>
-              <a
-                href="#"
-                onClick={() => { groupToggleCheckedFeatures("sci_"); }}
-              >
-                Check/Uncheck All
-              </a>
-              <ul>
-                {
-                  this.props.features.sci_features.map(feature => (
-                    <CheckBoxInput
-                      key={`sci_${feature}`}
-                      label={feature}
-                      {...fields[`sci_${feature}`]}
-                    />
-                 ))
-                }
-              </ul>
-            </TabPanel>
-            <TabPanel>
-              <a
-                href="#"
-                onClick={() => { groupToggleCheckedFeatures("obs_"); }}
-              >
-                Check/Uncheck All
-              </a>
-              <ul>
-                {
-                  this.props.features.obs_features.map(feature => (
-                    <CheckBoxInput
-                      key={`obs_${feature}`}
-                      label={feature}
-                      {...fields[`obs_${feature}`]}
-                    />
-                  ))
-                }
-              </ul>
-            </TabPanel>
-            <TabPanel>
-              <a
-                href="#"
-                onClick={() => { groupToggleCheckedFeatures("lmb_"); }}
-              >
-                Check/Uncheck All
-              </a>
-              <ul>
-                {
-                  this.props.features.lmb_features.map(feature => (
-                    <CheckBoxInput
-                      key={`lmb_${feature}`}
-                      label={feature}
-                      {...fields[`lmb_${feature}`]}
-                    />
-                  ))
-                }
-              </ul>
-            </TabPanel>
-            <TabPanel>
-              <TextareaInput
-                label="Enter Python code defining custom features"
-                rows="10" cols="50"
-                {...customFeatsCode}
-              />
-            </TabPanel>
-          </Tabs>
-        </Form>
-      </div>
-    );
-  }
-}
+  return (
+    <div>
+      <Form onSubmit={handleSubmit} error={error}>
+        <SubmitButton
+          label="Compute Selected Features"
+          submiting={submitting}
+          resetForm={resetForm}
+        />
+        <TextInput label="Feature Set Name" {...featuresetName} />
+        <SelectInput
+          label="Select Dataset to Featurize"
+          key={props.selectedProject.id}
+          options={datasets}
+          {...datasetID}
+        />
+        <b>Select Features to Compute</b>
+        <Tabs>
+          <TabList>
+            <Tab>General</Tab>
+            <Tab>Cadence/Error</Tab>
+            <Tab>Lomb Scargle (Periodic)</Tab>
+            <Tab>Custom Features</Tab>
+          </TabList>
+          <TabPanel>
+            <a
+              href="#"
+              onClick={() => { groupToggleCheckedFeatures("sci_"); }}
+            >
+              Check/Uncheck All
+            </a>
+            <ul>
+              {
+                props.features.sci_features.map(feature => (
+                  <CheckBoxInput
+                    key={`sci_${feature}`}
+                    label={feature}
+                    {...fields[`sci_${feature}`]}
+                  />
+                ))
+              }
+            </ul>
+          </TabPanel>
+          <TabPanel>
+            <a
+              href="#"
+              onClick={() => { groupToggleCheckedFeatures("obs_"); }}
+            >
+              Check/Uncheck All
+            </a>
+            <ul>
+              {
+                props.features.obs_features.map(feature => (
+                  <CheckBoxInput
+                    key={`obs_${feature}`}
+                    label={feature}
+                    {...fields[`obs_${feature}`]}
+                  />
+                ))
+              }
+            </ul>
+          </TabPanel>
+          <TabPanel>
+            <a
+              href="#"
+              onClick={() => { groupToggleCheckedFeatures("lmb_"); }}
+            >
+              Check/Uncheck All
+            </a>
+            <ul>
+              {
+                props.features.lmb_features.map(feature => (
+                  <CheckBoxInput
+                    key={`lmb_${feature}`}
+                    label={feature}
+                    {...fields[`lmb_${feature}`]}
+                  />
+                ))
+              }
+            </ul>
+          </TabPanel>
+          <TabPanel>
+            <TextareaInput
+              label="Enter Python code defining custom features"
+              rows="10" cols="50"
+              {...customFeatsCode}
+            />
+          </TabPanel>
+        </Tabs>
+      </Form>
+    </div>
+  );
+};
+FeaturizeForm.propTypes = {
+  fields: React.PropTypes.object.isRequired,
+  datasets: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+  error: React.PropTypes.string,
+  handleSubmit: React.PropTypes.func.isRequired,
+  submitting: React.PropTypes.bool.isRequired,
+  resetForm: React.PropTypes.func.isRequired,
+  groupToggleCheckedFeatures: React.PropTypes.func.isRequired,
+  selectedProject: React.PropTypes.object,
+  features: React.PropTypes.object
+};
+
 
 const mapStateToProps = (state, ownProps) => {
   const obs_features = state.featuresets.features.obs_features;

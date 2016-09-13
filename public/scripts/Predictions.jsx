@@ -14,48 +14,56 @@ import FoldableRow from './FoldableRow';
 import Delete from './Delete';
 
 
-class PredictForm extends FormComponent {
-  render() {
-    const { fields: { modelID, datasetID }, handleSubmit, submitting, resetForm,
-           error } = this.props;
+let PredictForm = (props) => {
+  const { fields: { modelID, datasetID }, handleSubmit, submitting, resetForm,
+          error } = props;
 
-    let datasets = this.props.datasets.map(ds => (
-      { id: ds.id,
-       label: ds.name }
-    ));
+  let datasets = props.datasets.map(ds => (
+    { id: ds.id,
+      label: ds.name }
+  ));
 
-    let models = this.props.models
-                     .filter(model => !Validate.isEmpty(model.finished))
-                     .map(model => (
-                       { id: model.id,
-                        label: model.name }
-                     ));
+  let models = props.models
+                   .filter(model => !Validate.isEmpty(model.finished))
+                   .map(model => (
+                     { id: model.id,
+                       label: model.name }
+                   ));
 
-    return (
-      <div>
-        <Form onSubmit={handleSubmit} error={error}>
-          <SelectInput
-            label="Select Model"
-            key={`${this.props.selectedProject.id}modelID`}
-            options={models}
-            {...modelID}
-          />
-          <SelectInput
-            label="Select Data Set"
-            key={`${this.props.selectedProject.id}datasetID`}
-            options={datasets}
-            {...datasetID}
-          />
-          <SubmitButton
-            label="Predict"
-            submitting={submitting}
-            resetForm={resetForm}
-          />
-        </Form>
-      </div>
-    );
-  }
-}
+  return (
+    <div>
+      <Form onSubmit={handleSubmit} error={error}>
+        <SelectInput
+          label="Select Model"
+          key={`${props.selectedProject.id}modelID`}
+          options={models}
+          {...modelID}
+        />
+        <SelectInput
+          label="Select Data Set"
+          key={`${props.selectedProject.id}datasetID`}
+          options={datasets}
+          {...datasetID}
+        />
+        <SubmitButton
+          label="Predict"
+          submitting={submitting}
+          resetForm={resetForm}
+        />
+      </Form>
+    </div>
+  );
+};
+PredictForm.propTypes = {
+  fields: React.PropTypes.object.isRequired,
+  error: React.PropTypes.string,
+  handleSubmit: React.PropTypes.func.isRequired,
+  resetForm: React.PropTypes.func.isRequired,
+  submitting: React.PropTypes.bool.isRequired,
+  datasets: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+  models: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+  selectedProject: React.PropTypes.object.isRequired
+};
 
 
 const mapStateToProps = (state, ownProps) => {
