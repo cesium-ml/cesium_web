@@ -30,5 +30,9 @@
         "no-restricted-syntax": 1,
         "guard-for-in": 1,
         "array-callback-return": 1,
+        "class-methods-use-this": 1,
+        "jsx-a11y/no-static-element-interactions": 1,
+        "react/forbid-prop-types": 1,
+        "arrow-parens": 1,
     }
 }
