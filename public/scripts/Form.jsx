@@ -1,4 +1,5 @@
 import React, { PropTypes } from 'react';
+import _ from 'underscore';
 
 export const FormComponent = (props) => {
 };
@@ -44,7 +45,7 @@ export const Form = (props) => {
   return (
     <div style={style}>
       {props.error && <div style={style.error}>Error: {props.error}</div>}
-      <form {...props} className="form-horizontal">
+      <form className="form-horizontal" {..._.omit(props, "error")}>
         {props.children}
       </form>
     </div>
@@ -72,7 +73,8 @@ export const TextInput = (props) => {
       <input
         className="form-control"
         type="text"
-        value={props.value || ''} {...props}
+        value={props.value || ''}
+        {..._.omit(props, ["error", "initialValue", "autofill", "onUpdate", "valid", "invalid", "dirty", "pristine", "active", "touched", "visited", "autofilled"])}
       />
       <Error {...props} />
     </div>
@@ -81,7 +83,7 @@ export const TextInput = (props) => {
 
 TextInput.propTypes = {
   label: PropTypes.string,
-  value: PropTypes.string
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 };
 
 export const TextareaInput = (props) => {
@@ -96,7 +98,8 @@ export const TextareaInput = (props) => {
       }
       <textarea
         className="form-control"
-        value={props.value || ''} {...props}
+        value={props.value || ''}
+        {..._.omit(props, ["error", "initialValue", "autofill", "onUpdate", "valid", "invalid", "dirty", "pristine", "active", "touched", "visited", "autofilled"])}
       />
       <Error {...props} />
     </div>
@@ -109,7 +112,11 @@ TextareaInput.propTypes = {
 
 export const CheckBoxInput = props => (
   <div className="checkbox">
-    <input type="checkbox" {...props} /> {props.label}
+    <input
+      type="checkbox"
+      {..._.omit(props, ["initialValue", "autofill", "onUpdate", "valid", "invalid", "dirty", "pristine", "active", "touched", "visited", "autofilled"])}
+    />
+    {props.label}
   </div>
 );
 CheckBoxInput.propTypes = {
@@ -128,7 +135,7 @@ export const SelectInput = (props) => {
       }
       <select
         className="form-control"
-        {...props}
+        {..._.omit(props, ["error", "options", "initialValue", "autofill", "onUpdate", "valid", "invalid", "dirty", "pristine", "active", "touched", "visited", "autofilled"])}
       >
         {props.options.map((option, idx) => (
           <option
@@ -184,19 +191,22 @@ export const FileInput = (props) => {
   const fileInputStyle = {
   };
 
-  const { value: _, ...otherProps } = props;
+  const { value: _someval, ...otherProps } = props;
 
   return (
     <div className="form-group" style={fileInputStyle}>
       {props.label &&
         <label>{props.label}</label>
       }
-      <input type="file" {...otherProps} />
+      <input type="file" {..._.omit(otherProps, ["error", "initialValue", "autofill", "onUpdate", "valid", "invalid", "dirty", "pristine", "active", "touched", "visited", "autofilled"])} />
       <Error {...props} />
     </div>
   );
 };
 FileInput.propTypes = {
   label: PropTypes.string,
-  value: PropTypes.string
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.object
+  ])
 };

@@ -35,7 +35,6 @@ class MainContent extends React.Component {
     store.dispatch(Action.hydrate());
   }
   render() {
-    console.log("MainContent this.props:", this.props);
     const config = {
       sidebar: 300,
       topbar: '4em',
