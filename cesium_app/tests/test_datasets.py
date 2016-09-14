@@ -10,8 +10,7 @@ test_dataset_name = str(uuid.uuid4())
 
 
 def test_add_new_dataset(driver):
-    driver.get("http://localhost:5000")
-    driver.set_window_size(1920,1080)
+    driver.get("/")
 
     with create_test_project() as p:
         driver.refresh()
@@ -47,5 +46,5 @@ def test_delete_dataset(driver):
         driver.find_element_by_partial_link_text('Delete').click()
         driver.implicitly_wait(1)
         status_td = driver.find_element_by_xpath(
-            "//div[contains(text(),'Dataset successfully deleted')]")
+            "//div[contains(text(),'Dataset deleted')]")
         assert test_dataset_name not in driver.page_source

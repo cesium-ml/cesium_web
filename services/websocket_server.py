@@ -6,7 +6,7 @@ import zmq
 import jwt
 
 from cesium_app import config
-secret = config.cfg['flask']['secret-key']
+secret = config.cfg['app']['secret-key']
 
 ctx = zmq.Context()
 

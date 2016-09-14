@@ -7,9 +7,7 @@ from util import create_test_project
 
 
 def test_create_project(driver):
-    driver.set_window_size(1920,1080)
-
-    driver.get("http://localhost:5000")
+    driver.get("/")
 
     # Add new project
     driver.implicitly_wait(1)
@@ -25,7 +23,7 @@ def test_create_project(driver):
 
     driver.implicitly_wait(1)
     status_td = driver.find_element_by_xpath(
-        "//div[contains(text(),'Successfully added new project')]")
+        "//div[contains(text(),'Added new project')]")
     assert test_proj_name in driver.page_source
 
     proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
@@ -71,7 +69,7 @@ def test_delete_project(driver):
         driver.find_element_by_partial_link_text('Delete Project').click()
         driver.implicitly_wait(1)
         status_td = driver.find_element_by_xpath(
-            "//div[contains(text(),'Project successfully deleted')]")
+            "//div[contains(text(),'Project deleted')]")
 
 
 def test_main_content_disabled_no_project(driver):

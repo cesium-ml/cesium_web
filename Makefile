@@ -47,15 +47,15 @@ debug:
 
 # Attach to terminal of running webserver; useful to, e.g., use pdb
 attach:
-	supervisorctl -c conf/supervisord_common.conf fg flask
+	supervisorctl -c conf/supervisord_common.conf fg app
 
 clean:
 	rm $(bundle)
 
-test_headless:
+test_headless: paths dependencies
 	PYTHONPATH='.' xvfb-run ./tools/frontend_tests.py
 
-test_headful:
+test: paths dependencies
 	PYTHONPATH='.' ./tools/frontend_tests.py
 
 status:

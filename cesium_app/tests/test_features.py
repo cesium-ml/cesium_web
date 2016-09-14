@@ -12,8 +12,7 @@ test_featureset_name = str(uuid.uuid4())
 
 
 def test_add_new_featureset(driver):
-    driver.get('http://localhost:5000')
-    driver.set_window_size(1920,1080)
+    driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds:
         driver.refresh()
         proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
@@ -37,8 +36,7 @@ def test_add_new_featureset(driver):
 
 
 def test_check_uncheck_features(driver):
-    driver.get('http://localhost:5000')
-    driver.set_window_size(1920,1080)
+    driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds:
         driver.refresh()
         proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
@@ -70,8 +68,7 @@ def test_check_uncheck_features(driver):
 
 
 def test_cannot_compute_zero_features(driver):
-    driver.get('http://localhost:5000')
-    driver.set_window_size(1920,1080)
+    driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds:
         driver.refresh()
         proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
@@ -109,8 +106,7 @@ def test_cannot_compute_zero_features(driver):
 
 
 def test_plot_features(driver):
-    driver.get('http://localhost:5000')
-    driver.set_window_size(1920,1080)
+    driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds,\
          create_test_featureset(p) as fs:
         driver.refresh()
@@ -129,8 +125,7 @@ def test_plot_features(driver):
 
 
 def test_delete_featureset(driver):
-    driver.get('http://localhost:5000')
-    driver.set_window_size(1920,1080)
+    driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds,\
          create_test_featureset(p) as fs:
         driver.refresh()
@@ -141,7 +136,7 @@ def test_delete_featureset(driver):
         driver.find_element_by_partial_link_text('Delete').click()
         driver.implicitly_wait(1)
         status_td = driver.find_element_by_xpath(
-            "//div[contains(text(),'Feature set successfully deleted')]")
+            "//div[contains(text(),'Feature set deleted')]")
         try:
             el = driver.find_element_by_xpath(
                 "//td[contains(text(),'{}')]".format(test_featureset_name))

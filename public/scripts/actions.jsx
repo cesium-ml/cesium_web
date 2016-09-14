@@ -110,7 +110,7 @@ export function addProject(form) {
         .then((json) => {
           if (json.status == 'success') {
             dispatch(resetForm('newProject'));
-            dispatch(showNotification('Successfully added new project'));
+            dispatch(showNotification('Added new project'))
             dispatch(selectProject(json.data.id));
           } else {
             return Promise.reject({ _error: json.message });
@@ -158,7 +158,7 @@ export function deleteProject(id) {
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
-            dispatch(showNotification('Project successfully deleted'));
+            dispatch(showNotification('Project deleted'));
             dispatch(selectProject());
           } else {
             dispatch(
@@ -395,7 +395,7 @@ export function deleteDataset(id) {
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
-            dispatch(showNotification('Dataset successfully deleted'));
+            dispatch(showNotification('Dataset deleted'));
           } else {
             dispatch(
               showNotification(
@@ -417,7 +417,7 @@ export function deleteFeatureset(id) {
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
-            dispatch(showNotification('Feature set successfully deleted'));
+            dispatch(showNotification('Feature set deleted'));
           } else {
             dispatch(
               showNotification(
@@ -502,7 +502,7 @@ export function deleteModel(id) {
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
-            dispatch(showNotification('Model successfully deleted'));
+            dispatch(showNotification('Model deleted'));
           } else {
             dispatch(
               showNotification(
@@ -551,7 +551,7 @@ export function deletePrediction(id) {
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
-            dispatch(showNotification('Prediction successfully deleted'));
+            dispatch(showNotification('Prediction deleted'));
           } else {
             dispatch(
               showNotification(

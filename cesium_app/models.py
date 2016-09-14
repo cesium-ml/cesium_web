@@ -167,7 +167,7 @@ class Prediction(BaseModel):
         info['featureset_name'] = self.model.featureset.name
         if self.task_id is None:
             try:
-                with xr.open_dataset(self.file.uri) as pset:
+                with xr.open_dataset(self.file.uri, engine=cfg['xr_engine']) as pset:
                     info['results'] = pset.load()
             except (RuntimeError, OSError):
                 info['results'] = None

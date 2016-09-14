@@ -23,7 +23,7 @@ with open(req_file) as f:
 
         dep = re.split('\W+', dep)[0]
         try:
-            __import__(pkg_import.get(dep, dep.lower()))
+            __import__(pkg_import.get(dep, dep))
         except ImportError:
             print(("Development dependency '{}' unfulfilled. "
                    "Installing requirements.").format(dep))
