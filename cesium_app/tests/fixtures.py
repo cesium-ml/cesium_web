@@ -29,10 +29,8 @@ def create_test_project():
 
 @contextmanager
 def create_test_dataset(project):
-    header = pjoin(os.path.dirname(__file__),
-                   'data/asas_training_subset_classes.dat')
-    tarball = pjoin(os.path.dirname(__file__),
-                    'data/asas_training_subset.tar.gz')
+    header = pjoin(os.path.dirname(__file__), 'data', 'asas_training_subset_classes.dat')
+    tarball = pjoin(os.path.dirname(__file__), 'data', 'asas_training_subset.tar.gz')
     header = shutil.copy2(header, cfg['paths']['upload_folder'])
     tarball = shutil.copy2(tarball, cfg['paths']['upload_folder'])
     time_series = data_management.parse_and_store_ts_data(

@@ -4,7 +4,7 @@ from selenium.webdriver.support.ui import Select
 import uuid
 import os
 from os.path import join as pjoin
-from util import create_test_project, create_test_dataset
+from cesium_app.tests.fixtures import create_test_project, create_test_dataset
 
 test_dataset_name = str(uuid.uuid4())
 
@@ -23,10 +23,12 @@ def test_add_new_dataset(driver):
         dataset_name.send_keys(test_dataset_name)
 
         header_file = driver.find_element_by_css_selector('[name=headerFile]')
-        header_file.send_keys(pjoin(os.path.dirname(__file__), 'data/asas_training_subset_classes.dat'))
+        header_file.send_keys(pjoin(os.path.dirname(os.path.dirname(__file__)), 'data',
+                                    'asas_training_subset_classes.dat'))
 
         tar_file = driver.find_element_by_css_selector('[name=tarFile]')
-        tar_file.send_keys(pjoin(os.path.dirname(__file__), 'data/asas_training_subset.tar.gz'))
+        tar_file.send_keys(pjoin(os.path.dirname(os.path.dirname(__file__)), 'data',
+                                 'asas_training_subset.tar.gz'))
 
         driver.find_element_by_class_name('btn-primary').click()
 

@@ -5,8 +5,8 @@ import uuid
 import time
 import os
 from os.path import join as pjoin
-from util import create_test_project, create_test_dataset, \
-    create_test_featureset, create_test_model
+from cesium_app.tests.fixtures import (create_test_project, create_test_dataset,
+                                       create_test_featureset, create_test_model)
 
 test_model_name = str(uuid.uuid4())
 
@@ -26,8 +26,8 @@ def test_add_model(driver):
 
         driver.find_element_by_class_name('btn-primary').click()
 
-        driver.implicitly_wait(0.2)
         try:
+            driver.implicitly_wait(0.5)
             status_td = driver.find_element_by_xpath(
                 "//div[contains(text(),'Model training begun')]")
 

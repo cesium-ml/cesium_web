@@ -2,7 +2,7 @@ import os
 import tempfile
 
 from cesium_app import models as m
-from cesium_app.tests.util import create_test_project, create_test_dataset
+from cesium_app.tests.fixtures import create_test_project, create_test_dataset
 
 
 def test_file_delete():
