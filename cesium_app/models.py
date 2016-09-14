@@ -1,12 +1,13 @@
 import datetime
 import inspect
+import os
 import sys
 import time
 
 import peewee as pw
-from playhouse.fields import ManyToManyField
 from playhouse.postgres_ext import ArrayField, BinaryJSONField
 from playhouse.shortcuts import model_to_dict
+from playhouse import signals
 import xarray as xr
 
 from cesium_app.json_util import to_json
@@ -17,7 +18,7 @@ db = pw.PostgresqlDatabase(autocommit=True, autorollback=True,
                            **cfg['database'])
 
 
-class BaseModel(pw.Model):
+class BaseModel(signals.Model):
     def __str__(self):
         return to_json(self.__dict__())
 
@@ -65,11 +66,17 @@ class UserProject(BaseModel):
         )
 
 
-# TODO Delete corresponding file upon deleting row
 class File(BaseModel):
     """ORM model of the TimeSeries table"""
     uri = pw.CharField(primary_key=True)  # s3://cesium_bin/3eef6601a
     created = pw.DateTimeField(default=datetime.datetime.now)
+
+@signals.post_delete(sender=File)
+def remove_file_after_delete(sender, instance):
+    try:
+        os.remove(instance.uri)
+    except FileNotFoundError:
+        pass
 
 
 class Dataset(BaseModel):
@@ -108,6 +115,11 @@ class DatasetFile(BaseModel):
         indexes = (
             (('dataset', 'file'), True),
         )
+
+@signals.pre_delete(sender=Dataset)
+def remove_related_files(sender, instance):
+    query = File.delete().where(File.uri in instance.uris)
+    query.execute()
 
 
 class Featureset(BaseModel):
