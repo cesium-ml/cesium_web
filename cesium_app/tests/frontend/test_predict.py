@@ -5,8 +5,9 @@ import uuid
 import time
 import os
 from os.path import join as pjoin
-from util import create_test_project, create_test_dataset,\
-    create_test_featureset, create_test_model, create_test_prediction
+from cesium_app.tests.fixtures import (create_test_project, create_test_dataset,
+                                       create_test_featureset, create_test_model,
+                                       create_test_prediction)
 
 
 def test_add_prediction(driver):
@@ -27,7 +28,7 @@ def test_add_prediction(driver):
             "//div[contains(text(),'Model predictions begun')]")
 
         try:
-            driver.implicitly_wait(10)
+            driver.implicitly_wait(30)
             status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
         except:
             driver.save_screenshot("/tmp/pred_fail.png")

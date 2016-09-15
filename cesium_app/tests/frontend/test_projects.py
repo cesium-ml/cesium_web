@@ -3,7 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 import uuid
-from util import create_test_project
+from cesium_app.tests.fixtures import create_test_project
 
 
 def test_create_project(driver):

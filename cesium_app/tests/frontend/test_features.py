@@ -6,7 +6,9 @@ import uuid
 import os
 import time
 from os.path import join as pjoin
-from util import create_test_project, create_test_dataset, create_test_featureset
+from cesium_app.tests.fixtures import (create_test_project,
+                                       create_test_dataset,
+                                       create_test_featureset)
 
 test_featureset_name = str(uuid.uuid4())
 
@@ -31,7 +33,7 @@ def test_add_new_featureset(driver):
             "//div[contains(text(),'Feature computation begun')]")
         status_td = driver.find_element_by_xpath("//td[contains(text(),'In progress')]")
 
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(30)
         status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
 
 
