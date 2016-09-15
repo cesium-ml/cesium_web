@@ -202,7 +202,7 @@ let FeaturesTab = (props) => {
 FeaturesTab.propTypes = {
   featurePlotURL: React.PropTypes.string.isRequired,
   computeFeatures: React.PropTypes.func.isRequired,
-  selectedProject: React.PropTypes.string
+  selectedProject: React.PropTypes.object
 };
 
 const ftMapDispatchToProps = dispatch => (

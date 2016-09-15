@@ -249,7 +249,7 @@ let PredictTab = props => (
 );
 PredictTab.propTypes = {
   doPrediction: PropTypes.func.isRequired,
-  selectedProject: PropTypes.string
+  selectedProject: PropTypes.object
 };
 
 

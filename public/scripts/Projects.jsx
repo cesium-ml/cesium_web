@@ -176,7 +176,7 @@ let ProjectSelector = (props) => {
   );
 };
 ProjectSelector.propTypes = {
-  fields: PropTypes.array,
+  fields: PropTypes.object,
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
   style: PropTypes.object,
   label: PropTypes.string
