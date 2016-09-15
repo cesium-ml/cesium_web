@@ -1,5 +1,4 @@
 import React, { PropTypes } from 'react';
-import _ from 'underscore';
 
 export const FormComponent = (props) => {
 };
@@ -42,10 +41,11 @@ export const Form = (props) => {
       display: 'block-inline'
     }
   };
+  const { error, ...formProps } = props; // eslint-disable-line
   return (
     <div style={style}>
       {props.error && <div style={style.error}>Error: {props.error}</div>}
-      <form className="form-horizontal" {..._.omit(props, "error")}>
+      <form className="form-horizontal" {...formProps}>
         {props.children}
       </form>
     </div>
@@ -64,6 +64,11 @@ export const TextInput = (props) => {
   const textInputStyle = {
     paddingTop: 10,
   };
+  /* eslint-disable */
+  const { error, initialValue, autofill, onUpdate, valid,
+          invalid, dirty, pristine, active, touched, visited,
+          autofilled, ...inputProps } = props;
+  /* eslint-enable */
 
   return (
     <div className="form-group" style={textInputStyle}>
@@ -74,7 +79,7 @@ export const TextInput = (props) => {
         className="form-control"
         type="text"
         value={props.value || ''}
-        {..._.omit(props, ["error", "initialValue", "autofill", "onUpdate", "valid", "invalid", "dirty", "pristine", "active", "touched", "visited", "autofilled"])}
+        {...inputProps}
       />
       <Error {...props} />
     </div>
@@ -90,6 +95,11 @@ export const TextareaInput = (props) => {
   const textareaInputStyle = {
     paddingTop: 10,
   };
+  /* eslint-disable */
+  const { error, initialValue, autofill, onUpdate, valid, invalid,
+          dirty, pristine, active, touched, visited, autofilled,
+          ...textareaProps } = props;
+  /* eslint-enable */
 
   return (
     <div className="form-group" style={textareaInputStyle}>
@@ -99,7 +109,7 @@ export const TextareaInput = (props) => {
       <textarea
         className="form-control"
         value={props.value || ''}
-        {..._.omit(props, ["error", "initialValue", "autofill", "onUpdate", "valid", "invalid", "dirty", "pristine", "active", "touched", "visited", "autofilled"])}
+        {...textareaProps}
       />
       <Error {...props} />
     </div>
@@ -110,15 +120,23 @@ TextareaInput.propTypes = {
   value: PropTypes.string
 };
 
-export const CheckBoxInput = props => (
-  <div className="checkbox">
-    <input
-      type="checkbox"
-      {..._.omit(props, ["initialValue", "autofill", "onUpdate", "valid", "invalid", "dirty", "pristine", "active", "touched", "visited", "autofilled"])}
-    />
-    {props.label}
-  </div>
-);
+export const CheckBoxInput = (props) => {
+  /* eslint-disable */
+  const { initialValue, autofill, onUpdate, valid, invalid,
+          dirty, pristine, active, touched, visited, autofilled,
+          ...checkboxProps } = props;
+  /* eslint-enable */
+
+  return (
+    <div className="checkbox">
+      <input
+        type="checkbox"
+        {...checkboxProps}
+      />
+      {props.label}
+    </div>
+  );
+};
 CheckBoxInput.propTypes = {
   label: PropTypes.string
 };
@@ -127,6 +145,11 @@ export const SelectInput = (props) => {
   const selectInputStyle = {
     paddingTop: 10
   };
+  /* eslint-disable */
+  const { error, options, initialValue, autofill, onUpdate, valid,
+          invalid, dirty, pristine, active, touched, visited, autofilled,
+          ...selectProps } = props;
+  /* eslint-enable */
 
   return (
     <div className="form-group" style={selectInputStyle}>
@@ -135,7 +158,7 @@ export const SelectInput = (props) => {
       }
       <select
         className="form-control"
-        {..._.omit(props, ["error", "options", "initialValue", "autofill", "onUpdate", "valid", "invalid", "dirty", "pristine", "active", "touched", "visited", "autofilled"])}
+        {...selectProps}
       >
         {props.options.map((option, idx) => (
           <option
@@ -191,14 +214,19 @@ export const FileInput = (props) => {
   const fileInputStyle = {
   };
 
-  const { value: _someval, ...otherProps } = props;
+  /* eslint-disable */
+  const { value: _, ...otherProps } = props;
+  const { error, initialValue, autofill, onUpdate, valid, invalid, dirty,
+          pristine, active, touched, visited, autofilled,
+          ...inputProps } = otherProps;
+  /* eslint-enable */
 
   return (
     <div className="form-group" style={fileInputStyle}>
       {props.label &&
         <label>{props.label}</label>
       }
-      <input type="file" {..._.omit(otherProps, ["error", "initialValue", "autofill", "onUpdate", "valid", "invalid", "dirty", "pristine", "active", "touched", "visited", "autofilled"])} />
+      <input type="file" {...inputProps} />
       <Error {...props} />
     </div>
   );
