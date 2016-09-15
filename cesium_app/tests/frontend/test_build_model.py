@@ -31,7 +31,7 @@ def test_add_model(driver):
             status_td = driver.find_element_by_xpath(
                 "//div[contains(text(),'Model training begun')]")
 
-            driver.implicitly_wait(1)
+            driver.implicitly_wait(2)
             status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
         except:
             driver.save_screenshot("/tmp/models_fail.png")
