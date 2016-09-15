@@ -110,7 +110,7 @@ export function addProject(form) {
         .then((json) => {
           if (json.status == 'success') {
             dispatch(resetForm('newProject'));
-            dispatch(showNotification('Added new project'))
+            dispatch(showNotification('Added new project'));
             dispatch(selectProject(json.data.id));
           } else {
             return Promise.reject({ _error: json.message });

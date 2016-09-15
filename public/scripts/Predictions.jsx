@@ -187,6 +187,7 @@ const PredictionResults = (props) => {
       <tbody>
       {results && Object.keys(results).map((fname, idx) => {
         const result = results[fname];
+        const classesSorted = classes.sort((a, b) => (result.prediction[b] - result.prediction[a]));
 
         return (
           <tr key={idx}>
@@ -198,7 +199,7 @@ const PredictionResults = (props) => {
                 <td key="pt">{result.target}</td>,
 
                modelHasProba &&
-               classes.map((classLabel, idx2) => ([
+               classesSorted.map((classLabel, idx2) => ([
                  <td key="cl0">{classLabel}</td>,
                  <td key="cl1">{result.prediction[classLabel]}</td>
                ])),

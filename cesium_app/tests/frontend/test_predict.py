@@ -46,9 +46,15 @@ def test_click_prediction(driver):
         driver.find_element_by_id('react-tabs-8').click()
         driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
         try:
-            import time; time.sleep(1)
             driver.implicitly_wait(1)
-            driver.find_element_by_xpath("//td[contains(text(),'Mira')]")
+            td = driver.find_element_by_xpath("//td[contains(text(),'Mira')]")
+            tr = td.find_element_by_xpath('..')
+            table = tr.find_element_by_xpath('..')
+            rows = table.find_elements_by_tag_name('tr')
+            for row in rows:
+                probs = [float(v.text)
+                         for v in row.find_elements_by_tag_name('td')[3::2]]
+                assert sorted(probs, reverse=True) == probs
             driver.find_element_by_xpath("//th[contains(text(),'Time Series')]")
         except:
             driver.save_screenshot("/tmp/pred_click_tr_fail.png")
