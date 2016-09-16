@@ -145,7 +145,7 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
             Check that value is one of these types.
 
         """
-        values = value if isinstance(value, list) else [value]
+        values = [value]
 
         none_vals = [None, "None", ""]
         values = [None if v in none_vals else v for v in values]
