@@ -153,15 +153,18 @@ const PredictionResults = (props) => {
   const classes = (firstResult && firstResult.prediction) ?
                 Object.keys(firstResult.prediction) : null;
 
-  const modelHasProba = contains(['RandomForestClassifier',
-                                'LinearSGDClassifier'],
-                               modelType);
+  let modelHasClass = contains(['RidgeClassifierCV'], modelType);
+  let modelHasProba = contains(['RandomForestClassifier'], modelType);
   const modelHasTarget = contains(['RandomForestRegressor',
                                  'LinearRegressor',
                                  'BayesianARDRegressor',
                                  'BayesianRidgeRegressor'],
                                 modelType);
-  const modelHasClass = contains(['RidgeClassifierCV'], modelType);
+
+  if (modelType === 'LinearSGDClassifier') {
+    modelHasProba = typeof firstResult.prediction === 'object';
+    modelHasClass = typeof firstResult.prediction === 'string';
+  }
 
   const hasTrueTargetLabel = p => (p && p.target);
 
