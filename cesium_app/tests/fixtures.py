@@ -28,9 +28,15 @@ def create_test_project():
 
 
 @contextmanager
-def create_test_dataset(project):
-    header = pjoin(os.path.dirname(__file__), 'data', 'asas_training_subset_classes.dat')
-    tarball = pjoin(os.path.dirname(__file__), 'data', 'asas_training_subset.tar.gz')
+def create_test_dataset(project, type='class'):
+    if type == 'class':
+        header = pjoin(os.path.dirname(__file__),
+                       'data', 'asas_training_subset_classes.dat')
+    elif type == 'regr':
+        header = pjoin(os.path.dirname(__file__),
+                       'data', 'asas_training_subset_targets.dat')
+    tarball = pjoin(os.path.dirname(__file__),
+                    'data', 'asas_training_subset.tar.gz')
     header = shutil.copy2(header, cfg['paths']['upload_folder'])
     tarball = shutil.copy2(tarball, cfg['paths']['upload_folder'])
     time_series = data_management.parse_and_store_ts_data(
@@ -45,10 +51,11 @@ def create_test_dataset(project):
 
 
 @contextmanager
-def create_test_featureset(project):
+def create_test_featureset(project, type='class'):
+    targets = ['Mira', 'Classical_Cepheid'] if type == 'class'\
+              else [2.2, 3.4, 4.4, 2.2, 3.1]
     features_to_use = obs_feats_list + sci_feats_list
-    fset_data = fixtures.sample_featureset(5, features_to_use,
-                                           ['Mira', 'Classical_Cepheid'])
+    fset_data = fixtures.sample_featureset(5, features_to_use, targets)
     fset_path = pjoin(cfg['paths']['features_folder'],
                       '{}.nc'.format(str(uuid.uuid4())))
     fset_data.to_netcdf(fset_path, engine=cfg['xr_engine'])
@@ -65,20 +72,28 @@ def create_test_featureset(project):
 
 
 @contextmanager
-def create_test_model(fset):
-    model_params = {"bootstrap": True, "criterion": "gini",
-                    "oob_score": False, "max_features": "auto",
-                    "n_estimators": 10}
+def create_test_model(fset, type='RandomForestClassifier'):
+    model_params = {
+        "RandomForestClassifier": {
+            "bootstrap": True, "criterion": "gini",
+            "oob_score": False, "max_features": "auto",
+            "n_estimators": 10},
+        "RandomForestRegressor": {
+            "bootstrap": True, "criterion": "mse",
+            "oob_score": False, "max_features": "auto",
+            "n_estimators": 10},
+        "LinearSGDClassifier": {
+            "loss": "hinge"}}
     with xr.open_dataset(fset.file.uri, engine=cfg['xr_engine']) as fset_data:
         model_data = build_model.build_model_from_featureset(fset_data,
-            model_type='RandomForestClassifier')
+                                                             model_type=type)
         model_path = pjoin(cfg['paths']['models_folder'],
                            '{}.pkl'.format(str(uuid.uuid4())))
         joblib.dump(model_data, model_path)
     f, created = m.File.create_or_get(uri=model_path)
     model = m.Model.create(name='test_model',
                            file=f, featureset=fset, project=fset.project,
-                           params=model_params, type='RandomForestClassifier',
+                           params=model_params[type], type=type,
                            finished=datetime.datetime.now())
     model.save()
     try:

@@ -8,10 +8,8 @@ from os.path import join as pjoin
 from cesium_app.tests.fixtures import (create_test_project, create_test_dataset,
                                        create_test_featureset, create_test_model)
 
-test_model_name = str(uuid.uuid4())
 
-
-def test_add_model(driver):
+def test_build_model_rfc(driver):
     driver.get('/')
     with create_test_project() as p, create_test_featureset(p) as fs:
         driver.refresh()
@@ -21,7 +19,11 @@ def test_add_model(driver):
         driver.find_element_by_id('react-tabs-6').click()
         driver.find_element_by_partial_link_text('Create New Model').click()
 
+        model_select = Select(driver.find_element_by_css_selector('[name=modelType]'))
+        model_select.select_by_visible_text('RandomForestClassifier')
+
         model_name = driver.find_element_by_css_selector('[name=modelName]')
+        test_model_name = str(uuid.uuid4())
         model_name.send_keys(test_model_name)
 
         driver.find_element_by_class_name('btn-primary').click()
@@ -36,6 +38,69 @@ def test_add_model(driver):
         except:
             driver.save_screenshot("/tmp/models_fail.png")
             raise
+
+
+def test_build_model_lsgdc(driver):
+    driver.get('/')
+    with create_test_project() as p, create_test_featureset(p) as fs:
+        driver.refresh()
+        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+        proj_select.select_by_value(str(p.id))
+
+        driver.find_element_by_id('react-tabs-6').click()
+        driver.find_element_by_partial_link_text('Create New Model').click()
+
+        model_select = Select(driver.find_element_by_css_selector('[name=modelType]'))
+        model_select.select_by_visible_text('LinearSGDClassifier')
+
+        model_name = driver.find_element_by_css_selector('[name=modelName]')
+        test_model_name = str(uuid.uuid4())
+        model_name.send_keys(test_model_name)
+
+        driver.find_element_by_class_name('btn-primary').click()
+
+        try:
+            driver.implicitly_wait(0.5)
+            status_td = driver.find_element_by_xpath(
+                "//div[contains(text(),'Model training begun')]")
+
+            driver.implicitly_wait(2)
+            status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
+        except:
+            driver.save_screenshot("/tmp/models_fail.png")
+            raise
+
+
+def test_build_model_lr(driver):
+    driver.get('/')
+    with create_test_project() as p, create_test_featureset(p, type='regr') as fs:
+        driver.refresh()
+        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+        proj_select.select_by_value(str(p.id))
+
+        driver.find_element_by_id('react-tabs-6').click()
+        driver.find_element_by_partial_link_text('Create New Model').click()
+
+        model_select = Select(driver.find_element_by_css_selector('[name=modelType]'))
+        model_select.select_by_visible_text('LinearRegressor')
+
+        model_name = driver.find_element_by_css_selector('[name=modelName]')
+        test_model_name = str(uuid.uuid4())
+        model_name.send_keys(test_model_name)
+
+        driver.find_element_by_class_name('btn-primary').click()
+
+        try:
+            driver.implicitly_wait(0.5)
+            status_td = driver.find_element_by_xpath(
+                "//div[contains(text(),'Model training begun')]")
+
+            driver.implicitly_wait(2)
+            status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
+        except:
+            driver.save_screenshot("/tmp/models_fail.png")
+            raise
+
 
 def test_delete_model(driver):
     driver.get('/')
