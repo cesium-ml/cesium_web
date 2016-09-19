@@ -28,11 +28,11 @@ def create_test_project():
 
 
 @contextmanager
-def create_test_dataset(project, type='class'):
-    if type == 'class':
+def create_test_dataset(project, label_type='class'):
+    if label_type == 'class':
         header = pjoin(os.path.dirname(__file__),
                        'data', 'asas_training_subset_classes.dat')
-    elif type == 'regr':
+    elif label_type == 'regr':
         header = pjoin(os.path.dirname(__file__),
                        'data', 'asas_training_subset_targets.dat')
     tarball = pjoin(os.path.dirname(__file__),
@@ -51,8 +51,8 @@ def create_test_dataset(project, type='class'):
 
 
 @contextmanager
-def create_test_featureset(project, type='class'):
-    targets = ['Mira', 'Classical_Cepheid'] if type == 'class'\
+def create_test_featureset(project, label_type='class'):
+    targets = ['Mira', 'Classical_Cepheid'] if label_type == 'class'\
               else [2.2, 3.4, 4.4, 2.2, 3.1]
     features_to_use = obs_feats_list + sci_feats_list
     fset_data = fixtures.sample_featureset(5, features_to_use, targets)
@@ -72,7 +72,7 @@ def create_test_featureset(project, type='class'):
 
 
 @contextmanager
-def create_test_model(fset, type='RandomForestClassifier'):
+def create_test_model(fset, model_type='RandomForestClassifier'):
     model_params = {
         "RandomForestClassifier": {
             "bootstrap": True, "criterion": "gini",
@@ -88,14 +88,14 @@ def create_test_model(fset, type='RandomForestClassifier'):
             "fit_intercept": True}}
     with xr.open_dataset(fset.file.uri, engine=cfg['xr_engine']) as fset_data:
         model_data = build_model.build_model_from_featureset(fset_data,
-                                                             model_type=type)
+                                                             model_type=model_type)
         model_path = pjoin(cfg['paths']['models_folder'],
                            '{}.pkl'.format(str(uuid.uuid4())))
         joblib.dump(model_data, model_path)
     f, created = m.File.create_or_get(uri=model_path)
     model = m.Model.create(name='test_model',
                            file=f, featureset=fset, project=fset.project,
-                           params=model_params[type], type=type,
+                           params=model_params[model_type], type=model_type,
                            finished=datetime.datetime.now())
     model.save()
     try:
