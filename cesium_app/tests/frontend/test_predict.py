@@ -105,11 +105,12 @@ def test_pred_results_table_lsgdc(driver):
             tr = td.find_element_by_xpath('..')
             table = tr.find_element_by_xpath('..')
             rows = table.find_elements_by_tag_name('tr')
-            fname_true_class = [row.text.split(' ')[:2] for row in rows]
+            rows = [row.text for row in rows]
             npt.assert_array_equal(
-                [['0', 'Mira'], ['1', 'Classical_Cepheid'], ['2', 'Mira'],
-                 ['3', 'Classical_Cepheid'], ['4', 'Mira']],
-                fname_true_class)
+                ['0 Mira Mira', '1 Classical_Cepheid Classical_Cepheid',
+                 '2 Mira Mira', '3 Classical_Cepheid Classical_Cepheid',
+                 '4 Mira Mira'],
+                rows)
         except:
             driver.save_screenshot("/tmp/pred_click_tr_fail.png")
             raise
@@ -145,7 +146,7 @@ def test_pred_results_table_regr(driver):
     driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds,\
          create_test_featureset(p, type='regr') as fs,\
-         create_test_model(fs, type='RandomForestRegressor') as m,\
+         create_test_model(fs, type='LinearRegressor') as m,\
          create_test_prediction(ds, m):
         driver.refresh()
         proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
@@ -158,10 +159,12 @@ def test_pred_results_table_regr(driver):
             tr = td.find_element_by_xpath('..')
             table = tr.find_element_by_xpath('..')
             rows = table.find_elements_by_tag_name('tr')
-            fname_true_target = [row.text.split(' ')[:2] for row in rows]
-            npt.assert_array_equal(
-                [['0', '2.2'], ['1', '3.4'], ['2', '4.4'], ['3', '2.2'], ['4', '3.1']],
-                fname_true_target)
+            rows = [[float(el) for el in row.text.split(' ')] for row in rows]
+            npt.assert_array_almost_equal(
+                [[0.0, 2.2, 2.2000000000000006], [1.0, 3.4, 3.4000000000000004],
+                 [2.0, 4.4, 4.400000000000001], [3.0, 2.2, 2.1999999999999993],
+                 [4.0, 3.1, 3.099999999999999]],
+                rows)
         except:
             driver.save_screenshot("/tmp/pred_click_tr_fail.png")
             raise

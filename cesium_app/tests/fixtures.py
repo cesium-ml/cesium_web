@@ -83,7 +83,9 @@ def create_test_model(fset, type='RandomForestClassifier'):
             "oob_score": False, "max_features": "auto",
             "n_estimators": 10},
         "LinearSGDClassifier": {
-            "loss": "hinge"}}
+            "loss": "hinge"},
+        "LinearRegressor": {
+            "fit_intercept": True}}
     with xr.open_dataset(fset.file.uri, engine=cfg['xr_engine']) as fset_data:
         model_data = build_model.build_model_from_featureset(fset_data,
                                                              model_type=type)
