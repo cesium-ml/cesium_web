@@ -122,3 +122,5 @@ do
     fi
 done
 ```
+
+- Run `make docker-images` to build and push to Docker hub

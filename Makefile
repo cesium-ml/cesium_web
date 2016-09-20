@@ -60,3 +60,9 @@ test: paths dependencies
 
 status:
 	PYTHONPATH='.' ./tools/supervisor_status.py
+
+docker-images:
+	# Add --no-cache flag to rebuild from scratch
+	docker build -t cesium/web . && docker push cesium/web
+	cd docker/postgres && docker build -t cesium/postgres . && docker push cesium/postgres
+
