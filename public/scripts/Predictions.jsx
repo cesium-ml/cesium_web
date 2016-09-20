@@ -130,7 +130,11 @@ let PredictionsTable = props => (
               <td>{prediction.dataset_name}</td>
               <td>{reformatDatetime(prediction.created)}</td>
               {status}
-              <td><DeletePrediction ID={prediction.id} /></td>
+              <td>
+                <DownloadPredCSV ID={prediction.id} />
+                &nbsp;&nbsp;
+                <DeletePrediction ID={prediction.id} />
+              </td>
               <td />
             </tr>
             {foldedContent}
@@ -236,6 +240,31 @@ const dpMapDispatchToProps = dispatch => (
 );
 
 const DeletePrediction = connect(null, dpMapDispatchToProps)(Delete);
+
+let DownloadPredCSV = (props) => (
+  <a
+    style={{ display: "inline-block" }}
+    onClick={
+      (e) => {
+        e.stopPropagation();
+        props.download(props.ID);
+      }
+            }
+  >
+    Download
+  </a>
+);
+DownloadPredCSV.propTypes = {
+  download: PropTypes.func.isRequired,
+  ID: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
+};
+
+
+const dlMapDispatchToProps = dispatch => (
+  { download: ID => dispatch(Action.downloadPredictionCSV(ID)) }
+);
+
+DownloadPredCSV = connect(null, dlMapDispatchToProps)(DownloadPredCSV);
 
 let PredictTab = props => (
   <div>

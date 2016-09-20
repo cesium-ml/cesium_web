@@ -44,11 +44,12 @@ export const RECEIVE_SKLEARN_MODELS = 'cesium/RECEIVE_SKLEARN_MODELS';
 
 export const SPIN_LOGO = 'cesium/SPIN_LOGO';
 export const GROUP_TOGGLE_FEATURES = 'cesium/GROUP_TOGGLE_FEATURES';
+export const RECEIVE_PRED_RESULTS_CSV = 'cesium/RECEIVE_PRED_RESULTS_CSV';
 
 
 import { showNotification, reduceNotifications } from './Notifications';
 import promiseAction from './action_tools';
-import { objectType } from './utils';
+import { objectType, downloadCSV } from './utils';
 
 // Refactor this into a utility function
 String.prototype.format = function (...args) {
@@ -622,5 +623,29 @@ export function hydrate() {
         });
       });
     dispatch(fetchSklearnModels());
+  };
+}
+
+
+export function receivePredResultsCSV(data) {
+  return {
+    type: RECEIVE_PRED_RESULTS_CSV,
+    payload: data
+  };
+}
+
+
+export function downloadPredictionCSV(ID) {
+  return (dispatch) => {
+    fetch(`/download_prediction_results/${ID}`)
+      .then(response => response.json())
+      .then((json) => {
+        if (json.status === 'success') {
+          dispatch(receivePredResultsCSV(json.data));
+          downloadCSV(json.data, 'cesium_prediction_results.csv');
+        } else {
+          return dispatch(showNotification(json.message));
+        }
+      });
   };
 }

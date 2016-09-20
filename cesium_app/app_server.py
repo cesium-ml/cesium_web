@@ -12,7 +12,8 @@ from .handlers import (
     FeatureListHandler,
     SklearnModelsHandler,
     SocketAuthTokenHandler,
-    PlotFeaturesHandler
+    PlotFeaturesHandler,
+    DownloadPredictionResultsHandler
     )
 
 
@@ -32,6 +33,7 @@ def make_app():
         (r'/socket_auth_token', SocketAuthTokenHandler),
         (r'/sklearn_models', SklearnModelsHandler),
         (r'/plot_features/(.*)', PlotFeaturesHandler),
+        (r'/download_prediction_results/(.*)', DownloadPredictionResultsHandler),
         (r'/(.*)', tornado.web.StaticFileHandler,
              {'path': 'public/', 'default_filename': 'index.html'})
     ]

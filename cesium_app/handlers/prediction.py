@@ -1,6 +1,7 @@
 from .base import BaseHandler, AccessError
 from ..models import Prediction, File, Dataset, Model, Project
 from ..config import cfg
+from .. import util
 
 import tornado.gen
 
@@ -113,6 +114,7 @@ class PredictionHandler(BaseHandler):
             prediction_info = [p.display_info() for p in predictions]
         else:
             prediction = self._get_prediction(prediction_id)
+            prediction_info = prediction.display_info()
 
         return self.success(prediction_info)
 
@@ -120,3 +122,9 @@ class PredictionHandler(BaseHandler):
         prediction = self._get_prediction(prediction_id)
         prediction.delete_instance()
         return self.success(action='cesium/FETCH_PREDICTIONS')
+
+
+class DownloadPredictionResultsHandler(PredictionHandler):
+    def get(self, prediction_id):
+        prediction = xr.open_dataset(self._get_prediction(prediction_id).file.uri)
+        return self.success(util.prediction_to_csv(prediction))

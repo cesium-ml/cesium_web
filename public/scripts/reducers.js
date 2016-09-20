@@ -131,6 +131,16 @@ function misc(state={ logoSpinAngle: 0 }, action) {
 }
 
 
+function predResultsCSV(state={}, action) {
+  switch (action.type) {
+    case Action.RECEIVE_PRED_RESULTS_CSV:
+      return { data: action.payload };
+    default:
+      return state;
+  }
+}
+
+
 const rootReducer = combineReducers({
   projects,
   datasets,
@@ -141,7 +151,8 @@ const rootReducer = combineReducers({
   expander,
   sklearnModels,
   form: myFormReducer(formReducer),
-  misc
+  misc,
+  predResultsCSV
 });
 
 export default rootReducer;
