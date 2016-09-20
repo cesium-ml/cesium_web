@@ -19,6 +19,7 @@ import xarray as xr
 
 @contextmanager
 def create_test_project():
+    """Create and yield test project, then delete."""
     p = m.Project.add_by('test_proj', 'test_desc', 'testuser@gmail.com')
     p.save()
     try:
@@ -29,6 +30,18 @@ def create_test_project():
 
 @contextmanager
 def create_test_dataset(project, label_type='class'):
+    """Create and yield test labeled dataset, then delete.
+
+    Params
+    ------
+    project : `models.Project` instance
+        The project under which to create test dataset.
+    label_type  : str
+        String indicating whether data labels are class names ('class')
+        for classification, or numerical values for regression (anything other
+        than 'class'). Defaults to 'class'.
+
+    """
     if label_type == 'class':
         header = pjoin(os.path.dirname(__file__),
                        'data', 'asas_training_subset_classes.dat')
@@ -52,6 +65,18 @@ def create_test_dataset(project, label_type='class'):
 
 @contextmanager
 def create_test_featureset(project, label_type='class'):
+    """Create and yield test labeled featureset, then delete.
+
+    Params
+    ------
+    project : `models.Project` instance
+        The project under which to create test feature set.
+    label_type  : str, optional
+        String indicating whether data labels are class names ('class')
+        for classification, or numerical values for regression (anything other
+        than 'class'). Defaults to 'class'.
+
+    """
     targets = ['Mira', 'Classical_Cepheid'] if label_type == 'class'\
               else [2.2, 3.4, 4.4, 2.2, 3.1]
     features_to_use = obs_feats_list + sci_feats_list
@@ -73,6 +98,17 @@ def create_test_featureset(project, label_type='class'):
 
 @contextmanager
 def create_test_model(fset, model_type='RandomForestClassifier'):
+    """Create and yield test model, then delete.
+
+    Params
+    ------
+    fset : `models.Featureset` instance
+        The (labeled) feature set from which to build the model.
+    model_type  : str, optional
+        String indicating type of model to build. Defaults to
+        'RandomForestClassifier'.
+
+    """
     model_params = {
         "RandomForestClassifier": {
             "bootstrap": True, "criterion": "gini",
@@ -106,6 +142,16 @@ def create_test_model(fset, model_type='RandomForestClassifier'):
 
 @contextmanager
 def create_test_prediction(dataset, model):
+    """Create and yield test prediction, then delete.
+
+    Params
+    ------
+    dataset : `models.Dataset` instance
+        The dataset on which prediction will be performed.
+    model  : `models.Model` instance
+        The model to use to create prediction.
+
+    """
     with xr.open_dataset(model.featureset.file.uri, engine=cfg['xr_engine']) as fset_data:
         model_data = joblib.load(model.file.uri)
         pred_data = predict.model_predictions(fset_data.load(), model_data)

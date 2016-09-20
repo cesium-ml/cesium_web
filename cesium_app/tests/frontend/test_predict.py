@@ -14,7 +14,7 @@ from cesium_app.tests.fixtures import (create_test_project, create_test_dataset,
 def _add_prediction(proj_id, driver):
     driver.refresh()
     proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
-    proj_select.select_by_value(proj_id)
+    proj_select.select_by_value(str(proj_id))
 
     driver.find_element_by_id('react-tabs-8').click()
     driver.find_element_by_partial_link_text('Predict Targets').click()
@@ -36,7 +36,7 @@ def _add_prediction(proj_id, driver):
 def _click_prediction_row(proj_id, driver):
     driver.refresh()
     proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
-    proj_select.select_by_value(proj_id)
+    proj_select.select_by_value(str(proj_id))
     driver.find_element_by_id('react-tabs-8').click()
     driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
 
@@ -55,7 +55,7 @@ def test_add_prediction_rfc(driver):
     driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds,\
          create_test_featureset(p) as fs, create_test_model(fs) as m:
-        _add_prediction(str(p.id), driver)
+        _add_prediction(p.id, driver)
 
 
 def test_pred_results_table_rfc(driver):
@@ -63,7 +63,7 @@ def test_pred_results_table_rfc(driver):
     with create_test_project() as p, create_test_dataset(p) as ds,\
          create_test_featureset(p) as fs, create_test_model(fs) as m,\
          create_test_prediction(ds, m):
-        _click_prediction_row(str(p.id), driver)
+        _click_prediction_row(p.id, driver)
         try:
             rows = _grab_pred_results_table_rows(driver, 'Mira')
             for row in rows:
@@ -81,7 +81,7 @@ def test_add_prediction_lsgdc(driver):
     with create_test_project() as p, create_test_dataset(p) as ds,\
          create_test_featureset(p) as fs,\
          create_test_model(fs, model_type='LinearSGDClassifier') as m:
-        _add_prediction(str(p.id), driver)
+        _add_prediction(p.id, driver)
 
 
 def test_pred_results_table_lsgdc(driver):
@@ -90,7 +90,7 @@ def test_pred_results_table_lsgdc(driver):
          create_test_featureset(p) as fs,\
          create_test_model(fs, model_type='LinearSGDClassifier') as m,\
          create_test_prediction(ds, m):
-        _click_prediction_row(str(p.id), driver)
+        _click_prediction_row(p.id, driver)
         try:
             rows = _grab_pred_results_table_rows(driver, 'Mira')
             rows = [row.text for row in rows]
@@ -109,7 +109,7 @@ def test_add_prediction_rfr(driver):
     with create_test_project() as p, create_test_dataset(p, label_type='regr') as ds,\
          create_test_featureset(p, label_type='regr') as fs,\
          create_test_model(fs, model_type='RandomForestRegressor') as m:
-        _add_prediction(str(p.id), driver)
+        _add_prediction(p.id, driver)
 
 
 def test_pred_results_table_regr(driver):
@@ -118,7 +118,7 @@ def test_pred_results_table_regr(driver):
          create_test_featureset(p, label_type='regr') as fs,\
          create_test_model(fs, model_type='LinearRegressor') as m,\
          create_test_prediction(ds, m):
-        _click_prediction_row(str(p.id), driver)
+        _click_prediction_row(p.id, driver)
         try:
             rows = _grab_pred_results_table_rows(driver, '3.4')
             rows = [[float(el) for el in row.text.split(' ')] for row in rows]
