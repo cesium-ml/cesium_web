@@ -11,29 +11,51 @@ from cesium_app.tests.fixtures import (create_test_project, create_test_dataset,
                                        create_test_prediction)
 
 
+def _add_prediction(proj_id, driver):
+    driver.refresh()
+    proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+    proj_select.select_by_value(proj_id)
+
+    driver.find_element_by_id('react-tabs-8').click()
+    driver.find_element_by_partial_link_text('Predict Targets').click()
+
+    driver.find_element_by_class_name('btn-primary').click()
+
+    driver.implicitly_wait(1)
+    status_td = driver.find_element_by_xpath(
+        "//div[contains(text(),'Model predictions begun')]")
+
+    try:
+        driver.implicitly_wait(30)
+        status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
+    except:
+        driver.save_screenshot("/tmp/pred_fail.png")
+        raise
+
+
+def _click_prediction_row(proj_id, driver):
+    driver.refresh()
+    proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+    proj_select.select_by_value(proj_id)
+    driver.find_element_by_id('react-tabs-8').click()
+    driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
+
+
+def _grab_pred_results_table_rows(driver, text_to_look_for):
+    driver.implicitly_wait(1)
+    td = driver.find_element_by_xpath("//td[contains(text(),'{}')]".format(
+        text_to_look_for))
+    tr = td.find_element_by_xpath('..')
+    table = tr.find_element_by_xpath('..')
+    rows = table.find_elements_by_tag_name('tr')
+    return rows
+
+
 def test_add_prediction_rfc(driver):
     driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds,\
          create_test_featureset(p) as fs, create_test_model(fs) as m:
-        driver.refresh()
-        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
-        proj_select.select_by_value(str(p.id))
-
-        driver.find_element_by_id('react-tabs-8').click()
-        driver.find_element_by_partial_link_text('Predict Targets').click()
-
-        driver.find_element_by_class_name('btn-primary').click()
-
-        driver.implicitly_wait(1)
-        status_td = driver.find_element_by_xpath(
-            "//div[contains(text(),'Model predictions begun')]")
-
-        try:
-            driver.implicitly_wait(30)
-            status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
-        except:
-            driver.save_screenshot("/tmp/pred_fail.png")
-            raise
+        _add_prediction(str(p.id), driver)
 
 
 def test_pred_results_table_rfc(driver):
@@ -41,17 +63,9 @@ def test_pred_results_table_rfc(driver):
     with create_test_project() as p, create_test_dataset(p) as ds,\
          create_test_featureset(p) as fs, create_test_model(fs) as m,\
          create_test_prediction(ds, m):
-        driver.refresh()
-        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
-        proj_select.select_by_value(str(p.id))
-        driver.find_element_by_id('react-tabs-8').click()
-        driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
+        _click_prediction_row(str(p.id), driver)
         try:
-            driver.implicitly_wait(1)
-            td = driver.find_element_by_xpath("//td[contains(text(),'Mira')]")
-            tr = td.find_element_by_xpath('..')
-            table = tr.find_element_by_xpath('..')
-            rows = table.find_elements_by_tag_name('tr')
+            rows = _grab_pred_results_table_rows(driver, 'Mira')
             for row in rows:
                 probs = [float(v.text)
                          for v in row.find_elements_by_tag_name('td')[3::2]]
@@ -66,45 +80,19 @@ def test_add_prediction_lsgdc(driver):
     driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds,\
          create_test_featureset(p) as fs,\
-         create_test_model(fs, type='LinearSGDClassifier') as m:
-        driver.refresh()
-        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
-        proj_select.select_by_value(str(p.id))
-
-        driver.find_element_by_id('react-tabs-8').click()
-        driver.find_element_by_partial_link_text('Predict Targets').click()
-
-        driver.find_element_by_class_name('btn-primary').click()
-
-        driver.implicitly_wait(1)
-        status_td = driver.find_element_by_xpath(
-            "//div[contains(text(),'Model predictions begun')]")
-
-        try:
-            driver.implicitly_wait(30)
-            status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
-        except:
-            driver.save_screenshot("/tmp/pred_fail.png")
-            raise
+         create_test_model(fs, model_type='LinearSGDClassifier') as m:
+        _add_prediction(str(p.id), driver)
 
 
 def test_pred_results_table_lsgdc(driver):
     driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds,\
          create_test_featureset(p) as fs,\
-         create_test_model(fs, type='LinearSGDClassifier') as m,\
+         create_test_model(fs, model_type='LinearSGDClassifier') as m,\
          create_test_prediction(ds, m):
-        driver.refresh()
-        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
-        proj_select.select_by_value(str(p.id))
-        driver.find_element_by_id('react-tabs-8').click()
-        driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
+        _click_prediction_row(str(p.id), driver)
         try:
-            driver.implicitly_wait(1)
-            td = driver.find_element_by_xpath("//td[contains(text(),'Mira')]")
-            tr = td.find_element_by_xpath('..')
-            table = tr.find_element_by_xpath('..')
-            rows = table.find_elements_by_tag_name('tr')
+            rows = _grab_pred_results_table_rows(driver, 'Mira')
             rows = [row.text for row in rows]
             npt.assert_array_equal(
                 ['0 Mira Mira', '1 Classical_Cepheid Classical_Cepheid',
@@ -118,47 +106,21 @@ def test_pred_results_table_lsgdc(driver):
 
 def test_add_prediction_rfr(driver):
     driver.get('/')
-    with create_test_project() as p, create_test_dataset(p, type='regr') as ds,\
-         create_test_featureset(p, type='regr') as fs,\
-         create_test_model(fs, type='RandomForestRegressor') as m:
-        driver.refresh()
-        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
-        proj_select.select_by_value(str(p.id))
-
-        driver.find_element_by_id('react-tabs-8').click()
-        driver.find_element_by_partial_link_text('Predict Targets').click()
-
-        driver.find_element_by_class_name('btn-primary').click()
-
-        driver.implicitly_wait(1)
-        status_td = driver.find_element_by_xpath(
-            "//div[contains(text(),'Model predictions begun')]")
-
-        try:
-            driver.implicitly_wait(30)
-            status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
-        except:
-            driver.save_screenshot("/tmp/pred_fail.png")
-            raise
+    with create_test_project() as p, create_test_dataset(p, label_type='regr') as ds,\
+         create_test_featureset(p, label_type='regr') as fs,\
+         create_test_model(fs, model_type='RandomForestRegressor') as m:
+        _add_prediction(str(p.id), driver)
 
 
 def test_pred_results_table_regr(driver):
     driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds,\
-         create_test_featureset(p, type='regr') as fs,\
-         create_test_model(fs, type='LinearRegressor') as m,\
+         create_test_featureset(p, label_type='regr') as fs,\
+         create_test_model(fs, model_type='LinearRegressor') as m,\
          create_test_prediction(ds, m):
-        driver.refresh()
-        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
-        proj_select.select_by_value(str(p.id))
-        driver.find_element_by_id('react-tabs-8').click()
-        driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
+        _click_prediction_row(str(p.id), driver)
         try:
-            driver.implicitly_wait(1)
-            td = driver.find_element_by_xpath("//td[contains(text(),'3.4')]")
-            tr = td.find_element_by_xpath('..')
-            table = tr.find_element_by_xpath('..')
-            rows = table.find_elements_by_tag_name('tr')
+            rows = _grab_pred_results_table_rows(driver, '3.4')
             rows = [[float(el) for el in row.text.split(' ')] for row in rows]
             npt.assert_array_almost_equal(
                 [[0.0, 2.2, 2.2000000000000006], [1.0, 3.4, 3.4000000000000004],

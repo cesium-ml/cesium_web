@@ -105,7 +105,7 @@ def create_test_model(fset, model_type='RandomForestClassifier'):
 
 
 @contextmanager
-def create_test_prediction(ds, model):
+def create_test_prediction(dataset, model):
     with xr.open_dataset(model.featureset.file.uri, engine=cfg['xr_engine']) as fset_data:
         model_data = joblib.load(model.file.uri)
         pred_data = predict.model_predictions(fset_data.load(), model_data)
@@ -113,7 +113,7 @@ def create_test_prediction(ds, model):
                       '{}.nc'.format(str(uuid.uuid4())))
     pred_data.to_netcdf(pred_path, engine=cfg['xr_engine'])
     f, created = m.File.create_or_get(uri=pred_path)
-    pred = m.Prediction.create(file=f, dataset=ds, project=ds.project,
+    pred = m.Prediction.create(file=f, dataset=dataset, project=dataset.project,
                                model=model, finished=datetime.datetime.now())
     pred.save()
     try:
