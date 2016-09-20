@@ -1,4 +1,4 @@
-cesium>=0.6.1
+cesium>=0.6.2
 netCDF4
 peewee>=2.8.3
 psycopg2
