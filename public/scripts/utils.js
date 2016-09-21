@@ -17,11 +17,3 @@ export function $try(func) {
 export function reformatDatetime(dtStr) {
   return new Date(dtStr).toString();
 }
-
-export function downloadCSV(data, filename) {
-  const a = document.createElement('a');
-  const blob = new Blob(data, { type: 'application/octet-stream' });
-  a.href = window.URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-}

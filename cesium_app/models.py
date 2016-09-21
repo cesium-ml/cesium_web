@@ -183,7 +183,7 @@ class Prediction(BaseModel):
                     info['results'] = pset.load()
             except (RuntimeError, OSError):
                 info['results'] = None
-        if info['results']:
+        if 'results' in info and info['results']:
             first_result = info['results'].sel(name=info['results'].name.values[0])
             if 'prediction' in first_result:
                 info['isProbabilistic'] = 'class_label' in\

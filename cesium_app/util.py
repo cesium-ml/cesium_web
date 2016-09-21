@@ -39,32 +39,60 @@ def secure_filename(filename):
 
 
 def prediction_to_csv(pred, outpath=None):
+    '''Convert an `xarray.Dataset` prediction object's results to CSV.
+
+    Parameters
+    ----------
+    pred : `xarray.Dataset`
+        The `xarray.Dataset` object containing prediction data.
+    outpath : str, optional
+        Path to save CSV, if desired. Defaults to None.
+
+    Returns
+    -------
+    list of lists of str (if `outpath` is None) or str
+        If `outpath` is not None, returns a list of lists representing the
+        tabular form of the prediction results, e.g.
+        [['ts_name', 'target', 'prediction'],
+         ['ts_1', 'Class_A', 'Class_A']]
+        If `outpath` is specified, the data is saved in CSV format to the
+        path specified, which is then returned.
+
+    '''
     head = ['ts_name']
-    els = []
+    rows = []
+
     first_iter = True
+
     for tsname in pred.name.values:
-        els.append([tsname])
         entry = pred.sel(name=tsname)
+        row = [tsname]
+
         if 'target' in entry:
-            els[-1].append(entry.target.values.item())
+            row.append(entry.target.values.item())
+
             if first_iter:
                 head.append('true_target')
+
         if 'class_label' in entry:
             for label, val in zip(entry.class_label.values,
                                   entry.prediction.values):
-                els[-1].extend([str(label), str(val)])
+                row.extend([str(label), str(val)])
+
                 if first_iter:
                     head.extend(['predicted_class', 'probability'])
         else:
-            els[-1].append(str(entry.prediction.values.item()))
+            row.append(str(entry.prediction.values.item()))
+
             if first_iter:
                 head.extend(['prediction'])
-        els[-1][-1] += '\n'
+
+        rows.append(row)
         first_iter = False
 
-    head[-1] += '\n'
     all_rows = [head]
-    all_rows.extend(els)
+    all_rows.extend(rows)
+
     if outpath:
         with open(outpath, 'w') as f:
             csv.writer(f).writerows(all_rows)

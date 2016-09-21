@@ -241,30 +241,17 @@ const dpMapDispatchToProps = dispatch => (
 
 const DeletePrediction = connect(null, dpMapDispatchToProps)(Delete);
 
-let DownloadPredCSV = (props) => (
+const DownloadPredCSV = (props) => (
   <a
     style={{ display: "inline-block" }}
-    onClick={
-      (e) => {
-        e.stopPropagation();
-        props.download(props.ID);
-      }
-            }
+    href={`/predictions/${props.ID}/download`}
   >
     Download
   </a>
 );
 DownloadPredCSV.propTypes = {
-  download: PropTypes.func.isRequired,
   ID: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
 };
-
-
-const dlMapDispatchToProps = dispatch => (
-  { download: ID => dispatch(Action.downloadPredictionCSV(ID)) }
-);
-
-DownloadPredCSV = connect(null, dlMapDispatchToProps)(DownloadPredCSV);
 
 let PredictTab = props => (
   <div>

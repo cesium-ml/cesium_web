@@ -5,6 +5,7 @@ import uuid
 import time
 import os
 from os.path import join as pjoin
+import numpy as np
 import numpy.testing as npt
 from cesium_app.tests.fixtures import (create_test_project, create_test_dataset,
                                        create_test_featureset, create_test_model,
@@ -141,9 +142,65 @@ def test_delete_prediction(driver):
         proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
         proj_select.select_by_value(str(p.id))
         driver.find_element_by_id('react-tabs-8').click()
+        driver.implicitly_wait(1)
         driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
-        import time; time.sleep(0.2)
+        time.sleep(0.2)
         driver.find_element_by_partial_link_text('Delete').click()
         driver.implicitly_wait(1)
         status_td = driver.find_element_by_xpath(
             "//div[contains(text(),'Prediction deleted')]")
+
+
+def _click_download(proj_id, driver):
+    driver.refresh()
+    proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+    proj_select.select_by_value(str(proj_id))
+    driver.find_element_by_id('react-tabs-8').click()
+    driver.implicitly_wait(1)
+    driver.find_element_by_partial_link_text('Download').click()
+    time.sleep(0.5)
+
+
+def test_download_prediction_csv_class(driver):
+    driver.get('/')
+    with create_test_project() as p, create_test_dataset(p) as ds,\
+         create_test_featureset(p) as fs,\
+         create_test_model(fs, model_type='LinearSGDClassifier') as m,\
+         create_test_prediction(ds, m):
+        _click_download(p.id, driver)
+        assert os.path.exists('/tmp/cesium_prediction_results.csv')
+        try:
+            npt.assert_equal(
+                np.genfromtxt('/tmp/cesium_prediction_results.csv', dtype='str'),
+                ['ts_name,true_target,prediction',
+                 '0,Mira,Mira',
+                 '1,Classical_Cepheid,Classical_Cepheid',
+                 '2,Mira,Mira',
+                 '3,Classical_Cepheid,Classical_Cepheid',
+                 '4,Mira,Mira'])
+        finally:
+            os.remove('/tmp/cesium_prediction_results.csv')
+
+
+def test_download_prediction_csv_regr(driver):
+    driver.get('/')
+    with create_test_project() as p, create_test_dataset(p, label_type='regr') as ds,\
+         create_test_featureset(p, label_type='regr') as fs,\
+         create_test_model(fs, model_type='LinearRegressor') as m,\
+         create_test_prediction(ds, m):
+        _click_download(p.id, driver)
+        assert os.path.exists('/tmp/cesium_prediction_results.csv')
+        try:
+            results = np.genfromtxt('/tmp/cesium_prediction_results.csv',
+                                    dtype='str', delimiter=',')
+            npt.assert_equal(results[0],
+                             ['ts_name', 'true_target', 'prediction'])
+            npt.assert_array_almost_equal(
+                [[float(e) for e in row] for row in results[1:]],
+                [[0, 2.2, 2.2],
+                 [1, 3.4, 3.4],
+                 [2, 4.4, 4.4],
+                 [3, 2.2, 2.2],
+                 [4, 3.1, 3.1]])
+        finally:
+            os.remove('/tmp/cesium_prediction_results.csv')
