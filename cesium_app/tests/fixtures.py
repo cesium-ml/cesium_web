@@ -77,8 +77,12 @@ def create_test_featureset(project, label_type='class'):
         than 'class'). Defaults to 'class'.
 
     """
-    targets = ['Mira', 'Classical_Cepheid'] if label_type == 'class'\
-              else [2.2, 3.4, 4.4, 2.2, 3.1]
+    if label_type == 'class':
+        targets = ['Mira', 'Classical_Cepheid']
+    elif label_type == 'regr':
+        targets = [2.2, 3.4, 4.4, 2.2, 3.1]
+    elif label_type == 'none':
+        targets = []
     features_to_use = obs_feats_list + sci_feats_list
     fset_data = fixtures.sample_featureset(5, features_to_use, targets)
     fset_path = pjoin(cfg['paths']['features_folder'],
