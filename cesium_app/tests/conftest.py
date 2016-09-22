@@ -5,7 +5,7 @@ import types
 from cesium_app import models as m
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope='module', autouse=True)
 def driver(request):
     from selenium import webdriver
     from selenium.webdriver.chrome.options import Options
@@ -15,6 +15,12 @@ def driver(request):
 
     if chromium:
         chrome_options.binary_location = chromium
+
+    chrome_options.add_argument('--browser.download.folderList=2')
+    chrome_options.add_argument(
+        '--browser.helperApps.neverAsk.saveToDisk=application/octet-stream')
+    prefs = {'download.default_directory' : '/tmp'}
+    chrome_options.add_experimental_option('prefs', prefs)
 
     driver = webdriver.Chrome(chrome_options=chrome_options)
 
@@ -35,7 +41,7 @@ def driver(request):
     return driver
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope='session', autouse=True)
 def remove_test_files(request):
     def teardown():
         for f in m.File.select():

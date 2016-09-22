@@ -1,8 +1,10 @@
 from .base import BaseHandler, AccessError
 from ..models import Prediction, File, Dataset, Model, Project
 from ..config import cfg
+from .. import util
 
 import tornado.gen
+from tornado.web import RequestHandler
 
 import cesium.time_series
 import cesium.featurize
@@ -13,6 +15,8 @@ from sklearn.externals import joblib
 from os.path import join as pjoin
 import uuid
 import datetime
+import os
+import tempfile
 
 
 class PredictionHandler(BaseHandler):
@@ -105,16 +109,27 @@ class PredictionHandler(BaseHandler):
 
         return self.success(prediction, 'cesium/FETCH_PREDICTIONS')
 
-    def get(self, prediction_id=None):
-        if prediction_id is None:
-            predictions = [prediction
-                           for project in Project.all(self.get_username())
-                           for prediction in project.predictions]
-            prediction_info = [p.display_info() for p in predictions]
+    def get(self, prediction_id=None, action=None):
+        if action == 'download':
+            prediction = xr.open_dataset(self._get_prediction(prediction_id).file.uri)
+            with tempfile.NamedTemporaryFile() as tf:
+                util.prediction_to_csv(prediction, tf.name)
+                with open(tf.name) as f:
+                    self.set_header("Content-Type", 'text/csv; charset="utf-8"')
+                    self.set_header("Content-Disposition",
+                                    "attachment; filename=cesium_prediction_results.csv")
+                    self.write(f.read())
         else:
-            prediction = self._get_prediction(prediction_id)
+            if prediction_id is None:
+                predictions = [prediction
+                               for project in Project.all(self.get_username())
+                               for prediction in project.predictions]
+                prediction_info = [p.display_info() for p in predictions]
+            else:
+                prediction = self._get_prediction(prediction_id)
+                prediction_info = prediction.display_info()
 
-        return self.success(prediction_info)
+            return self.success(prediction_info)
 
     def delete(self, prediction_id):
         prediction = self._get_prediction(prediction_id)
