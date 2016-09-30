@@ -2,6 +2,7 @@ import React from 'react';
 import { connect, Provider } from 'react-redux';
 import ReactDOM from 'react-dom';
 import ReactTabs from 'react-tabs';
+import ReactTooltip from 'react-tooltip';
 
 import 'bootstrap-css';
 import 'bootstrap';
@@ -252,12 +253,45 @@ class MainContent extends React.Component {
 
           <Tabs>
             <TabList style={style.tabs}>
-              <Tab style={style.disableable}>Project</Tab>
-              <Tab style={style.disableable}>Data</Tab>
-              <Tab style={style.disableable}>Features</Tab>
-              <Tab style={style.disableable}>Models</Tab>
-              <Tab style={style.disableable}>Predict</Tab>
-              <Tab>
+              <Tab
+                data-tip
+                data-for="projectTabTooltip"
+                style={style.disableable}
+              >
+                Projects
+              </Tab>
+              <Tab
+                data-tip
+                data-for="datasetsTabTooltip"
+                style={style.disableable}
+              >
+                Data
+              </Tab>
+              <Tab
+                data-tip
+                data-for="featuresTabTooltip"
+                style={style.disableable}
+              >
+                Features
+              </Tab>
+              <Tab
+                data-tip
+                data-for="modelsTabTooltip"
+                style={style.disableable}
+              >
+                Models
+              </Tab>
+              <Tab
+                data-tip
+                data-for="predictTabTooltip"
+                style={style.disableable}
+              >
+                Predict
+              </Tab>
+              <Tab
+                data-tip
+                data-for="statusTabTooltip"
+              >
                 <WebSocket
                   url={`ws://${this.props.root}websocket`}
                   auth_url={`${location.protocol}//${this.props.root}socket_auth_token`}
@@ -294,6 +328,25 @@ class MainContent extends React.Component {
           </div>
 
         </div>
+
+        <ReactTooltip place="bottom" delayShow={200} id="projectTabTooltip">
+          <span>Manage your projects</span>
+        </ReactTooltip>
+        <ReactTooltip place="bottom" delayShow={200} id="datasetsTabTooltip">
+          <span>Upload your time-series data</span>
+        </ReactTooltip>
+        <ReactTooltip place="bottom" delayShow={200} id="featuresTabTooltip">
+          <span>Generate features from your time-series data</span>
+        </ReactTooltip>
+        <ReactTooltip place="bottom" delayShow={200} id="modelsTabTooltip">
+          <span>Train a model from a feature set</span>
+        </ReactTooltip>
+        <ReactTooltip place="bottom" delayShow={200} id="predictTabTooltip">
+          <span>Generate predictions for new data</span>
+        </ReactTooltip>
+        <ReactTooltip place="bottom" delayShow={200} id="statusTabTooltip">
+          <span>Application status</span>
+        </ReactTooltip>
 
       </div>
     );

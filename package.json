@@ -23,7 +23,8 @@
     "whatwg-fetch": "latest",
     "redux-form": "^5.3.3",
     "plotly.js": "latest",
-    "webpack": "latest"
+    "webpack": "latest",
+    "react-tooltip": "latest"
   },
   "devDependencies": {
     "babel": "latest",
