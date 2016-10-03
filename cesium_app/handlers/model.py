@@ -73,7 +73,7 @@ class ModelHandler(BaseHandler):
             return self.error('No access to featureset')
 
         if fset.finished is None:
-            return self.error('Cannot build model for in-progress featureset')
+            return self.error('Cannot build model for in-progress feature set')
 
         model_params = data
         model_params = {k: robust_literal_eval(v)

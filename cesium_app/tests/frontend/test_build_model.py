@@ -98,3 +98,24 @@ def test_hyper_param_populate(driver):
         driver.implicitly_wait(0.1)
         driver.find_element_by_xpath("//label[contains(text(),'n_iter')]")
         driver.find_element_by_xpath("//label[contains(text(),'alpha_1')]")
+
+
+def test_cannot_build_model_unlabeled_data(driver):
+    driver.get('/')
+    with create_test_project() as p,\
+         create_test_featureset(p, label_type='none') as fs:
+        driver.refresh()
+        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+        proj_select.select_by_value(str(p.id))
+
+        driver.find_element_by_id('react-tabs-6').click()
+        driver.find_element_by_partial_link_text('Create New Model').click()
+
+        model_name = driver.find_element_by_css_selector('[name=modelName]')
+        model_name.send_keys(str(uuid.uuid4()))
+
+        driver.find_element_by_class_name('btn-primary').click()
+
+        driver.implicitly_wait(2)
+        driver.find_element_by_xpath(
+            "//div[contains(.,'Cannot build model for unlabeled feature set.')]")
