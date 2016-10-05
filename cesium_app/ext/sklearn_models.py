@@ -1,4 +1,4 @@
-from ..util import make_list
+from cesium.util import make_list
 
 
 model_descriptions = [

@@ -26,12 +26,6 @@ def test_robust_literal_eval():
     npt.assert_equal(params, expected)
 
 
-def test_make_list():
-    """Test util.make_list"""
-    npt.assert_equal(util.make_list(1), [1])
-    npt.assert_equal(util.make_list([1]), [1])
-
-
 def test_check_model_param_types():
     """Test sklearn_models.check_model_param_types"""
     model_type = "RandomForestClassifier"

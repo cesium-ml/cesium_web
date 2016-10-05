@@ -3,15 +3,7 @@ import hashlib
 import csv
 
 
-__all__ = ['make_list', 'robust_literal_eval', 'prediction_to_csv']
-
-
-def make_list(x):
-    import collections
-    if isinstance(x, collections.Iterable) and not isinstance(x, (str, dict)):
-        return x
-    else:
-        return [x]
+__all__ = ['robust_literal_eval', 'prediction_to_csv']
 
 
 def robust_literal_eval(val):
