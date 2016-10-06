@@ -30,11 +30,8 @@ authentication:
     google_client_secret:
 
 paths:
-    ## Two special variables are available below:
-    ## - {project_path} : location of the cesium package
-    ## - {package_path} : location of the cesium package content
-    ##
-    ## You can also use defined paths later on (see, e.g., data_path).
+    # Note below that defined variables can be reused in subsequent
+    # definitions.
 
     data_path:        '~/.local/cesium'
     err_log_path:     '{data_path}/logs/errors_and_warnings.log'
