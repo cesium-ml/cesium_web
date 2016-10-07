@@ -329,22 +329,22 @@ class MainContent extends React.Component {
 
         </div>
 
-        <ReactTooltip place="bottom" delayShow={200} id="projectTabTooltip">
+        <ReactTooltip place="bottom" delayShow={700} id="projectTabTooltip">
           <span>Manage your projects</span>
         </ReactTooltip>
-        <ReactTooltip place="bottom" delayShow={200} id="datasetsTabTooltip">
+        <ReactTooltip place="bottom" delayShow={700} id="datasetsTabTooltip">
           <span>Upload your time-series data</span>
         </ReactTooltip>
-        <ReactTooltip place="bottom" delayShow={200} id="featuresTabTooltip">
+        <ReactTooltip place="bottom" delayShow={700} id="featuresTabTooltip">
           <span>Generate features from your time-series data</span>
         </ReactTooltip>
-        <ReactTooltip place="bottom" delayShow={200} id="modelsTabTooltip">
+        <ReactTooltip place="bottom" delayShow={700} id="modelsTabTooltip">
           <span>Train a model from a feature set</span>
         </ReactTooltip>
-        <ReactTooltip place="bottom" delayShow={200} id="predictTabTooltip">
+        <ReactTooltip place="bottom" delayShow={700} id="predictTabTooltip">
           <span>Generate predictions for new data</span>
         </ReactTooltip>
-        <ReactTooltip place="bottom" delayShow={200} id="statusTabTooltip">
+        <ReactTooltip place="bottom" delayShow={700} id="statusTabTooltip">
           <span>Application status</span>
         </ReactTooltip>
 

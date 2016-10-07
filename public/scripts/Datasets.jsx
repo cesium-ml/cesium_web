@@ -63,10 +63,10 @@ let DatasetForm = (props) => {
         <SubmitButton label="Upload Dataset" disabled={submitting} />
       </Form>
 
-      <ReactTooltip place="top" delayShow={200} id="headerfileTooltip">
+      <ReactTooltip place="top" delayShow={700} id="headerfileTooltip">
         <span>filename,target<br />ts1.dat,class_A<br />...</span>
       </ReactTooltip>
-      <ReactTooltip place="top" delayShow={200} id="tarfileTooltip">
+      <ReactTooltip place="top" delayShow={700} id="tarfileTooltip">
         <span>
           Each file in tarball should be formatted as follows<br />
           (column titles are optional)<br /><br />
