@@ -84,7 +84,7 @@ def create_test_featureset(project, label_type='class'):
     elif label_type == 'none':
         targets = []
     features_to_use = obs_feats_list + sci_feats_list
-    fset_data = fixtures.sample_featureset(5, features_to_use, targets)
+    fset_data = fixtures.sample_featureset(5, 1, features_to_use, targets)
     fset_path = pjoin(cfg['paths']['features_folder'],
                       '{}.nc'.format(str(uuid.uuid4())))
     fset_data.to_netcdf(fset_path, engine=cfg['xr_engine'])
