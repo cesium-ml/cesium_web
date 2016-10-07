@@ -39,6 +39,7 @@ def dataset_row_to_dict(row):
 
 
 class Encoder(json.JSONEncoder):
+    """Extends json.JSONEncoder with additional capabilities/configurations."""
     def default(self, o):
         if isinstance(o, datetime):
             return o.isoformat()

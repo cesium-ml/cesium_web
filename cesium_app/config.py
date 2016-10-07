@@ -1,7 +1,5 @@
-# config.py
-#
-# Config file for cesium app.
-#
+"""Config file for cesium app."""
+
 from __future__ import print_function
 import os, sys
 import multiprocessing
@@ -111,6 +109,7 @@ cfg['cesium'] = locals()
 
 
 def show_config():
+    """Print config settings to stdout (run on app start)."""
     print()
     print("=" * 78)
     print("cesium configuration")

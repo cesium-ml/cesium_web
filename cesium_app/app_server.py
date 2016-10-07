@@ -17,6 +17,9 @@ from .handlers import (
 
 
 def make_app():
+    """Create and return a `tornado.web.Application` object with specified
+    handlers and settings.
+    """
     settings = {
         'static_path': '../public',
         'autoreload': '--debug' in sys.argv

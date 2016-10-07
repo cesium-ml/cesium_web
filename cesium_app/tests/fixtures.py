@@ -1,3 +1,5 @@
+'''Assortment of fixtures for use in test modules.'''
+
 import uuid
 import os
 from os.path import join as pjoin
@@ -72,9 +74,9 @@ def create_test_featureset(project, label_type='class'):
     project : `models.Project` instance
         The project under which to create test feature set.
     label_type  : str, optional
-        String indicating whether data labels are class names ('class')
-        for classification, or numerical values for regression (anything other
-        than 'class'). Defaults to 'class'.
+        String indicating whether data are labeled with class names ('class')
+        for classification, numerical values for regression ('regr'), or
+        unlabeled ('none'). Defaults to 'class'.
 
     """
     if label_type == 'class':

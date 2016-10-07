@@ -11,6 +11,21 @@ from .config import cfg
 
 
 def feature_scatterplot(fset_path, features_to_plot):
+    """Create scatter plot of feature set.
+
+    Parameters
+    ----------
+    fset_path : str
+        Path to feature set to be plotted.
+    features_to_plot : list of str
+        List of feature names to be plotted.
+
+    Returns
+    -------
+    tuple
+        (fig.data, fig.layout) where `fig` is an instance of
+        `plotly.tools.FigureFactory`.
+    """
     with xr.open_dataset(fset_path, engine=cfg['xr_engine']) as fset:
         fset_data = fset.load()
         feat_df = build_model.rectangularize_featureset(fset_data)

@@ -1,3 +1,5 @@
+'''Assortment of utility functions.'''
+
 import ast
 import hashlib
 import csv
@@ -26,12 +28,13 @@ def robust_literal_eval(val):
 
 
 def secure_filename(filename):
+    """Create secure file name from SHA-256 has of `filename`."""
     filename = filename.encode('utf-8')
     return hashlib.sha256(filename).hexdigest()[:20]
 
 
 def prediction_to_csv(pred, outpath=None):
-    '''Convert an `xarray.Dataset` prediction object's results to CSV.
+    """Convert an `xarray.Dataset` prediction object's results to CSV.
 
     Parameters
     ----------
@@ -50,7 +53,7 @@ def prediction_to_csv(pred, outpath=None):
         If `outpath` is specified, the data is saved in CSV format to the
         path specified, which is then returned.
 
-    '''
+    """
     head = ['ts_name']
     rows = []
 
