@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from "react-redux";
 import { reduxForm } from 'redux-form';
-import ReactTooltip from 'react-tooltip';
 
 import { FormComponent, Form, TextInput, FileInput, SubmitButton } from './Form';
 import * as Validate from './validate';
@@ -9,6 +8,7 @@ import Expand from './Expand';
 import Delete from './Delete';
 import * as Action from './actions';
 import { reformatDatetime } from './utils';
+import CesiumTooltip from './Tooltip';
 
 
 const DatasetsTab = props => (
@@ -63,18 +63,19 @@ let DatasetForm = (props) => {
         <SubmitButton label="Upload Dataset" disabled={submitting} />
       </Form>
 
-      <ReactTooltip place="top" delayShow={700} id="headerfileTooltip">
-        <span>filename,target<br />ts1.dat,class_A<br />...</span>
-      </ReactTooltip>
-      <ReactTooltip place="top" delayShow={700} id="tarfileTooltip">
-        <span>
-          Each file in tarball should be formatted as follows<br />
-          (column titles are optional)<br /><br />
-          time,value,error<br />
-          125912.23,12.31604,0.279105<br />
-          ...
-        </span>
-      </ReactTooltip>
+      <CesiumTooltip
+        id="headerfileTooltip"
+        text={["filename,target", <br />, "ts1.dat,class_A", <br />, "..."]}
+      />
+      <CesiumTooltip
+        id="tarfileTooltip"
+        text={[
+          "Each file in tarball should be formatted as follows",
+          <br />, "(column titles are optional)", <br />, <br />,
+          "time,value,error", <br />,
+          "125912.23,12.31604,0.279105", <br />,
+          "..."]}
+      />
 
     </div>
   );

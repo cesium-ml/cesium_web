@@ -2,7 +2,6 @@ import React from 'react';
 import { connect, Provider } from 'react-redux';
 import ReactDOM from 'react-dom';
 import ReactTabs from 'react-tabs';
-import ReactTooltip from 'react-tooltip';
 
 import 'bootstrap-css';
 import 'bootstrap';
@@ -19,6 +18,7 @@ import PredictTab from './Predictions';
 import { Notifications } from './Notifications';
 import colorScheme from './colorscheme';
 import Progress from './Progress';
+import CesiumTooltip from './Tooltip';
 
 const Tab = ReactTabs.Tab;
 const Tabs = ReactTabs.Tabs;
@@ -329,24 +329,36 @@ class MainContent extends React.Component {
 
         </div>
 
-        <ReactTooltip place="bottom" delayShow={700} id="projectTabTooltip">
-          <span>Manage your projects</span>
-        </ReactTooltip>
-        <ReactTooltip place="bottom" delayShow={700} id="datasetsTabTooltip">
-          <span>Upload your time-series data</span>
-        </ReactTooltip>
-        <ReactTooltip place="bottom" delayShow={700} id="featuresTabTooltip">
-          <span>Generate features from your time-series data</span>
-        </ReactTooltip>
-        <ReactTooltip place="bottom" delayShow={700} id="modelsTabTooltip">
-          <span>Train a model from a feature set</span>
-        </ReactTooltip>
-        <ReactTooltip place="bottom" delayShow={700} id="predictTabTooltip">
-          <span>Generate predictions for new data</span>
-        </ReactTooltip>
-        <ReactTooltip place="bottom" delayShow={700} id="statusTabTooltip">
-          <span>Application status</span>
-        </ReactTooltip>
+        <CesiumTooltip
+          id="projectTabTooltip"
+          text="Manage your projects"
+          place="bottom"
+        />
+        <CesiumTooltip
+          id="datasetsTabTooltip"
+          text="Upload your time-series data"
+          place="bottom"
+        />
+        <CesiumTooltip
+          id="featuresTabTooltip"
+          text="Generate features from your time-series data"
+          place="bottom"
+        />
+        <CesiumTooltip
+          id="modelsTabTooltip"
+          text="Train a model from a feature set"
+          place="bottom"
+        />
+        <CesiumTooltip
+          id="predictTabTooltip"
+          text="Generate predictions for new data"
+          place="bottom"
+        />
+        <CesiumTooltip
+          id="statusTabTooltip"
+          text="Application status"
+          place="bottom"
+        />
 
       </div>
     );
