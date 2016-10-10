@@ -22,8 +22,8 @@ def feature_scatterplot(fset_path, features_to_plot):
 
     Returns
     -------
-    tuple
-        (fig.data, fig.layout) where `fig` is an instance of
+    (fig.data, fig.layout)
+        Returns (fig.data, fig.layout) where `fig` is an instance of
         `plotly.tools.FigureFactory`.
     """
     with xr.open_dataset(fset_path, engine=cfg['xr_engine']) as fset:

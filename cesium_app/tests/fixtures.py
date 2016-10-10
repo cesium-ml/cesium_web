@@ -69,11 +69,11 @@ def create_test_dataset(project, label_type='class'):
 def create_test_featureset(project, label_type='class'):
     """Create and yield test labeled featureset, then delete.
 
-    Params
-    ------
+    Parameters
+    ----------
     project : `models.Project` instance
         The project under which to create test feature set.
-    label_type  : str, optional
+    label_type  : {'class', 'regr', 'none'}, optional
         String indicating whether data are labeled with class names ('class')
         for classification, numerical values for regression ('regr'), or
         unlabeled ('none'). Defaults to 'class'.
