@@ -1,3 +1,5 @@
+'''Test fixture configuration.'''
+
 import pytest
 import os
 import distutils.spawn

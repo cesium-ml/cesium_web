@@ -8,6 +8,7 @@ import Expand from './Expand';
 import Delete from './Delete';
 import * as Action from './actions';
 import { reformatDatetime } from './utils';
+import CesiumTooltip from './Tooltip';
 
 
 const DatasetsTab = props => (
@@ -35,21 +36,48 @@ let DatasetForm = (props) => {
   };
 
   return (
-    <Form onSubmit={handleSubmit} error={error}>
-      <TextInput label="Dataset Name" {...datasetName} />
-      <FileInput label="Header File" {...headerFile} />
+    <div>
+      <Form onSubmit={handleSubmit} error={error}>
+        <TextInput label="Dataset Name" {...datasetName} />
+        <FileInput
+          label="Header File"
+          {...headerFile}
+          data-tip
+          data-for="headerfileTooltip"
+        />
 
-      <div style={description}>
-        Format: comma-separated with columns "filename" (of a time series from the uploaded archive), "target" (class label or regression target), and any metafeatures (floating point values).
-      </div>
+        <div style={description}>
+          Format: comma-separated with columns "filename" (of a time series from the uploaded archive), "target" (class label or numerical value), and any metafeatures (numerical).
+        </div>
 
-      <FileInput label="Data Tarball" {...tarFile} />
-      <div style={description}>
-        Format: zipfile or tarfile containing time series files, each of which is comma-separated with columns "time", "value", "error" (optional).
-      </div>
+        <FileInput
+          label="Data Tarball"
+          {...tarFile}
+          data-tip
+          data-for="tarfileTooltip"
+        />
+        <div style={description}>
+          Format: zipfile or tarfile containing time series files, each of which is comma-separated with columns "time", "value", "error" (optional).
+        </div>
 
-      <SubmitButton label="Upload Dataset" disabled={submitting} />
-    </Form>
+        <SubmitButton label="Upload Dataset" disabled={submitting} />
+      </Form>
+
+      <CesiumTooltip
+        id="headerfileTooltip"
+        text={["filename,target", <br />, "ts1.dat,class_A", <br />, "..."]}
+      />
+      <CesiumTooltip
+        id="tarfileTooltip"
+        text={[
+          "Each file in tarball should be formatted as follows",
+          <br />, "(column titles are optional)", <br />, <br />,
+          "time,value,error", <br />,
+          "125912.23,12.31604,0.279105", <br />,
+          "..."]}
+      />
+
+    </div>
   );
 };
 DatasetForm.propTypes = {

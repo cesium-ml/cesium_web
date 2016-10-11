@@ -45,9 +45,7 @@ nginx supervisor postgresql libpq-dev npm nodejs-legacy libhdf5-dev libnetcdf-de
 
 2. Install Python dependencies: `pip install -r requirements.txt`
 
-3. Initialize the RethinkDB database with `make db_init`
-
-4. Configurate database permissions for postgresql.  In your `pg_hba.conf`
+3. Configurate database permissions for postgresql.  In your `pg_hba.conf`
    (typically located in `/etc/postgresql/9.5/main`):
 
 Underneath the line
@@ -64,6 +62,8 @@ local cesium_test cesium trust
 ```
 
 Restart postgres (on Debian: `sudo service postgresql restart`)
+
+4. Initialize the database with `make db_init`
 
 5. Start the server with `make` and navigate to `localhost:5000` in a browser.
 

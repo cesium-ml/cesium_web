@@ -18,7 +18,7 @@ const ProjectForm = (props) => {
   return (
     <Form onSubmit={handleSubmit} error={error}>
       <TextInput label="Project Name" {...projectName} />
-      <TextInput label="Project Description" {...projectDescription} />
+      <TextInput label="Project Description (optional)" {...projectDescription} />
       <SubmitButton
         label={props.label}
         submitting={submitting} resetForm={resetForm}

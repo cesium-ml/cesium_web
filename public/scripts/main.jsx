@@ -18,6 +18,7 @@ import PredictTab from './Predictions';
 import { Notifications } from './Notifications';
 import colorScheme from './colorscheme';
 import Progress from './Progress';
+import CesiumTooltip from './Tooltip';
 
 const Tab = ReactTabs.Tab;
 const Tabs = ReactTabs.Tabs;
@@ -252,12 +253,45 @@ class MainContent extends React.Component {
 
           <Tabs>
             <TabList style={style.tabs}>
-              <Tab style={style.disableable}>Project</Tab>
-              <Tab style={style.disableable}>Data</Tab>
-              <Tab style={style.disableable}>Features</Tab>
-              <Tab style={style.disableable}>Models</Tab>
-              <Tab style={style.disableable}>Predict</Tab>
-              <Tab>
+              <Tab
+                data-tip
+                data-for="projectTabTooltip"
+                style={style.disableable}
+              >
+                Projects
+              </Tab>
+              <Tab
+                data-tip
+                data-for="datasetsTabTooltip"
+                style={style.disableable}
+              >
+                Data
+              </Tab>
+              <Tab
+                data-tip
+                data-for="featuresTabTooltip"
+                style={style.disableable}
+              >
+                Features
+              </Tab>
+              <Tab
+                data-tip
+                data-for="modelsTabTooltip"
+                style={style.disableable}
+              >
+                Models
+              </Tab>
+              <Tab
+                data-tip
+                data-for="predictTabTooltip"
+                style={style.disableable}
+              >
+                Predict
+              </Tab>
+              <Tab
+                data-tip
+                data-for="statusTabTooltip"
+              >
                 <WebSocket
                   url={`ws://${this.props.root}websocket`}
                   auth_url={`${location.protocol}//${this.props.root}socket_auth_token`}
@@ -294,6 +328,37 @@ class MainContent extends React.Component {
           </div>
 
         </div>
+
+        <CesiumTooltip
+          id="projectTabTooltip"
+          text="Manage your projects"
+          place="bottom"
+        />
+        <CesiumTooltip
+          id="datasetsTabTooltip"
+          text="Upload your time-series data"
+          place="bottom"
+        />
+        <CesiumTooltip
+          id="featuresTabTooltip"
+          text="Generate features from your time-series data"
+          place="bottom"
+        />
+        <CesiumTooltip
+          id="modelsTabTooltip"
+          text="Train a model from a feature set"
+          place="bottom"
+        />
+        <CesiumTooltip
+          id="predictTabTooltip"
+          text="Generate predictions for new data"
+          place="bottom"
+        />
+        <CesiumTooltip
+          id="statusTabTooltip"
+          text="Application status"
+          place="bottom"
+        />
 
       </div>
     );
