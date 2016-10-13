@@ -1,4 +1,4 @@
-cesium>=0.6.4
+-e git://github.com/cesium-ml/cesium.git#egg=cesium
 netCDF4
 peewee>=2.8.3
 psycopg2
