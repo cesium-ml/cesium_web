@@ -18,7 +18,8 @@ req_file = sys.argv[1]
 
 with open(req_file) as f:
     for dep in f:
-        if not dep.strip():
+        dep = dep.strip()
+        if not dep:
             continue
 
         if '-e' in dep:
