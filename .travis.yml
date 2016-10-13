@@ -67,7 +67,6 @@ matrix:
   include:
     - python: 3.5
       env:
-        - WITH_DOC=1
         - TEST_TARGET=test
 
 before_install:
