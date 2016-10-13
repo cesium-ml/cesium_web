@@ -8,8 +8,7 @@ from cesium_app import models as m
 from cesium import build_model
 from cesium import predict
 from cesium import data_management
-from cesium.obs_feature_tools import FEATURES_LIST as obs_feats_list
-from cesium.science_feature_tools import FEATURES_LIST as sci_feats_list
+from cesium.features import CADENCE_FEATS, GENERAL_FEATS, LOMB_SCARGLE_FEATS
 from cesium.tests import fixtures
 from cesium_app.config import cfg
 import shutil
@@ -85,7 +84,7 @@ def create_test_featureset(project, label_type='class'):
         targets = [2.2, 3.4, 4.4, 2.2, 3.1]
     elif label_type == 'none':
         targets = []
-    features_to_use = obs_feats_list + sci_feats_list
+    features_to_use = (CADENCE_FEATS + GENERAL_FEATS + LOMB_SCARGLE_FEATS)
     fset_data = fixtures.sample_featureset(5, 1, features_to_use, targets)
     fset_path = pjoin(cfg['paths']['features_folder'],
                       '{}.nc'.format(str(uuid.uuid4())))

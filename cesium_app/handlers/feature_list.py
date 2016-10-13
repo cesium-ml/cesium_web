@@ -1,13 +1,11 @@
 from .base import BaseHandler
 
-from cesium import obs_feature_tools as oft
-from cesium import science_feature_tools as sft
+from cesium.features import CADENCE_FEATS, GENERAL_FEATS, LOMB_SCARGLE_FEATS
 
 
 class FeatureListHandler(BaseHandler):
     def get(self):
         self.success({
-            "obs_features": oft.FEATURES_LIST,
-            "sci_features": [el for el in sft.FEATURES_LIST if el not in
-                                sft.LOMB_SCARGLE_FEATURES_LIST],
-            "lmb_features": sft.LOMB_SCARGLE_FEATURES_LIST})
+            "obs_features": CADENCE_FEATS,
+            "sci_features": GENERAL_FEATS,
+            "lmb_features": LOMB_SCARGLE_FEATS})
