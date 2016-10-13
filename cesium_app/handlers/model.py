@@ -100,7 +100,7 @@ class ModelHandler(BaseHandler):
         computed_model = executor.submit(
             build_model.build_model_from_featureset,
             featureset=fset_data, model_type=model_type,
-            model_options=model_params,
+            model_parameters=model_params,
             params_to_optimize=params_to_optimize)
         future = executor.submit(joblib.dump, computed_model, model_file.uri)
         closed = executor.submit(xr.Dataset.close, fset_data)
