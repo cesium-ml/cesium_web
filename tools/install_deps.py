@@ -18,10 +18,15 @@ req_file = sys.argv[1]
 
 with open(req_file) as f:
     for dep in f:
-        if not dep.strip() or dep.startswith('https'):
+        dep = dep.strip()
+        if not dep:
             continue
 
-        dep = re.split('\W+', dep)[0]
+        if '-e' in dep:
+            dep = dep.split('#egg=')[-1]   # use the egg name
+        else:
+            dep = re.split('\W+', dep)[0]  # discard version info
+
         try:
             __import__(pkg_import.get(dep, dep))
         except ImportError:
