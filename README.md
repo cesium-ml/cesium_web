@@ -2,6 +2,12 @@
 
 [![Build Status](https://travis-ci.org/cesium-ml/cesium_web.svg?branch=master)](https://travis-ci.org/cesium-ml/cesium_web)
 
+
+## About 
+
+Frontend for the [cesium library](https://github.com/cesium-ml/cesium).
+It is a user friendly platform that allows people to interactively compute features on a dataset, train a model, and make predictions. 
+
 ## Getting started
 
 The easiest way to try the web app is to run it through docker:
@@ -37,7 +43,24 @@ The easiest way to try the web app is to run it through docker:
 - npm
 - HDF5 and NetCDF4 headers, if available on your platform
 
-On Debian, e.g., install these packages:
+
+### MacOS
+You can install these dependencies using brew. Don’t know what [brew](http://brew.sh/) is?
+
+Run:
+`
+brew install supervisor nginx postgresql npm hdf5
+`
+
+An alternative to installing these dependencies is to use pip. You can install each package by using the following:
+
+`
+pip install supervisor nginx postgresql npm hdf5
+`
+
+### Linux
+
+On Debian or Ubuntu, you can install these packages by using the following command:
 
 ```
 nginx supervisor postgresql libpq-dev npm nodejs-legacy libhdf5-dev libnetcdf-dev libpython3-dev
@@ -46,26 +69,33 @@ nginx supervisor postgresql libpq-dev npm nodejs-legacy libhdf5-dev libnetcdf-de
 2. Install Python dependencies: `pip install -r requirements.txt`
 
 3. Configurate database permissions for postgresql.  In your `pg_hba.conf`
-   (typically located in `/etc/postgresql/9.5/main`):
 
-Underneath the line
+On MacOS pg_hba.conf can typically be found at:
+ `/usr/local/var/postgres`
+
+On Linux it can be typically be found at:
+ `/etc/postgresql/9.5/main`
+
+At the end of the pg_hba.conf file, add the following lines:
 
 ```
 local   all             postgres                                peer
-```
-
-insert
-
-```
 local cesium cesium trust
 local cesium_test cesium trust
 ```
 
-Restart postgres (on Debian: `sudo service postgresql restart`)
+After modifying pg_hba.conf restart postgres:
+
+
+### MacOS:
+`pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log restart `
+
+### Linux (Debian, Ubuntu):
+`sudo service postgresql restart`
 
 4. Initialize the database with `make db_init`
 
-5. Start the server with `make` and navigate to `localhost:5000` in a browser.
+5. Run `make`to start the server and install additional dependencies. Then, navigate to `localhost:5000` in a browser.
 
 ## Dev
 
@@ -124,3 +154,4 @@ done
 ```
 
 - Run `make docker-images` to build and push to Docker hub
+
