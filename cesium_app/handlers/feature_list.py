@@ -1,11 +1,10 @@
 from .base import BaseHandler
 
-from cesium.features import CADENCE_FEATS, GENERAL_FEATS, LOMB_SCARGLE_FEATS
+from cesium.features import feature_categories, feature_tags
 
 
 class FeatureListHandler(BaseHandler):
     def get(self):
         self.success({
-            "obs_features": CADENCE_FEATS,
-            "sci_features": GENERAL_FEATS,
-            "lmb_features": LOMB_SCARGLE_FEATS})
+            'features_by_category': feature_categories,
+            'feature_tags': feature_tags})

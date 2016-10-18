@@ -59,7 +59,7 @@ let FeaturizeForm = (props) => {
             </a>
             <ul>
               {
-                props.features.sci_features.map(feature => (
+                props.features_by_category.general.map(feature => (
                   <CheckBoxInput
                     key={`sci_${feature}`}
                     label={feature}
@@ -78,7 +78,7 @@ let FeaturizeForm = (props) => {
             </a>
             <ul>
               {
-                props.features.obs_features.map(feature => (
+                props.features_by_category.cadence.map(feature => (
                   <CheckBoxInput
                     key={`obs_${feature}`}
                     label={feature}
@@ -97,7 +97,7 @@ let FeaturizeForm = (props) => {
             </a>
             <ul>
               {
-                props.features.lmb_features.map(feature => (
+                props.features_by_category.lomb_scargle.map(feature => (
                   <CheckBoxInput
                     key={`lmb_${feature}`}
                     label={feature}
@@ -128,14 +128,14 @@ FeaturizeForm.propTypes = {
   resetForm: React.PropTypes.func.isRequired,
   groupToggleCheckedFeatures: React.PropTypes.func.isRequired,
   selectedProject: React.PropTypes.object,
-  features: React.PropTypes.object
+  features_by_category: React.PropTypes.object
 };
 
 
 const mapStateToProps = (state, ownProps) => {
-  const obs_features = state.features.obs_features;
-  const sci_features = state.features.sci_features;
-  const lmb_features = state.features.lmb_features;
+  const obs_features = state.features.features_by_category.cadence;
+  const sci_features = state.features.features_by_category.general;
+  const lmb_features = state.features.features_by_category.lomb_scargle;
   const obs_fields = obs_features.map(f => `obs_${f}`);
   const sci_fields = sci_features.map(f => `sci_${f}`);
   const lmb_fields = lmb_features.map(f => `lmb_${f}`);
@@ -150,7 +150,7 @@ const mapStateToProps = (state, ownProps) => {
   const zerothDataset = filteredDatasets[0];
 
   return {
-    features: state.features,
+    features_by_category: state.features.features_by_category,
     datasets: filteredDatasets,
     fields: obs_fields.concat(sci_fields).concat(lmb_fields).concat(
       ['datasetID', 'featuresetName', 'customFeatsCode']),
