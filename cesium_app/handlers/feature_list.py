@@ -7,4 +7,4 @@ class FeatureListHandler(BaseHandler):
     def get(self):
         self.success({
             'features_by_category': feature_categories,
-            'feature_tags': feature_tags})
+            'tags': feature_tags})

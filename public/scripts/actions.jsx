@@ -599,10 +599,10 @@ export function spinLogo() {
 }
 
 
-export function groupToggleCheckedFeatures(prefix) {
+export function groupToggleCheckedFeatures(list_of_feats_in_category) {
   return {
     type: GROUP_TOGGLE_FEATURES,
-    payload: prefix
+    payload: { ctgy_list: list_of_feats_in_category }
   };
 }
 

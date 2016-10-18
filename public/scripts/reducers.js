@@ -3,6 +3,7 @@ import { reducer as formReducer } from 'redux-form';
 
 import * as Action from './actions';
 import { reducer as notifications } from './Notifications';
+import { contains } from './utils';
 
 
 function projects(state={ projectList: [] }, action) {
@@ -75,7 +76,7 @@ const myFormReducer = theirFormReducer => (
       }
       case Action.GROUP_TOGGLE_FEATURES: {
         const field_names = Object.keys(state.featurize).filter(
-          fn => fn.startsWith(action.payload));
+          field_name => contains(action.payload.ctgy_list, field_name));
         const featurizeFormState = Object.assign({}, state.featurize);
         const allAreChecked = (field_names.filter(
           el => !featurizeFormState[el].value).length === 0);
