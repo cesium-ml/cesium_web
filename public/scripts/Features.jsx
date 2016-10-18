@@ -133,9 +133,9 @@ FeaturizeForm.propTypes = {
 
 
 const mapStateToProps = (state, ownProps) => {
-  const obs_features = state.featuresets.features.obs_features;
-  const sci_features = state.featuresets.features.sci_features;
-  const lmb_features = state.featuresets.features.lmb_features;
+  const obs_features = state.features.obs_features;
+  const sci_features = state.features.sci_features;
+  const lmb_features = state.features.lmb_features;
   const obs_fields = obs_features.map(f => `obs_${f}`);
   const sci_fields = sci_features.map(f => `sci_${f}`);
   const lmb_fields = lmb_features.map(f => `lmb_${f}`);
@@ -150,7 +150,7 @@ const mapStateToProps = (state, ownProps) => {
   const zerothDataset = filteredDatasets[0];
 
   return {
-    features: state.featuresets.features,
+    features: state.features,
     datasets: filteredDatasets,
     fields: obs_fields.concat(sci_fields).concat(lmb_fields).concat(
       ['datasetID', 'featuresetName', 'customFeatsCode']),
@@ -262,7 +262,7 @@ FeatureTable.propTypes = {
 
 const ftMapStateToProps = (state, ownProps) => (
   {
-    featuresets: state.featuresets.featuresetList.filter(
+    featuresets: state.featuresets.filter(
       fs => (fs.project === ownProps.selectedProject.id)
     )
   }

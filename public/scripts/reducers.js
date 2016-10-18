@@ -25,14 +25,20 @@ function datasets(state = [], action) {
 }
 
 
-function featuresets(state={ featuresetList: [],
-                            featuresList: [] }, action) {
+function featuresets(state=[], action) {
   switch (action.type) {
     case Action.RECEIVE_FEATURESETS:
-      // {obs_features, sci_features}
-      return { ...state, featuresetList: action.payload };
+      return action.payload;
+    default:
+      return state;
+  }
+}
+
+
+function features(state={}, action) {
+  switch (action.type) {
     case Action.RECEIVE_FEATURES:
-      return { ...state, features: action.payload };
+      return action.payload;
     default:
       return state;
   }
@@ -135,6 +141,7 @@ const rootReducer = combineReducers({
   projects,
   datasets,
   featuresets,
+  features,
   models,
   predictions,
   notifications,
