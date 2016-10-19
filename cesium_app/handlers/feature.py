@@ -65,11 +65,8 @@ class FeatureHandler(BaseHandler):
         data = self.get_json()
         featureset_name = data.get('featuresetName', '')
         dataset_id = int(data['datasetID'])
-        feature_fields = {feature: selected for (feature, selected) in
-                          data.items() if feature in dask_feature_graph}
-        feat_type_name = [feat.split('_', 1) for (feat, selected) in
-                          feature_fields.items() if selected]
-        features_to_use = [fname for (ftype, fname) in feat_type_name]
+        features_to_use = [feature for (feature, selected) in data.items()
+                           if feature in dask_feature_graph and selected]
         if not features_to_use:
             return self.error("At least one feature must be selected.")
 
