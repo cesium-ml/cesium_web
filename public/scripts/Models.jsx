@@ -99,13 +99,13 @@ const mapStateToProps = function (state, ownProps) {
     paramDefaults[param.name] = (param.default === null) ? "None" : param.default;
   });
 
-  const firstFeatureSet = state.featuresets.featuresetList[0];
+  const firstFeatureSet = state.featuresets[0];
   const firstFeatureSetID = firstFeatureSet ? firstFeatureSet.id : "";
 
   return {
     models: state.sklearnModels,
     projects: state.projects,
-    featureSets: state.featuresets.featuresetList,
+    featureSets: state.featuresets,
     fields,
     initialValues: {
       modelType: currentModelId,
