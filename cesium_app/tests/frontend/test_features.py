@@ -47,7 +47,7 @@ def test_check_uncheck_features(driver):
         driver.find_element_by_id('react-tabs-4').click()
         driver.find_element_by_partial_link_text('Compute New Features').click()
 
-        amplitude = driver.find_element_by_css_selector('[name=sci_amplitude]')
+        amplitude = driver.find_element_by_css_selector('[name=amplitude]')
         assert amplitude.get_attribute('value') == 'true'
         driver.find_element_by_partial_link_text('Check/Uncheck All').click()
         time.sleep(0.3)
@@ -57,7 +57,7 @@ def test_check_uncheck_features(driver):
         assert amplitude.get_attribute('value') == 'true'
 
         driver.find_element_by_id('react-tabs-14').click()
-        n_epochs = driver.find_element_by_css_selector('[name=obs_n_epochs]')
+        n_epochs = driver.find_element_by_css_selector('[name=n_epochs]')
         assert n_epochs.get_attribute('value') == 'true'
         driver.find_element_by_partial_link_text('Check/Uncheck All').click()
         time.sleep(0.1)
@@ -66,7 +66,7 @@ def test_check_uncheck_features(driver):
         driver.find_element_by_id('react-tabs-16').click()
         driver.find_element_by_partial_link_text('Check/Uncheck All').click()
         assert driver.find_element_by_css_selector(
-            '[name=lmb_fold2P_slope_10percentile]').get_attribute('value') == 'false'
+            '[name=fold2P_slope_10percentile]').get_attribute('value') == 'false'
 
 
 def test_cannot_compute_zero_features(driver):
@@ -79,14 +79,14 @@ def test_cannot_compute_zero_features(driver):
         driver.find_element_by_id('react-tabs-4').click()
         driver.find_element_by_partial_link_text('Compute New Features').click()
 
-        amplitude = driver.find_element_by_css_selector('[name=sci_amplitude]')
+        amplitude = driver.find_element_by_css_selector('[name=amplitude]')
         assert amplitude.get_attribute('value') == 'true'
         driver.find_element_by_partial_link_text('Check/Uncheck All').click()
         time.sleep(0.1)
         assert amplitude.get_attribute('value') == 'false'
 
         driver.find_element_by_id('react-tabs-14').click()
-        n_epochs = driver.find_element_by_css_selector('[name=obs_n_epochs]')
+        n_epochs = driver.find_element_by_css_selector('[name=n_epochs]')
         assert n_epochs.get_attribute('value') == 'true'
         driver.find_element_by_partial_link_text('Check/Uncheck All').click()
         time.sleep(0.1)
@@ -95,7 +95,7 @@ def test_cannot_compute_zero_features(driver):
         driver.find_element_by_id('react-tabs-16').click()
         driver.find_element_by_partial_link_text('Check/Uncheck All').click()
         assert driver.find_element_by_css_selector(
-            '[name=lmb_fold2P_slope_10percentile]').get_attribute('value') == 'false'
+            '[name=fold2P_slope_10percentile]').get_attribute('value') == 'false'
 
         featureset_name = driver.find_element_by_css_selector('[name=featuresetName]')
         featureset_name.send_keys(test_featureset_name)
