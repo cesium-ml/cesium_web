@@ -43,18 +43,19 @@ let FeaturizeForm = (props) => {
           options={datasets}
           {...datasetID}
         />
-        <b>Select Features to Compute</b><br /><br />
-        <span><i>Feature Tags (features associated with at least one checked tag will be shown)</i></span>
-
-        {
-          props.tagList.map(tag => (
-            <CheckBoxInput
-              key={tag}
-              label={tag}
-              {...fields[tag]}
-            />
-          ))
-        }
+        <b>Select Features to Compute</b><br />
+        <Expand label="Filter By Tag" id="featureTagsExpander">
+          <span><i>Features associated with at least one checked tag will be shown below</i></span>
+          {
+            props.tagList.map(tag => (
+              <CheckBoxInput
+                key={tag}
+                label={tag}
+                {...fields[tag]}
+              />
+            ))
+          }
+        </Expand>
         <Tabs>
           <TabList>
             <Tab>General</Tab>

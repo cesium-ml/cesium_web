@@ -78,6 +78,7 @@ def test_check_uncheck_tags(driver):
 
         driver.find_element_by_id('react-tabs-4').click()
         driver.find_element_by_partial_link_text('Compute New Features').click()
+        driver.find_element_by_partial_link_text('Filter By Tag').click()
 
         driver.find_element_by_css_selector('[name=amplitude]')
         driver.find_element_by_css_selector('[name=Astronomy]').click()
