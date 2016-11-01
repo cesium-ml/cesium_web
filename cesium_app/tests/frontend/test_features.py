@@ -69,6 +69,29 @@ def test_check_uncheck_features(driver):
             '[name=fold2P_slope_10percentile]').get_attribute('value') == 'false'
 
 
+def test_check_uncheck_tags(driver):
+    driver.get('/')
+    with create_test_project() as p, create_test_dataset(p) as ds:
+        driver.refresh()
+        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+        proj_select.select_by_value(str(p.id))
+
+        driver.find_element_by_id('react-tabs-4').click()
+        driver.find_element_by_partial_link_text('Compute New Features').click()
+
+        driver.find_element_by_css_selector('[name=amplitude]')
+        driver.find_element_by_css_selector('[name=Astronomy]').click()
+        time.sleep(0.1)
+        driver.find_element_by_css_selector('[name=General]').click()
+        time.sleep(0.1)
+        with pytest.raises(NoSuchElementException):
+            driver.find_element_by_css_selector('[name=amplitude]').click()
+
+        driver.find_element_by_css_selector('[name=General]').click()
+        driver.implicitly_wait(1)
+        driver.find_element_by_css_selector('[name=amplitude]')
+
+
 def test_cannot_compute_zero_features(driver):
     driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds:
