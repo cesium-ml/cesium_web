@@ -44,7 +44,7 @@ let FeaturizeForm = (props) => {
           {...datasetID}
         />
         <b>Select Features to Compute</b><br /><br />
-        <span>Feature Tags (check/uncheck to show/hide)</span>
+        <span><i>Feature Tags (features associated with at least one checked tag will be shown)</i></span>
 
         {
           props.tagList.map(tag => (
