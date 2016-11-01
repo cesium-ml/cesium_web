@@ -38,8 +38,47 @@ function featuresets(state=[], action) {
 
 function features(state={}, action) {
   switch (action.type) {
-    case Action.RECEIVE_FEATURES:
-      return action.payload;
+    case Action.RECEIVE_FEATURES: {
+      let tagList = [];
+      for (const feat in action.payload.tags) {
+        if (!action.payload.tags.hasOwnProperty(feat)) continue;
+        for (const idx in action.payload.tags[feat]) {
+          if (tagList.indexOf(action.payload.tags[feat][idx]) === -1) {
+            tagList.push(action.payload.tags[feat][idx]);
+          }
+        }
+      }
+      let allFeatsList = [];
+      for (const ctgy in action.payload.features_by_category) {
+        if (action.payload.features_by_category.hasOwnProperty(ctgy)) {
+          allFeatsList = allFeatsList.concat(action.payload.features_by_category[ctgy]);
+        }
+      }
+      return { ...action.payload,
+               allFeatsList,
+               tagList,
+               checkedTags: tagList.slice(0),
+               featsWithCheckedTags: allFeatsList.slice(0) };
+    }
+    case 'redux-form/CHANGE': {
+      if (action.form === 'featurize' && contains(state.tagList, action.field)) {
+        let checkedTags = state.checkedTags.slice(0);
+        if (action.value === false) {
+          if (checkedTags.indexOf(action.field) > -1) {
+            checkedTags.splice(checkedTags.indexOf(action.field), 1);
+          }
+        } else if (action.value === true) {
+          if (checkedTags.indexOf(action.field) === -1) {
+            checkedTags.push(action.field);
+          }
+        }
+        const featsWithCheckedTags = state.allFeatsList.filter(feature => (
+          state.tags[feature].some(tag => contains(checkedTags, tag))));
+        return { ...state,
+                 featsWithCheckedTags,
+                 checkedTags };
+      }
+    }
     default:
       return state;
   }
