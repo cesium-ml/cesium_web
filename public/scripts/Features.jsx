@@ -51,6 +51,7 @@ let FeaturizeForm = (props) => {
               <CheckBoxInput
                 key={tag}
                 label={tag}
+                divStyle={{ display: "table-cell", width: "150px" }}
                 {...fields[tag]}
               />
             ))

@@ -128,7 +128,7 @@ export const CheckBoxInput = (props) => {
   /* eslint-enable */
 
   return (
-    <div className="checkbox">
+    <div className="checkbox" style={props.divStyle}>
       <input
         type="checkbox"
         {...checkboxProps}
@@ -138,7 +138,8 @@ export const CheckBoxInput = (props) => {
   );
 };
 CheckBoxInput.propTypes = {
-  label: PropTypes.string
+  label: PropTypes.string,
+  divStyle: PropTypes.object
 };
 
 export const SelectInput = (props) => {
