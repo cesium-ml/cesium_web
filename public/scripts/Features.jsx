@@ -22,7 +22,7 @@ const TabPanel = ReactTabs.TabPanel;
 let FeaturizeForm = (props) => {
   const { fields, fields: { datasetID, featuresetName, customFeatsCode },
           handleSubmit, submitting, resetForm, error, groupToggleCheckedFeatures,
-          featuresList } = props;
+          clickFeatureTagCheckbox, featuresList } = props;
   const datasets = props.datasets.map(ds => (
     { id: ds.id,
       label: ds.name }
@@ -49,10 +49,11 @@ let FeaturizeForm = (props) => {
           {
             props.tagList.map(tag => (
               <CheckBoxInput
+                defaultChecked
                 key={tag}
                 label={tag}
                 divStyle={{ display: "table-cell", width: "150px" }}
-                {...fields[tag]}
+                onChange={() => { clickFeatureTagCheckbox(tag); }}
               />
             ))
           }
@@ -147,6 +148,7 @@ FeaturizeForm.propTypes = {
   submitting: React.PropTypes.bool.isRequired,
   resetForm: React.PropTypes.func.isRequired,
   groupToggleCheckedFeatures: React.PropTypes.func.isRequired,
+  clickFeatureTagCheckbox: React.PropTypes.func.isRequired,
   selectedProject: React.PropTypes.object,
   featuresByCategory: React.PropTypes.object,
   tagList: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
@@ -159,10 +161,6 @@ const mapStateToProps = (state, ownProps) => {
 
   const initialValues = { };
   featuresList.map((f, idx) => { initialValues[f] = true; return null; });
-  state.features.tagList.map((tag, idx) => {
-    initialValues[tag] = contains(state.features.checkedTags, tag);
-    return null;
-  });
 
   const filteredDatasets = state.datasets.filter(dataset =>
     (dataset.project === ownProps.selectedProject.id));
@@ -173,7 +171,7 @@ const mapStateToProps = (state, ownProps) => {
     tagList: state.features.tagList,
     featuresList,
     datasets: filteredDatasets,
-    fields: featuresList.concat(state.features.tagList).concat(
+    fields: featuresList.concat(
       ['datasetID', 'featuresetName', 'customFeatsCode']),
     initialValues: { ...initialValues,
                     datasetID: zerothDataset ? zerothDataset.id.toString() : "",
@@ -183,7 +181,8 @@ const mapStateToProps = (state, ownProps) => {
 
 const ffMapDispatchToProps = dispatch => (
   {
-    groupToggleCheckedFeatures: prefix => dispatch(Action.groupToggleCheckedFeatures(prefix))
+    groupToggleCheckedFeatures: ctgy => dispatch(Action.groupToggleCheckedFeatures(ctgy)),
+    clickFeatureTagCheckbox: tag => dispatch(Action.clickFeatureTagCheckbox(tag))
   }
 );
 

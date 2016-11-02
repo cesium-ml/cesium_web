@@ -124,11 +124,11 @@ export const CheckBoxInput = (props) => {
   /* eslint-disable */
   const { initialValue, autofill, onUpdate, valid, invalid,
           dirty, pristine, active, touched, visited, autofilled,
-          ...checkboxProps } = props;
+          divStyle, ...checkboxProps } = props;
   /* eslint-enable */
 
   return (
-    <div className="checkbox" style={props.divStyle}>
+    <div className="checkbox" style={divStyle}>
       <input
         type="checkbox"
         {...checkboxProps}

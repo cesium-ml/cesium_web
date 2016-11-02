@@ -60,24 +60,20 @@ function features(state={}, action) {
                checkedTags: tagList.slice(0),
                featsWithCheckedTags: allFeatsList.slice(0) };
     }
-    case 'redux-form/CHANGE': {
-      if (action.form === 'featurize' && contains(state.tagList, action.field)) {
-        let checkedTags = state.checkedTags.slice(0);
-        if (action.value === false) {
-          if (checkedTags.indexOf(action.field) > -1) {
-            checkedTags.splice(checkedTags.indexOf(action.field), 1);
-          }
-        } else if (action.value === true) {
-          if (checkedTags.indexOf(action.field) === -1) {
-            checkedTags.push(action.field);
-          }
-        }
-        const featsWithCheckedTags = state.allFeatsList.filter(feature => (
-          state.tags[feature].some(tag => contains(checkedTags, tag))));
-        return { ...state,
-                 featsWithCheckedTags,
-                 checkedTags };
+    case Action.CLICK_FEATURE_TAG_CHECKBOX: {
+      let checkedTags = state.checkedTags.slice(0);
+
+      if (checkedTags.indexOf(action.payload.tag) > -1) {
+        checkedTags.splice(checkedTags.indexOf(action.payload.tag), 1);
+      } else {
+        checkedTags.push(action.payload.tag);
       }
+
+      const featsWithCheckedTags = state.allFeatsList.filter(feature => (
+        state.tags[feature].some(tag => contains(checkedTags, tag))));
+      return { ...state,
+               featsWithCheckedTags,
+               checkedTags };
     }
     default:
       return state;

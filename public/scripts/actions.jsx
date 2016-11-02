@@ -44,6 +44,7 @@ export const RECEIVE_SKLEARN_MODELS = 'cesium/RECEIVE_SKLEARN_MODELS';
 
 export const SPIN_LOGO = 'cesium/SPIN_LOGO';
 export const GROUP_TOGGLE_FEATURES = 'cesium/GROUP_TOGGLE_FEATURES';
+export const CLICK_FEATURE_TAG_CHECKBOX = 'cesium/CLICK_FEATURE_TAG_CHECKBOX';
 
 
 import { showNotification, reduceNotifications } from './Notifications';
@@ -603,6 +604,14 @@ export function groupToggleCheckedFeatures(list_of_feats_in_category) {
   return {
     type: GROUP_TOGGLE_FEATURES,
     payload: { ctgy_list: list_of_feats_in_category }
+  };
+}
+
+
+export function clickFeatureTagCheckbox(tag) {
+  return {
+    type: CLICK_FEATURE_TAG_CHECKBOX,
+    payload: { tag }
   };
 }
 

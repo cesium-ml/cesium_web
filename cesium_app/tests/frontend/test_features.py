@@ -81,14 +81,14 @@ def test_check_uncheck_tags(driver):
         driver.find_element_by_partial_link_text('Filter By Tag').click()
 
         driver.find_element_by_css_selector('[name=amplitude]')
-        driver.find_element_by_css_selector('[name=Astronomy]').click()
+        driver.find_element_by_css_selector('[label=Astronomy]').click()
         time.sleep(0.1)
-        driver.find_element_by_css_selector('[name=General]').click()
+        driver.find_element_by_css_selector('[label=General]').click()
         time.sleep(0.1)
         with pytest.raises(NoSuchElementException):
             driver.find_element_by_css_selector('[name=amplitude]').click()
 
-        driver.find_element_by_css_selector('[name=General]').click()
+        driver.find_element_by_css_selector('[label=General]').click()
         driver.implicitly_wait(1)
         driver.find_element_by_css_selector('[name=amplitude]')
 
