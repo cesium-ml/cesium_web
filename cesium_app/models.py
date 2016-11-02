@@ -85,11 +85,13 @@ class Dataset(BaseModel):
                                  related_name='datasets')
     name = pw.CharField()
     created = pw.DateTimeField(default=datetime.datetime.now)
+    meta_features = ArrayField(pw.CharField)
 
     @staticmethod
-    def add(name, project, file_uris=[]):
+    def add(name, project, file_uris=[], meta_features=[]):
         with db.atomic():
-            d = Dataset.create(name=name, project=project)
+            d = Dataset.create(name=name, project=project,
+                               meta_features=meta_features)
             files, created = zip(*(
                 File.create_or_get(uri=uri) for uri in file_uris)
             )
@@ -105,6 +107,13 @@ class Dataset(BaseModel):
 
     def is_owned_by(self, username):
         return self.project.is_owned_by(username)
+
+    def display_info(self):
+        info = self.__dict__()
+        info['files'] = [os.path.basename(uri).split('.nc')[0]
+                         for uri in self.uris]
+
+        return info
 
 
 class DatasetFile(BaseModel):

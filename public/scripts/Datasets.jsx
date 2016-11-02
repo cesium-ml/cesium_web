@@ -9,6 +9,7 @@ import Delete from './Delete';
 import * as Action from './actions';
 import { reformatDatetime } from './utils';
 import CesiumTooltip from './Tooltip';
+import FoldableRow from './FoldableRow';
 
 
 const DatasetsTab = props => (
@@ -116,24 +117,61 @@ DatasetForm = reduxForm({
 }, dsMapStateToProps, dsMapDispatchToProps)(DatasetForm);
 
 
+let DatasetInfo = props => (
+  <table className="table">
+    <thead>
+      <tr>
+        <th>Time Series File Names</th>
+        <th>Meta Features</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          {props.dataset.files.join(', ')}
+        </td>
+        <td>
+          {props.dataset.meta_features.join(', ')}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+);
+DatasetInfo.propTypes = {
+  dataset: React.PropTypes.object.isRequired
+};
+
 export let DatasetTable = props => (
   <table className="table">
     <thead>
       <tr>
         <th>Name</th><th>Uploaded</th><th>Actions</th>
       </tr>
-
-      {
-        props.datasets.map(dataset => (
-          <tr key={dataset.id}>
-            <td>{dataset.name}</td>
-            <td>{reformatDatetime(dataset.created)}</td>
-            <td><DeleteDataset ID={dataset.id} /></td>
-          </tr>
-        ))
-      }
-
     </thead>
+
+    {
+      props.datasets.map((dataset, idx) => {
+        const foldedContent = (
+          <tr key={`dsinfo_${idx}`}>
+            <td colSpan={6}>
+              <DatasetInfo dataset={dataset} />
+            </td>
+          </tr>
+        );
+
+        return (
+          <FoldableRow key={`ds_${idx}`}>
+            <tr key={dataset.id}>
+              <td>{dataset.name}</td>
+              <td>{reformatDatetime(dataset.created)}</td>
+              <td><DeleteDataset ID={dataset.id} /></td>
+            </tr>
+            {foldedContent}
+          </FoldableRow>
+        );
+      })
+    }
+
   </table>
 );
 DatasetTable.propTypes = {

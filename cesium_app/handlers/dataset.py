@@ -3,7 +3,7 @@ from ..models import Project, Dataset
 from .. import util
 from ..config import cfg
 
-from cesium import data_management
+from cesium import data_management, time_series
 
 from os.path import join as pjoin
 import uuid
@@ -59,18 +59,23 @@ class DatasetHandler(BaseHandler):
             zipfile_path,
             cfg['paths']['ts_data_folder'],
             headerfile_path)
-        d = Dataset.add(name=dataset_name, project=p, file_uris=ts_paths)
+        meta_features = list(time_series.from_netcdf(ts_paths[0])
+                             .__dict__['meta_features'].keys())
+        d = Dataset.add(name=dataset_name, project=p, file_uris=ts_paths,
+                        meta_features=meta_features)
 
         return self.success(d, 'cesium/FETCH_DATASETS')
 
     def get(self, dataset_id=None):
         if dataset_id is not None:
-            datasets = self._get_dataset(dataset_id)
+            dataset = self._get_dataset(dataset_id)
+            dataset_info = dataset.display_info()
         else:
             datasets = [d for p in Project.all(self.get_username())
                             for d in p.datasets]
+            dataset_info = [d.display_info() for d in datasets]
 
-        return self.success(datasets)
+        return self.success(dataset_info)
 
     def delete(self, dataset_id):
         d = self._get_dataset(dataset_id)
