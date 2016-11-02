@@ -41,19 +41,19 @@ function features(state={}, action) {
     case Action.RECEIVE_FEATURES: {
       let tagList = [];
       for (const feat in action.payload.tags) {
-        if (!action.payload.tags.hasOwnProperty(feat)) continue;
-        for (const idx in action.payload.tags[feat]) {
-          if (tagList.indexOf(action.payload.tags[feat][idx]) === -1) {
-            tagList.push(action.payload.tags[feat][idx]);
-          }
+        if (action.payload.tags.hasOwnProperty(feat)) {
+          tagList = tagList.concat(action.payload.tags[feat]);
         }
       }
+      tagList = [...new Set(tagList)];
+
       let allFeatsList = [];
       for (const ctgy in action.payload.features_by_category) {
         if (action.payload.features_by_category.hasOwnProperty(ctgy)) {
           allFeatsList = allFeatsList.concat(action.payload.features_by_category[ctgy]);
         }
       }
+
       return { ...action.payload,
                allFeatsList,
                tagList,
