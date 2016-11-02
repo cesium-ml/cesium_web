@@ -53,7 +53,7 @@ let FeaturizeForm = (props) => {
                 key={tag}
                 label={tag}
                 divStyle={{ display: "table-cell", width: "150px" }}
-                onChange={() => { clickFeatureTagCheckbox(tag); }}
+                onChange={() => { props.dispatch(Action.clickFeatureTagCheckbox(tag)); }}
               />
             ))
           }
@@ -68,7 +68,9 @@ let FeaturizeForm = (props) => {
           <TabPanel>
             <a
               href="#"
-              onClick={() => { groupToggleCheckedFeatures(props.featuresByCategory.general); }}
+              onClick={() => {
+                props.dispatch(Action.groupToggleCheckedFeatures(
+                  props.featuresByCategory.general)); }}
             >
               Check/Uncheck All
             </a>
@@ -89,7 +91,9 @@ let FeaturizeForm = (props) => {
           <TabPanel>
             <a
               href="#"
-              onClick={() => { groupToggleCheckedFeatures(props.featuresByCategory.cadence); }}
+              onClick={() => {
+                props.dispatch(Action.groupToggleCheckedFeatures(
+                  props.featuresByCategory.cadence)); }}
             >
               Check/Uncheck All
             </a>
@@ -110,7 +114,9 @@ let FeaturizeForm = (props) => {
           <TabPanel>
             <a
               href="#"
-              onClick={() => { groupToggleCheckedFeatures(props.featuresByCategory.lomb_scargle); }}
+              onClick={() => {
+                props.dispatch(Action.groupToggleCheckedFeatures(
+                  props.featuresByCategory.lomb_scargle)); }}
             >
               Check/Uncheck All
             </a>
@@ -179,13 +185,6 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-const ffMapDispatchToProps = dispatch => (
-  {
-    groupToggleCheckedFeatures: ctgy => dispatch(Action.groupToggleCheckedFeatures(ctgy)),
-    clickFeatureTagCheckbox: tag => dispatch(Action.clickFeatureTagCheckbox(tag))
-  }
-);
-
 const validate = Validate.createValidator({
   datasetID: [Validate.required],
   featuresetName: [Validate.required]
@@ -195,7 +194,7 @@ FeaturizeForm = reduxForm({
   form: 'featurize',
   fields: [''],
   validate
-}, mapStateToProps, ffMapDispatchToProps)(FeaturizeForm);
+}, mapStateToProps)(FeaturizeForm);
 
 
 let FeaturesTab = (props) => {
