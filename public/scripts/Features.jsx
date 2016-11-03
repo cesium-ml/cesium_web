@@ -21,8 +21,7 @@ const TabPanel = ReactTabs.TabPanel;
 
 let FeaturizeForm = (props) => {
   const { fields, fields: { datasetID, featuresetName, customFeatsCode },
-          handleSubmit, submitting, resetForm, error, groupToggleCheckedFeatures,
-          clickFeatureTagCheckbox, featuresList } = props;
+          handleSubmit, submitting, resetForm, error, featuresList } = props;
   const datasets = props.datasets.map(ds => (
     { id: ds.id,
       label: ds.name }
@@ -74,19 +73,28 @@ let FeaturizeForm = (props) => {
             >
               Check/Uncheck All
             </a>
-            <ul>
-              {
-                props.featuresByCategory["General"].filter(feat => (
-                  contains(featuresList, feat)
-                )).map(feature => (
-                  <CheckBoxInput
-                    key={feature}
-                    label={feature}
-                    {...fields[feature]}
-                  />
-                ))
-              }
-            </ul>
+            <table style={{ overflow: "auto" }}>
+              <tbody>
+                {
+                  props.featuresByCategory["General"].filter(feat => (
+                    contains(featuresList, feat)
+                  )).map((feature, idx) => (
+                    <tr key={idx} style={idx % 2 == 0 ? { backgroundColor: "#f2f2f2" } : { }}>
+                      <td style={{ paddingLeft: "20px" }}>
+                        <CheckBoxInput
+                          key={feature}
+                          label={feature}
+                          {...fields[feature]}
+                        />
+                      </td>
+                      <td style={{ paddingLeft: "5px", verticalAlign: "bottom" }}>
+                        {props.featureDescriptions[feature]}
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
           </TabPanel>
           <TabPanel>
             <a
@@ -97,19 +105,28 @@ let FeaturizeForm = (props) => {
             >
               Check/Uncheck All
             </a>
-            <ul>
-              {
-                props.featuresByCategory["Cadence/Error"].filter(feat => (
-                  contains(featuresList, feat)
-                )).map(feature => (
-                  <CheckBoxInput
-                    key={feature}
-                    label={feature}
-                    {...fields[feature]}
-                  />
-                ))
-              }
-            </ul>
+            <table style={{ overflow: "auto" }}>
+              <tbody>
+                {
+                  props.featuresByCategory["Cadence/Error"].filter(feat => (
+                    contains(featuresList, feat)
+                  )).map((feature, idx) => (
+                    <tr key={idx} style={idx % 2 == 0 ? { backgroundColor: "#f2f2f2" } : { }}>
+                      <td style={{ paddingLeft: "20px" }}>
+                        <CheckBoxInput
+                          key={feature}
+                          label={feature}
+                          {...fields[feature]}
+                        />
+                      </td>
+                      <td style={{ paddingLeft: "5px", verticalAlign: "bottom" }}>
+                        {props.featureDescriptions[feature]}
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
           </TabPanel>
           <TabPanel>
             <a
@@ -120,19 +137,28 @@ let FeaturizeForm = (props) => {
             >
               Check/Uncheck All
             </a>
-            <ul>
-              {
-                props.featuresByCategory["Lomb-Scargle (Periodic)"].filter(feat => (
-                  contains(featuresList, feat)
-                )).map(feature => (
-                  <CheckBoxInput
-                    key={feature}
-                    label={feature}
-                    {...fields[feature]}
-                  />
-                ))
-              }
-            </ul>
+            <table style={{ overflow: "auto" }}>
+              <tbody>
+                {
+                  props.featuresByCategory["Lomb-Scargle (Periodic)"].filter(feat => (
+                    contains(featuresList, feat)
+                  )).map((feature, idx) => (
+                    <tr key={idx} style={idx % 2 == 0 ? { backgroundColor: "#f2f2f2" } : { }}>
+                      <td style={{ paddingLeft: "20px" }}>
+                        <CheckBoxInput
+                          key={feature}
+                          label={feature}
+                          {...fields[feature]}
+                        />
+                      </td>
+                      <td style={{ paddingLeft: "5px", verticalAlign: "bottom" }}>
+                        {props.featureDescriptions[feature]}
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
           </TabPanel>
           <TabPanel>
             <TextareaInput
@@ -153,12 +179,11 @@ FeaturizeForm.propTypes = {
   handleSubmit: React.PropTypes.func.isRequired,
   submitting: React.PropTypes.bool.isRequired,
   resetForm: React.PropTypes.func.isRequired,
-  groupToggleCheckedFeatures: React.PropTypes.func.isRequired,
-  clickFeatureTagCheckbox: React.PropTypes.func.isRequired,
   selectedProject: React.PropTypes.object,
   featuresByCategory: React.PropTypes.object,
   tagList: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
-  featuresList: React.PropTypes.array
+  featuresList: React.PropTypes.array,
+  featureDescriptions: React.PropTypes.object
 };
 
 
@@ -176,6 +201,7 @@ const mapStateToProps = (state, ownProps) => {
     featuresByCategory: state.features.features_by_category,
     tagList: state.features.tagList,
     featuresList,
+    featureDescriptions: state.features.descriptions,
     datasets: filteredDatasets,
     fields: featuresList.concat(
       ['datasetID', 'featuresetName', 'customFeatsCode']),
