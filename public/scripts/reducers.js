@@ -3,7 +3,7 @@ import { reducer as formReducer } from 'redux-form';
 
 import * as Action from './actions';
 import { reducer as notifications } from './Notifications';
-import { contains } from './utils';
+import { contains, joinObjectValues } from './utils';
 
 
 function projects(state={ projectList: [] }, action) {
@@ -39,20 +39,9 @@ function featuresets(state=[], action) {
 function features(state={}, action) {
   switch (action.type) {
     case Action.RECEIVE_FEATURES: {
-      let tagList = [];
-      for (const feat in action.payload.tags) {
-        if (action.payload.tags.hasOwnProperty(feat)) {
-          tagList = tagList.concat(action.payload.tags[feat]);
-        }
-      }
-      tagList = [...new Set(tagList)];
+      const tagList = joinObjectValues(action.payload.tags);
 
-      let allFeatsList = [];
-      for (const ctgy in action.payload.features_by_category) {
-        if (action.payload.features_by_category.hasOwnProperty(ctgy)) {
-          allFeatsList = allFeatsList.concat(action.payload.features_by_category[ctgy]);
-        }
-      }
+      const allFeatsList = joinObjectValues(action.payload.features_by_category);
 
       return { ...action.payload,
                allFeatsList,
