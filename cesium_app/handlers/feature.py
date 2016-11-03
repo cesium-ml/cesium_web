@@ -2,6 +2,7 @@ import tornado.ioloop
 
 import xarray as xr
 from cesium import featurize, time_series
+from cesium.features import dask_feature_graph
 
 from .base import BaseHandler, AccessError
 from ..models import Dataset, Featureset, Project, File
@@ -26,7 +27,7 @@ class FeatureHandler(BaseHandler):
 
     def get(self, featureset_id=None):
         if featureset_id is not None:
-            f = self._get_featureset(featureset_id)
+            featureset_info = self._get_featureset(featureset_id)
         else:
             featureset_info = [f for p in Project.all(self.get_username())
                                for f in p.featuresets]
@@ -64,12 +65,8 @@ class FeatureHandler(BaseHandler):
         data = self.get_json()
         featureset_name = data.get('featuresetName', '')
         dataset_id = int(data['datasetID'])
-        feature_fields = {feature: selected for (feature, selected) in
-                          data.items() if feature.startswith(('sci_', 'obs_',
-                                                              'lmb_'))}
-        feat_type_name = [feat.split('_', 1) for (feat, selected) in
-                          feature_fields.items() if selected]
-        features_to_use = [fname for (ftype, fname) in feat_type_name]
+        features_to_use = [feature for (feature, selected) in data.items()
+                           if feature in dask_feature_graph and selected]
         if not features_to_use:
             return self.error("At least one feature must be selected.")
 

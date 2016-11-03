@@ -17,3 +17,13 @@ export function $try(func) {
 export function reformatDatetime(dtStr) {
   return new Date(dtStr).toString();
 }
+
+export function joinObjectValues(obj) {
+  let vals = [];
+  for (const prop in obj) {
+    if (obj.hasOwnProperty(prop)) {
+      vals = vals.concat(obj[prop]);
+    }
+  }
+  return [...new Set(vals)];
+}

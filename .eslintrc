@@ -39,5 +39,7 @@
         "no-extend-native": 1,
         "no-use-before-define": 1,
         "no-unused-expressions": 1,
+        "no-continue": 1,
+        "no-prototype-builtins": 1,
     }
 }

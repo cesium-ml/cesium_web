@@ -3,6 +3,7 @@ import { reducer as formReducer } from 'redux-form';
 
 import * as Action from './actions';
 import { reducer as notifications } from './Notifications';
+import { contains, joinObjectValues } from './utils';
 
 
 function projects(state={ projectList: [] }, action) {
@@ -25,14 +26,44 @@ function datasets(state = [], action) {
 }
 
 
-function featuresets(state={ featuresetList: [],
-                            featuresList: [] }, action) {
+function featuresets(state=[], action) {
   switch (action.type) {
     case Action.RECEIVE_FEATURESETS:
-      // {obs_features, sci_features}
-      return { ...state, featuresetList: action.payload };
-    case Action.RECEIVE_FEATURES:
-      return { ...state, features: action.payload };
+      return action.payload;
+    default:
+      return state;
+  }
+}
+
+
+function features(state={}, action) {
+  switch (action.type) {
+    case Action.RECEIVE_FEATURES: {
+      const tagList = joinObjectValues(action.payload.tags);
+
+      const allFeatsList = joinObjectValues(action.payload.features_by_category);
+
+      return { ...action.payload,
+               allFeatsList,
+               tagList,
+               checkedTags: tagList.slice(0),
+               featsWithCheckedTags: allFeatsList.slice(0) };
+    }
+    case Action.CLICK_FEATURE_TAG_CHECKBOX: {
+      let checkedTags = state.checkedTags.slice(0);
+
+      if (checkedTags.indexOf(action.payload.tag) > -1) {
+        checkedTags.splice(checkedTags.indexOf(action.payload.tag), 1);
+      } else {
+        checkedTags.push(action.payload.tag);
+      }
+
+      const featsWithCheckedTags = state.allFeatsList.filter(feature => (
+        state.tags[feature].some(tag => contains(checkedTags, tag))));
+      return { ...state,
+               featsWithCheckedTags,
+               checkedTags };
+    }
     default:
       return state;
   }
@@ -69,7 +100,7 @@ const myFormReducer = theirFormReducer => (
       }
       case Action.GROUP_TOGGLE_FEATURES: {
         const field_names = Object.keys(state.featurize).filter(
-          fn => fn.startsWith(action.payload));
+          field_name => contains(action.payload.ctgy_list, field_name));
         const featurizeFormState = Object.assign({}, state.featurize);
         const allAreChecked = (field_names.filter(
           el => !featurizeFormState[el].value).length === 0);
@@ -135,6 +166,7 @@ const rootReducer = combineReducers({
   projects,
   datasets,
   featuresets,
+  features,
   models,
   predictions,
   notifications,

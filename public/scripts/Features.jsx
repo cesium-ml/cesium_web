@@ -10,7 +10,7 @@ import Expand from './Expand';
 import * as Action from './actions';
 import Plot from './Plot';
 import FoldableRow from './FoldableRow';
-import { reformatDatetime } from './utils';
+import { reformatDatetime, contains } from './utils';
 import Delete from './Delete';
 
 const Tab = ReactTabs.Tab;
@@ -21,7 +21,8 @@ const TabPanel = ReactTabs.TabPanel;
 
 let FeaturizeForm = (props) => {
   const { fields, fields: { datasetID, featuresetName, customFeatsCode },
-          handleSubmit, submitting, resetForm, error, groupToggleCheckedFeatures } = props;
+          handleSubmit, submitting, resetForm, error, groupToggleCheckedFeatures,
+          clickFeatureTagCheckbox, featuresList } = props;
   const datasets = props.datasets.map(ds => (
     { id: ds.id,
       label: ds.name }
@@ -42,7 +43,21 @@ let FeaturizeForm = (props) => {
           options={datasets}
           {...datasetID}
         />
-        <b>Select Features to Compute</b>
+        <b>Select Features to Compute</b><br />
+        <Expand label="Filter By Tag" id="featureTagsExpander">
+          <span><i>Features associated with at least one checked tag will be shown below</i></span>
+          {
+            props.tagList.map(tag => (
+              <CheckBoxInput
+                defaultChecked
+                key={tag}
+                label={tag}
+                divStyle={{ display: "table-cell", width: "150px" }}
+                onChange={() => { props.dispatch(Action.clickFeatureTagCheckbox(tag)); }}
+              />
+            ))
+          }
+        </Expand>
         <Tabs>
           <TabList>
             <Tab>General</Tab>
@@ -53,17 +68,21 @@ let FeaturizeForm = (props) => {
           <TabPanel>
             <a
               href="#"
-              onClick={() => { groupToggleCheckedFeatures("sci_"); }}
+              onClick={() => {
+                props.dispatch(Action.groupToggleCheckedFeatures(
+                  props.featuresByCategory.general)); }}
             >
               Check/Uncheck All
             </a>
             <ul>
               {
-                props.features.sci_features.map(feature => (
+                props.featuresByCategory.general.filter(feat => (
+                  contains(featuresList, feat)
+                )).map(feature => (
                   <CheckBoxInput
-                    key={`sci_${feature}`}
+                    key={feature}
                     label={feature}
-                    {...fields[`sci_${feature}`]}
+                    {...fields[feature]}
                   />
                 ))
               }
@@ -72,17 +91,21 @@ let FeaturizeForm = (props) => {
           <TabPanel>
             <a
               href="#"
-              onClick={() => { groupToggleCheckedFeatures("obs_"); }}
+              onClick={() => {
+                props.dispatch(Action.groupToggleCheckedFeatures(
+                  props.featuresByCategory.cadence)); }}
             >
               Check/Uncheck All
             </a>
             <ul>
               {
-                props.features.obs_features.map(feature => (
+                props.featuresByCategory.cadence.filter(feat => (
+                  contains(featuresList, feat)
+                )).map(feature => (
                   <CheckBoxInput
-                    key={`obs_${feature}`}
+                    key={feature}
                     label={feature}
-                    {...fields[`obs_${feature}`]}
+                    {...fields[feature]}
                   />
                 ))
               }
@@ -91,17 +114,21 @@ let FeaturizeForm = (props) => {
           <TabPanel>
             <a
               href="#"
-              onClick={() => { groupToggleCheckedFeatures("lmb_"); }}
+              onClick={() => {
+                props.dispatch(Action.groupToggleCheckedFeatures(
+                  props.featuresByCategory.lomb_scargle)); }}
             >
               Check/Uncheck All
             </a>
             <ul>
               {
-                props.features.lmb_features.map(feature => (
+                props.featuresByCategory.lomb_scargle.filter(feat => (
+                  contains(featuresList, feat)
+                )).map(feature => (
                   <CheckBoxInput
-                    key={`lmb_${feature}`}
+                    key={feature}
                     label={feature}
-                    {...fields[`lmb_${feature}`]}
+                    {...fields[feature]}
                   />
                 ))
               }
@@ -127,44 +154,36 @@ FeaturizeForm.propTypes = {
   submitting: React.PropTypes.bool.isRequired,
   resetForm: React.PropTypes.func.isRequired,
   groupToggleCheckedFeatures: React.PropTypes.func.isRequired,
+  clickFeatureTagCheckbox: React.PropTypes.func.isRequired,
   selectedProject: React.PropTypes.object,
-  features: React.PropTypes.object
+  featuresByCategory: React.PropTypes.object,
+  tagList: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
+  featuresList: React.PropTypes.array
 };
 
 
 const mapStateToProps = (state, ownProps) => {
-  const obs_features = state.featuresets.features.obs_features;
-  const sci_features = state.featuresets.features.sci_features;
-  const lmb_features = state.featuresets.features.lmb_features;
-  const obs_fields = obs_features.map(f => `obs_${f}`);
-  const sci_fields = sci_features.map(f => `sci_${f}`);
-  const lmb_fields = lmb_features.map(f => `lmb_${f}`);
+  const featuresList = state.features.featsWithCheckedTags;
 
-  const initialValues = {};
-  obs_fields.map((f, idx) => { initialValues[f] = true; return null; });
-  sci_fields.map((f, idx) => { initialValues[f] = true; return null; });
-  lmb_fields.map((f, idx) => { initialValues[f] = true; return null; });
+  const initialValues = { };
+  featuresList.map((f, idx) => { initialValues[f] = true; return null; });
 
   const filteredDatasets = state.datasets.filter(dataset =>
     (dataset.project === ownProps.selectedProject.id));
   const zerothDataset = filteredDatasets[0];
 
   return {
-    features: state.featuresets.features,
+    featuresByCategory: state.features.features_by_category,
+    tagList: state.features.tagList,
+    featuresList,
     datasets: filteredDatasets,
-    fields: obs_fields.concat(sci_fields).concat(lmb_fields).concat(
+    fields: featuresList.concat(
       ['datasetID', 'featuresetName', 'customFeatsCode']),
     initialValues: { ...initialValues,
                     datasetID: zerothDataset ? zerothDataset.id.toString() : "",
                     customFeatsCode: "" }
   };
 };
-
-const ffMapDispatchToProps = dispatch => (
-  {
-    groupToggleCheckedFeatures: prefix => dispatch(Action.groupToggleCheckedFeatures(prefix))
-  }
-);
 
 const validate = Validate.createValidator({
   datasetID: [Validate.required],
@@ -175,7 +194,7 @@ FeaturizeForm = reduxForm({
   form: 'featurize',
   fields: [''],
   validate
-}, mapStateToProps, ffMapDispatchToProps)(FeaturizeForm);
+}, mapStateToProps)(FeaturizeForm);
 
 
 let FeaturesTab = (props) => {
@@ -262,7 +281,7 @@ FeatureTable.propTypes = {
 
 const ftMapStateToProps = (state, ownProps) => (
   {
-    featuresets: state.featuresets.featuresetList.filter(
+    featuresets: state.featuresets.filter(
       fs => (fs.project === ownProps.selectedProject.id)
     )
   }
