@@ -160,6 +160,7 @@ class Model(BaseModel):
     file = pw.ForeignKeyField(File, on_delete='CASCADE')
     task_id = pw.CharField(null=True)
     finished = pw.DateTimeField(null=True)
+    train_score = pw.FloatField(null=True)
 
     def is_owned_by(self, username):
         return self.project.is_owned_by(username)

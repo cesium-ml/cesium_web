@@ -166,6 +166,7 @@ let ModelInfo = props => (
       <tr>
         <th>Model Type</th>
         <th>Hyper Parameters</th>
+        <th>Training Data Score</th>
       </tr>
     </thead>
     <tbody>
@@ -175,6 +176,9 @@ let ModelInfo = props => (
         </td>
         <td>
           {JSON.stringify(props.model.params, null, 4)}
+        </td>
+        <td>
+          {props.model.train_score}
         </td>
       </tr>
     </tbody>

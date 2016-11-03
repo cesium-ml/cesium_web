@@ -43,10 +43,11 @@ class ModelHandler(BaseHandler):
     @tornado.gen.coroutine
     def _await_model(self, future, model):
         try:
-            result = yield future._result()
+            score = yield future._result()
 
             model.task_id = None
             model.finished = datetime.datetime.now()
+            model.train_score = score
             model.save()
 
             self.action('cesium/SHOW_NOTIFICATION',
@@ -102,6 +103,8 @@ class ModelHandler(BaseHandler):
             featureset=fset_data, model_type=model_type,
             model_parameters=model_params,
             params_to_optimize=params_to_optimize)
+        train_score = executor.submit(build_model.score_model, computed_model,
+                                      fset_data)
         future = executor.submit(joblib.dump, computed_model, model_file.uri)
         closed = executor.submit(xr.Dataset.close, fset_data)
 
@@ -109,7 +112,7 @@ class ModelHandler(BaseHandler):
         model.save()
 
         loop = tornado.ioloop.IOLoop.current()
-        loop.spawn_callback(self._await_model, future, model)
+        loop.spawn_callback(self._await_model, train_score, model)
 
         return self.success(data={'message': "Model training begun."},
                             action='cesium/FETCH_MODELS')
