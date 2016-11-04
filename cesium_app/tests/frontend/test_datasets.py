@@ -38,8 +38,21 @@ def test_add_new_dataset(driver):
         assert test_dataset_name in driver.page_source
 
 
+def test_dataset_info_display(driver):
+    with create_test_project() as p, create_test_dataset(p) as ds:
+        driver.refresh()
+        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+        proj_select.select_by_value(str(p.id))
+        driver.find_element_by_id('react-tabs-2').click()
+
+        driver.find_element_by_xpath("//td[contains(text(),'{}')]".format(ds.name)).click()
+        assert driver.find_element_by_xpath("//th[contains(text(),'Time Series "
+                                            "File Names')]").is_displayed()
+        assert driver.find_element_by_xpath("//th[contains(text(),'Meta "
+                                            "Features')]").is_displayed()
+
+
 def test_delete_dataset(driver):
-    # Delete data set
     with create_test_project() as p, create_test_dataset(p) as ds:
         driver.refresh()
         proj_select = Select(driver.find_element_by_css_selector('[name=project]'))

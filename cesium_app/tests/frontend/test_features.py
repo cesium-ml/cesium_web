@@ -93,6 +93,22 @@ def test_check_uncheck_tags(driver):
         driver.find_element_by_css_selector('[name=amplitude]')
 
 
+def test_feature_descriptions_displayed(driver):
+    driver.get('/')
+    with create_test_project() as p, create_test_dataset(p) as ds:
+        driver.refresh()
+        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+        proj_select.select_by_value(str(p.id))
+
+        driver.find_element_by_id('react-tabs-4').click()
+        driver.find_element_by_partial_link_text('Compute New Features').click()
+
+        driver.implicitly_wait(0.5)
+        driver.find_element_by_xpath(
+            "//div[contains(.,'Half the difference between the maximum and "
+            "minimum magnitude.')]")
+
+
 def test_cannot_compute_zero_features(driver):
     driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds:
