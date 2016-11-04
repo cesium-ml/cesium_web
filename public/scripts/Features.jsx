@@ -21,7 +21,8 @@ const TabPanel = ReactTabs.TabPanel;
 
 let FeaturizeForm = (props) => {
   const { fields, fields: { datasetID, featuresetName, customFeatsCode },
-          handleSubmit, submitting, resetForm, error, featuresList } = props;
+          handleSubmit, submitting, resetForm, error, featuresList,
+          featureDescriptions } = props;
   const datasets = props.datasets.map(ds => (
     { id: ds.id,
       label: ds.name }
@@ -59,107 +60,49 @@ let FeaturizeForm = (props) => {
         </Expand>
         <Tabs>
           <TabList>
-            <Tab>General</Tab>
-            <Tab>Cadence/Error</Tab>
-            <Tab>Lomb Scargle (Periodic)</Tab>
+            {
+              Object.keys(props.featuresByCategory).map(ctgy => (
+                <Tab>{ctgy}</Tab>
+              ))
+            }
             <Tab>Custom Features</Tab>
           </TabList>
-          <TabPanel>
-            <a
-              href="#"
-              onClick={() => {
-                props.dispatch(Action.groupToggleCheckedFeatures(
-                  props.featuresByCategory["General"])); }}
-            >
-              Check/Uncheck All
-            </a>
-            <table style={{ overflow: "auto" }}>
-              <tbody>
-                {
-                  props.featuresByCategory["General"].filter(feat => (
-                    contains(featuresList, feat)
-                  )).map((feature, idx) => (
-                    <tr key={idx} style={idx % 2 == 0 ? { backgroundColor: "#f2f2f2" } : { }}>
-                      <td style={{ paddingLeft: "20px" }}>
-                        <CheckBoxInput
-                          key={feature}
-                          label={feature}
-                          {...fields[feature]}
-                        />
-                      </td>
-                      <td style={{ paddingLeft: "5px", verticalAlign: "bottom" }}>
-                        {props.featureDescriptions[feature]}
-                      </td>
-                    </tr>
-                  ))
-                }
-              </tbody>
-            </table>
-          </TabPanel>
-          <TabPanel>
-            <a
-              href="#"
-              onClick={() => {
-                props.dispatch(Action.groupToggleCheckedFeatures(
-                  props.featuresByCategory["Cadence/Error"])); }}
-            >
-              Check/Uncheck All
-            </a>
-            <table style={{ overflow: "auto" }}>
-              <tbody>
-                {
-                  props.featuresByCategory["Cadence/Error"].filter(feat => (
-                    contains(featuresList, feat)
-                  )).map((feature, idx) => (
-                    <tr key={idx} style={idx % 2 == 0 ? { backgroundColor: "#f2f2f2" } : { }}>
-                      <td style={{ paddingLeft: "20px" }}>
-                        <CheckBoxInput
-                          key={feature}
-                          label={feature}
-                          {...fields[feature]}
-                        />
-                      </td>
-                      <td style={{ paddingLeft: "5px", verticalAlign: "bottom" }}>
-                        {props.featureDescriptions[feature]}
-                      </td>
-                    </tr>
-                  ))
-                }
-              </tbody>
-            </table>
-          </TabPanel>
-          <TabPanel>
-            <a
-              href="#"
-              onClick={() => {
-                props.dispatch(Action.groupToggleCheckedFeatures(
-                  props.featuresByCategory["Lomb-Scargle (Periodic)"])); }}
-            >
-              Check/Uncheck All
-            </a>
-            <table style={{ overflow: "auto" }}>
-              <tbody>
-                {
-                  props.featuresByCategory["Lomb-Scargle (Periodic)"].filter(feat => (
-                    contains(featuresList, feat)
-                  )).map((feature, idx) => (
-                    <tr key={idx} style={idx % 2 == 0 ? { backgroundColor: "#f2f2f2" } : { }}>
-                      <td style={{ paddingLeft: "20px" }}>
-                        <CheckBoxInput
-                          key={feature}
-                          label={feature}
-                          {...fields[feature]}
-                        />
-                      </td>
-                      <td style={{ paddingLeft: "5px", verticalAlign: "bottom" }}>
-                        {props.featureDescriptions[feature]}
-                      </td>
-                    </tr>
-                  ))
-                }
-              </tbody>
-            </table>
-          </TabPanel>
+          {
+            Object.keys(props.featuresByCategory).map(ctgy => (
+              <TabPanel>
+                <a
+                  href="#"
+                  onClick={() => {
+                    props.dispatch(Action.groupToggleCheckedFeatures(
+                      props.featuresByCategory[ctgy])); }}
+                >
+                  Check/Uncheck All
+                </a>
+                <table style={{ overflow: "auto" }}>
+                  <tbody>
+                    {
+                      props.featuresByCategory[ctgy].filter(feat => (
+                        contains(featuresList, feat)
+                      )).map((feature, idx) => (
+                        <tr key={idx} style={idx % 2 == 0 ? { backgroundColor: "#f2f2f2" } : { }}>
+                          <td style={{ paddingLeft: "20px" }}>
+                            <CheckBoxInput
+                              key={feature}
+                              label={feature}
+                              {...fields[feature]}
+                            />
+                          </td>
+                          <td style={{ paddingLeft: "5px", verticalAlign: "bottom" }}>
+                            {featureDescriptions[feature]}
+                          </td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+              </TabPanel>
+            ))
+          }
           <TabPanel>
             <TextareaInput
               label="Enter Python code defining custom features"
