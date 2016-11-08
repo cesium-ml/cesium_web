@@ -41,5 +41,6 @@
         "no-unused-expressions": 1,
         "no-continue": 1,
         "no-prototype-builtins": 1,
+        "dot-notation": 1,
     }
 }

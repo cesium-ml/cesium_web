@@ -70,13 +70,13 @@ let FeaturizeForm = (props) => {
               href="#"
               onClick={() => {
                 props.dispatch(Action.groupToggleCheckedFeatures(
-                  props.featuresByCategory.general)); }}
+                  props.featuresByCategory["General"])); }}
             >
               Check/Uncheck All
             </a>
             <ul>
               {
-                props.featuresByCategory.general.filter(feat => (
+                props.featuresByCategory["General"].filter(feat => (
                   contains(featuresList, feat)
                 )).map(feature => (
                   <CheckBoxInput
@@ -93,13 +93,13 @@ let FeaturizeForm = (props) => {
               href="#"
               onClick={() => {
                 props.dispatch(Action.groupToggleCheckedFeatures(
-                  props.featuresByCategory.cadence)); }}
+                  props.featuresByCategory["Cadence/Error"])); }}
             >
               Check/Uncheck All
             </a>
             <ul>
               {
-                props.featuresByCategory.cadence.filter(feat => (
+                props.featuresByCategory["Cadence/Error"].filter(feat => (
                   contains(featuresList, feat)
                 )).map(feature => (
                   <CheckBoxInput
@@ -116,13 +116,13 @@ let FeaturizeForm = (props) => {
               href="#"
               onClick={() => {
                 props.dispatch(Action.groupToggleCheckedFeatures(
-                  props.featuresByCategory.lomb_scargle)); }}
+                  props.featuresByCategory["Lomb-Scargle (Periodic)"])); }}
             >
               Check/Uncheck All
             </a>
             <ul>
               {
-                props.featuresByCategory.lomb_scargle.filter(feat => (
+                props.featuresByCategory["Lomb-Scargle (Periodic)"].filter(feat => (
                   contains(featuresList, feat)
                 )).map(feature => (
                   <CheckBoxInput
