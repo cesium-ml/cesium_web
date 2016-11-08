@@ -55,11 +55,10 @@ class DatasetHandler(BaseHandler):
 
         p = Project.get(Project.id == project_id)
         # TODO this should give unique names to the time series files
-        time_series = data_management.parse_and_store_ts_data(
+        ts_paths = data_management.parse_and_store_ts_data(
             zipfile_path,
             cfg['paths']['ts_data_folder'],
             headerfile_path)
-        ts_paths = [ts.path for ts in time_series]
         d = Dataset.add(name=dataset_name, project=p, file_uris=ts_paths)
 
         return self.success(d, 'cesium/FETCH_DATASETS')
