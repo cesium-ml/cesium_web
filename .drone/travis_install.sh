@@ -26,7 +26,7 @@ section_end "install.cesium_web.requirements"
 
 section "init.cesium_web"
 make paths
-sudo make db_init
+make db_init
 make db_test_data
 make bundle
 section_end "init.cesium_web"
