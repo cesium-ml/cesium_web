@@ -5,16 +5,15 @@ from cesium.features.graphs import (feature_categories, feature_tags,
 
 class FeatureListHandler(BaseHandler):
     def get(self):
-        feature_descriptions = {}
-        for feature_name in [e for e in dask_feature_graph
-                             if not e.startswith('_')]:
-            description = (extra_feature_docs[feature_name] if
-                           feature_name in extra_feature_docs else
-                           ' '.join([e.strip() for e in
-                                     dask_feature_graph[feature_name][0]
-                                     .__doc__.split('\n\n')[0]
-                                     .strip().split('\n')]))
-            feature_descriptions[feature_name] = description
+
+        def get_docstring(func):
+            return ' '.join([e.strip() for e in
+                             func.__doc__.split('\n\n')[0].strip().split('\n')])
+
+        feature_descriptions = {f: extra_feature_docs[f] if f in
+                                extra_feature_docs else
+                                get_docstring(dask_feature_graph[f][0]) for f in
+                                dask_feature_graph if not f.startswith('_')}
 
         self.success({
             'features_by_category': feature_categories,
