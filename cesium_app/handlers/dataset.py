@@ -60,7 +60,7 @@ class DatasetHandler(BaseHandler):
             cfg['paths']['ts_data_folder'],
             headerfile_path)
         meta_features = list(time_series.from_netcdf(ts_paths[0])
-                             .__dict__['meta_features'].keys())
+                             .meta_features.keys())
         d = Dataset.add(name=dataset_name, project=p, file_uris=ts_paths,
                         meta_features=meta_features)
 
