@@ -110,7 +110,7 @@ class ModelHandler(BaseHandler):
         save_future = executor.submit(joblib.dump, computed_model, model_file.uri)
 
         @tornado.gen.coroutine
-        def _wait_and_call(callback, *args, futures_list=[]):
+        def _wait_and_call(callback, *args, futures=[]):
             yield _wait(futures_list)
             return callback(*args)
 
@@ -119,7 +119,7 @@ class ModelHandler(BaseHandler):
 
         loop = tornado.ioloop.IOLoop.current()
         loop.add_callback(_wait_and_call, xr.Dataset.close, fset_data,
-                          futures_list=[computed_model, score_future, save_future])
+                          futures=[computed_model, score_future, save_future])
         loop.spawn_callback(self._await_model, score_future, save_future, model)
 
         return self.success(data={'message': "Model training begun."},

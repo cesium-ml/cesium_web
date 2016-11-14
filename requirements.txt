@@ -9,6 +9,6 @@ pyzmq
 pyjwt
 plotly
 simplejson
-distributed
+distributed>=1.14.3
 selenium
 pytest
