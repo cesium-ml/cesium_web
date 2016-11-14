@@ -19,6 +19,9 @@ from sklearn.externals import joblib
 import xarray as xr
 
 
+def _await_then_execute(func, *func_args, futures=[], **func_kwargs):
+    return func(*func_args, **func_kwargs)
+
 class ModelHandler(BaseHandler):
     def _get_model(self, model_id):
         try:
@@ -41,11 +44,10 @@ class ModelHandler(BaseHandler):
         return self.success(model_info)
 
     @tornado.gen.coroutine
-    def _await_model(self, score_future, save_future, close_future, model):
+    def _await_model(self, score_future, save_future, model):
         try:
-            score = yield score_future._result()
             yield save_future._result()
-            yield close_future._result()
+            score = yield score_future._result()
 
             model.task_id = None
             model.finished = datetime.datetime.now()
@@ -108,14 +110,15 @@ class ModelHandler(BaseHandler):
         score_future = executor.submit(build_model.score_model, computed_model,
                                        fset_data)
         save_future = executor.submit(joblib.dump, computed_model, model_file.uri)
-        close_future = executor.submit(xr.Dataset.close, fset_data)
+        close_future = executor.submit(_await_then_execute, xr.Dataset.close,
+                                       fset_data, futures=[computed_model,
+                                                           score_future, save_future])
 
         model.task_id = save_future.key
         model.save()
 
         loop = tornado.ioloop.IOLoop.current()
-        loop.spawn_callback(self._await_model, score_future, save_future,
-                            close_future, model)
+        loop.spawn_callback(self._await_model, score_future, save_future, model)
 
         return self.success(data={'message': "Model training begun."},
                             action='cesium/FETCH_MODELS')
