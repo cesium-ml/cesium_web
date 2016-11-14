@@ -17,6 +17,7 @@ from cesium import build_model
 import tornado.ioloop
 from sklearn.externals import joblib
 import xarray as xr
+from distributed.client import _wait
 
 
 class ModelHandler(BaseHandler):
@@ -41,12 +42,14 @@ class ModelHandler(BaseHandler):
         return self.success(model_info)
 
     @tornado.gen.coroutine
-    def _await_model(self, future, model):
+    def _await_model(self, score_future, save_future, model):
         try:
-            result = yield future._result()
+            yield save_future._result()
+            score = yield score_future._result()
 
             model.task_id = None
             model.finished = datetime.datetime.now()
+            model.train_score = score
             model.save()
 
             self.action('cesium/SHOW_NOTIFICATION',
@@ -102,14 +105,22 @@ class ModelHandler(BaseHandler):
             featureset=fset_data, model_type=model_type,
             model_parameters=model_params,
             params_to_optimize=params_to_optimize)
-        future = executor.submit(joblib.dump, computed_model, model_file.uri)
-        closed = executor.submit(xr.Dataset.close, fset_data)
+        score_future = executor.submit(build_model.score_model, computed_model,
+                                       fset_data)
+        save_future = executor.submit(joblib.dump, computed_model, model_file.uri)
 
-        model.task_id = future.key
+        @tornado.gen.coroutine
+        def _wait_and_call(callback, *args, futures=[]):
+            yield _wait(futures_list)
+            return callback(*args)
+
+        model.task_id = save_future.key
         model.save()
 
         loop = tornado.ioloop.IOLoop.current()
-        loop.spawn_callback(self._await_model, future, model)
+        loop.add_callback(_wait_and_call, xr.Dataset.close, fset_data,
+                          futures=[computed_model, score_future, save_future])
+        loop.spawn_callback(self._await_model, score_future, save_future, model)
 
         return self.success(data={'message': "Model training begun."},
                             action='cesium/FETCH_MODELS')

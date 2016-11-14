@@ -46,6 +46,7 @@ def test_check_uncheck_features(driver):
 
         driver.find_element_by_id('react-tabs-4').click()
         driver.find_element_by_partial_link_text('Compute New Features').click()
+        driver.find_element_by_xpath("//li[contains(text(),'General')]").click()
 
         amplitude = driver.find_element_by_css_selector('[name=amplitude]')
         assert amplitude.get_attribute('value') == 'true'
@@ -56,14 +57,14 @@ def test_check_uncheck_features(driver):
         time.sleep(0.1)
         assert amplitude.get_attribute('value') == 'true'
 
-        driver.find_element_by_id('react-tabs-14').click()
+        driver.find_element_by_xpath("//li[contains(.,'Cadence')]").click()
         n_epochs = driver.find_element_by_css_selector('[name=n_epochs]')
         assert n_epochs.get_attribute('value') == 'true'
         driver.find_element_by_partial_link_text('Check/Uncheck All').click()
         time.sleep(0.1)
         assert n_epochs.get_attribute('value') == 'false'
 
-        driver.find_element_by_id('react-tabs-16').click()
+        driver.find_element_by_xpath("//li[contains(.,'Lomb-Scargle')]").click()
         driver.find_element_by_partial_link_text('Check/Uncheck All').click()
         assert driver.find_element_by_css_selector(
             '[name=fold2P_slope_10percentile]').get_attribute('value') == 'false'
@@ -79,6 +80,7 @@ def test_check_uncheck_tags(driver):
         driver.find_element_by_id('react-tabs-4').click()
         driver.find_element_by_partial_link_text('Compute New Features').click()
         driver.find_element_by_partial_link_text('Filter By Tag').click()
+        driver.find_element_by_xpath("//li[contains(text(),'General')]").click()
 
         driver.find_element_by_css_selector('[name=amplitude]')
         driver.find_element_by_css_selector('[label=Astronomy]').click()
@@ -93,6 +95,23 @@ def test_check_uncheck_tags(driver):
         driver.find_element_by_css_selector('[name=amplitude]')
 
 
+def test_feature_descriptions_displayed(driver):
+    driver.get('/')
+    with create_test_project() as p, create_test_dataset(p) as ds:
+        driver.refresh()
+        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+        proj_select.select_by_value(str(p.id))
+
+        driver.find_element_by_id('react-tabs-4').click()
+        driver.find_element_by_partial_link_text('Compute New Features').click()
+        driver.find_element_by_xpath("//li[contains(text(),'General')]").click()
+
+        driver.implicitly_wait(0.5)
+        driver.find_element_by_xpath(
+            "//div[contains(.,'Half the difference between the maximum and "
+            "minimum magnitude.')]")
+
+
 def test_cannot_compute_zero_features(driver):
     driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds:
@@ -102,6 +121,7 @@ def test_cannot_compute_zero_features(driver):
 
         driver.find_element_by_id('react-tabs-4').click()
         driver.find_element_by_partial_link_text('Compute New Features').click()
+        driver.find_element_by_xpath("//li[contains(text(),'General')]").click()
 
         amplitude = driver.find_element_by_css_selector('[name=amplitude]')
         assert amplitude.get_attribute('value') == 'true'
@@ -109,14 +129,14 @@ def test_cannot_compute_zero_features(driver):
         time.sleep(0.1)
         assert amplitude.get_attribute('value') == 'false'
 
-        driver.find_element_by_id('react-tabs-14').click()
+        driver.find_element_by_xpath("//li[contains(.,'Cadence')]").click()
         n_epochs = driver.find_element_by_css_selector('[name=n_epochs]')
         assert n_epochs.get_attribute('value') == 'true'
         driver.find_element_by_partial_link_text('Check/Uncheck All').click()
         time.sleep(0.1)
         assert n_epochs.get_attribute('value') == 'false'
 
-        driver.find_element_by_id('react-tabs-16').click()
+        driver.find_element_by_xpath("//li[contains(.,'Lomb-Scargle')]").click()
         driver.find_element_by_partial_link_text('Check/Uncheck All').click()
         assert driver.find_element_by_css_selector(
             '[name=fold2P_slope_10percentile]').get_attribute('value') == 'false'

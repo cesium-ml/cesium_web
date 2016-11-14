@@ -32,7 +32,7 @@ def _build_model(proj_id, model_type, driver):
             "//div[contains(text(),'Model training begun')]")
 
         driver.implicitly_wait(2)
-        status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
+        status_td = driver.find_element_by_xpath("//td[contains(.,'Completed')]")
     except:
         driver.save_screenshot("/tmp/models_fail.png")
         raise
@@ -119,3 +119,20 @@ def test_cannot_build_model_unlabeled_data(driver):
         driver.implicitly_wait(2)
         driver.find_element_by_xpath(
             "//div[contains(.,'Cannot build model for unlabeled feature set.')]")
+
+
+def test_model_info_display(driver):
+    with create_test_project() as p, create_test_featureset(p) as fs,\
+         create_test_model(fs) as m:
+        driver.refresh()
+        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+        proj_select.select_by_value(str(p.id))
+        driver.find_element_by_id('react-tabs-6').click()
+
+        driver.find_element_by_xpath("//td[contains(text(),'{}')]".format(m.name)).click()
+        assert driver.find_element_by_xpath("//th[contains(text(),'Model Type')]")\
+                     .is_displayed()
+        assert driver.find_element_by_xpath("//th[contains(text(),'Hyper "
+                                            "Parameters')]").is_displayed()
+        assert driver.find_element_by_xpath("//th[contains(text(),'Training "
+                                            "Data Score')]").is_displayed()
