@@ -17,10 +17,8 @@ from cesium import build_model
 import tornado.ioloop
 from sklearn.externals import joblib
 import xarray as xr
+from distributed.client import _wait
 
-
-def _await_then_execute(func, *func_args, futures=[], **func_kwargs):
-    return func(*func_args, **func_kwargs)
 
 class ModelHandler(BaseHandler):
     def _get_model(self, model_id):
@@ -110,14 +108,18 @@ class ModelHandler(BaseHandler):
         score_future = executor.submit(build_model.score_model, computed_model,
                                        fset_data)
         save_future = executor.submit(joblib.dump, computed_model, model_file.uri)
-        close_future = executor.submit(_await_then_execute, xr.Dataset.close,
-                                       fset_data, futures=[computed_model,
-                                                           score_future, save_future])
+
+        @tornado.gen.coroutine
+        def _wait_and_call(callback, *args, futures_list=[]):
+            yield _wait(futures_list)
+            return callback(*args)
 
         model.task_id = save_future.key
         model.save()
 
         loop = tornado.ioloop.IOLoop.current()
+        loop.add_callback(_wait_and_call, xr.Dataset.close, fset_data,
+                          futures_list=[computed_model, score_future, save_future])
         loop.spawn_callback(self._await_model, score_future, save_future, model)
 
         return self.success(data={'message': "Model training begun."},
