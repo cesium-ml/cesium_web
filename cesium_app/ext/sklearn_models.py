@@ -108,8 +108,6 @@ model_descriptions = [
 def check_model_param_types(model_type, model_params, all_as_lists=False):
     """Cast model parameter strings to expected types.
 
-    .. warning:: Modifies `model_params` dict in place.
-
     Parameters
     ----------
     model_type : str
@@ -121,6 +119,13 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
         Boolean indicating whether `model_params` values are wrapped in lists,
         as in the case of parameter grids for optimization.
 
+    Returns
+    -------
+    (dict, dict) tuple
+        Returns a tuple of two dictionaries, the first of which contain those
+        hyper-parameters determined to passed into model constructor as-is, and
+        the second containing hyper-parameter grids intended for optimization.
+
     Raises
     ------
     ValueError
@@ -129,7 +134,7 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
     """
     try:
         model_desc = next(md for md in model_descriptions
-                              if md['name'] == model_type)
+                          if md['name'] == model_type)
     except StopIteration:
         raise ValueError("model_type not in list of allowable models.")
 
@@ -160,6 +165,9 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
             raise TypeError('Value type does not match specification')
 
 
+    standard_params = {}
+    params_to_optimize = {}
+
     # Iterate through params and check against specification
     for param_name, param_value in model_params.items():
         try:
@@ -172,7 +180,16 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
 
         try:
             verify_type(param_value, required_type)
+            if (make_list(param_value) == param_value and list not in
+                set(make_list(required_type))):
+                params_to_optimize[param_name] = param_value
+            else:
+                standard_params[param_name] = param_value
         except TypeError as e:
             raise ValueError(
-                "Parameter {} in model {} has wrong type"
-                .format(param_name, model_desc["name"]))
+                "Parameter {} in model {} has wrong type. Expected {} and got "
+                "{} (type {})."
+                .format(param_name, model_desc["name"], required_type,
+                        param_value, type(param_value)))
+
+    return standard_params, params_to_optimize

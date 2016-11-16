@@ -84,10 +84,8 @@ class ModelHandler(BaseHandler):
         model_params = {k: robust_literal_eval(v)
                         for k, v in model_params.items()}
 
-        # TODO split out constant params / params to optimize
-        model_params, params_to_optimize = model_params, {}
-        check_model_param_types(model_type, model_params)
-
+        model_params, params_to_optimize = check_model_param_types(model_type,
+                                                                   model_params)
         model_path = pjoin(cfg['paths']['models_folder'],
                            '{}_model.pkl'.format(uuid.uuid4()))
 
