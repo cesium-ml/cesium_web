@@ -30,10 +30,10 @@ def test_check_model_param_types():
     """Test sklearn_models.check_model_param_types"""
     model_type = "RandomForestClassifier"
     params = {"n_estimators": 1000,
-                "max_features": "auto",
-                "min_weight_fraction_leaf": 0.34,
-                "bootstrap": True,
-                "class_weight": {'a': 0.2, 'b': 0.8}}
+              "max_features": "auto",
+              "min_weight_fraction_leaf": 0.34,
+              "bootstrap": True,
+              "class_weight": {'a': 0.2, 'b': 0.8}}
     sklearn_models.check_model_param_types(model_type, params)
 
     params = {"n_estimators": 100.1}
@@ -43,6 +43,15 @@ def test_check_model_param_types():
     model_type = "RandomForestClassifier"
     params = {"max_features": 150}
     sklearn_models.check_model_param_types(model_type, params)
+
+    model_type = "RandomForestClassifier"
+    params = {"max_features": [100, 150, 200],
+              "n_estimators": [10, 50, 100, 1000],
+              "bootstrap": True}
+    normal, opt = sklearn_models.check_model_param_types(model_type, params)
+    assert normal == {"bootstrap": True}
+    assert opt == {"max_features": [100, 150, 200],
+                   "n_estimators": [10, 50, 100, 1000]}
 
     params = {"max_depth": 100.1}
     pytest.raises(ValueError, sklearn_models.check_model_param_types,

@@ -106,7 +106,7 @@ model_descriptions = [
 
 
 def check_model_param_types(model_type, model_params, all_as_lists=False):
-    """Cast model parameter strings to expected types.
+    """Ensure parameters are of expected type; split standard values and grids.
 
     Parameters
     ----------

@@ -94,7 +94,7 @@ class PredictionHandler(BaseHandler):
                                     features_to_use=fset.features_list,
                                     custom_script_path=fset.custom_features_script)
         fset_data = executor.submit(cesium.featurize.assemble_featureset,
-                                    all_features, all_time_series)
+                                    all_features, all_time_series, impute=True)
         model_data = executor.submit(joblib.load, model.file.uri)
         predset = executor.submit(cesium.predict.model_predictions,
                                   fset_data, model_data)
