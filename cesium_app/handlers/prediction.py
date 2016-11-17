@@ -9,6 +9,7 @@ from tornado.web import RequestHandler
 import cesium.time_series
 import cesium.featurize
 import cesium.predict
+import cesium.featureset
 
 import xarray as xr
 import joblib
@@ -95,7 +96,7 @@ class PredictionHandler(BaseHandler):
                                     custom_script_path=fset.custom_features_script)
         fset_data = executor.submit(cesium.featurize.assemble_featureset,
                                     all_features, all_time_series)
-        fset_data = executor.submit(Featureset.impute, fset_data)
+        fset_data = executor.submit(cesium.featureset.Featureset.impute, fset_data)
         model_data = executor.submit(joblib.load, model.file.uri)
         predset = executor.submit(cesium.predict.model_predictions,
                                   fset_data, model_data)
