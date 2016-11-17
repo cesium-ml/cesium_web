@@ -15,7 +15,7 @@ import datetime
 
 from cesium import build_model
 import tornado.ioloop
-from sklearn.externals import joblib
+import joblib
 import xarray as xr
 from distributed.client import _wait
 

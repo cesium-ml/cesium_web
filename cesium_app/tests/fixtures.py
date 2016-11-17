@@ -14,7 +14,7 @@ from cesium_app.config import cfg
 import shutil
 import peewee
 import datetime
-from sklearn.externals import joblib
+import joblib
 import xarray as xr
 
 

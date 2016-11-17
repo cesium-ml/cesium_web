@@ -11,7 +11,7 @@ import cesium.featurize
 import cesium.predict
 
 import xarray as xr
-from sklearn.externals import joblib
+import joblib
 from os.path import join as pjoin
 import uuid
 import datetime
@@ -94,7 +94,8 @@ class PredictionHandler(BaseHandler):
                                     features_to_use=fset.features_list,
                                     custom_script_path=fset.custom_features_script)
         fset_data = executor.submit(cesium.featurize.assemble_featureset,
-                                    all_features, all_time_series, impute=True)
+                                    all_features, all_time_series)
+        fset_data = executor.submit(Featureset.impute, fset_data)
         model_data = executor.submit(joblib.load, model.file.uri)
         predset = executor.submit(cesium.predict.model_predictions,
                                   fset_data, model_data)
