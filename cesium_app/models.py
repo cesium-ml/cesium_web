@@ -69,6 +69,7 @@ class UserProject(BaseModel):
 class File(BaseModel):
     """ORM model of the TimeSeries table"""
     uri = pw.CharField(primary_key=True)  # s3://cesium_bin/3eef6601a
+    name = pw.CharField(null=True)
     created = pw.DateTimeField(default=datetime.datetime.now)
 
 @signals.post_delete(sender=File)
@@ -88,22 +89,26 @@ class Dataset(BaseModel):
     meta_features = ArrayField(pw.CharField)
 
     @staticmethod
-    def add(name, project, file_uris=[], meta_features=[]):
+    def add(name, project, file_uris=[], file_names=[], meta_features=[]):
+        if not file_names:
+            file_names = file_uris
         with db.atomic():
             d = Dataset.create(name=name, project=project,
                                meta_features=meta_features)
-            files, created = zip(*(
-                File.create_or_get(uri=uri) for uri in file_uris)
-            )
-            for f in files:
+            for fname, uri in zip(file_names, file_uris):
+                f, created = File.create_or_get(name=fname, uri=uri)
                 DatasetFile.create(dataset=d, file=f)
         return d
 
     @property
     def uris(self):
+        return [f.uri for f in self.files]
+
+    @property
+    def files(self):
         query = File.select().join(DatasetFile).join(Dataset).where(Dataset.id
                                                                     == self.id)
-        return [f.uri for f in query]
+        return list(query.execute())
 
     def is_owned_by(self, username):
         return self.project.is_owned_by(username)
@@ -127,8 +132,8 @@ class DatasetFile(BaseModel):
 
 @signals.pre_delete(sender=Dataset)
 def remove_related_files(sender, instance):
-    query = File.delete().where(File.uri in instance.uris)
-    query.execute()
+    for f in instance.files:
+        f.delete_instance()
 
 
 class Featureset(BaseModel):
