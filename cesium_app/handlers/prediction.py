@@ -113,7 +113,7 @@ class PredictionHandler(BaseHandler):
 
     def get(self, prediction_id=None, action=None):
         if action == 'download':
-            prediction = xr.open_dataset(self._get_prediction(prediction_id).file.uri)
+            prediction = cesium.featureset.from_netcdf(self._get_prediction(prediction_id).file.uri)
             with tempfile.NamedTemporaryFile() as tf:
                 util.prediction_to_csv(prediction, tf.name)
                 with open(tf.name) as f:

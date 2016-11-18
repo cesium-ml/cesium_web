@@ -3,6 +3,7 @@ from cesium_app.ext import sklearn_models
 import numpy.testing as npt
 import pytest
 import xarray as xr
+from cesium import featureset
 from cesium_app.tests.fixtures import (create_test_project, create_test_dataset,
                                        create_test_featureset, create_test_model,
                                        create_test_prediction)
@@ -95,7 +96,7 @@ def test_prediction_to_csv_class():
          create_test_featureset(p) as fs,\
          create_test_model(fs, model_type='LinearSGDClassifier') as m,\
          create_test_prediction(ds, m) as pred:
-        pred = xr.open_dataset(pred.file.uri)
+        pred = featureset.from_netcdf(pred.file.uri)
         assert util.prediction_to_csv(pred) ==\
             [['ts_name', 'true_target', 'prediction'],
              ['0', 'Mira', 'Mira'],
@@ -112,7 +113,7 @@ def test_prediction_to_csv_regr():
          create_test_model(fs, model_type='LinearRegressor') as m,\
          create_test_prediction(ds, m) as pred:
 
-        pred = xr.open_dataset(pred.file.uri)
+        pred = featureset.from_netcdf(pred.file.uri)
         results = util.prediction_to_csv(pred)
 
         assert results[0] == ['ts_name', 'true_target', 'prediction']

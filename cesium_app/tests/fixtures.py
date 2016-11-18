@@ -8,6 +8,7 @@ from cesium_app import models as m
 from cesium import build_model
 from cesium import predict
 from cesium import data_management
+from cesium import featureset
 from cesium.features import CADENCE_FEATS, GENERAL_FEATS, LOMB_SCARGLE_FEATS
 from cesium.tests import fixtures
 from cesium_app.config import cfg
@@ -126,7 +127,7 @@ def create_test_model(fset, model_type='RandomForestClassifier'):
             "loss": "hinge"},
         "LinearRegressor": {
             "fit_intercept": True}}
-    with xr.open_dataset(fset.file.uri, engine=cfg['xr_engine']) as fset_data:
+    with featureset.from_netcdf(fset.file.uri, engine=cfg['xr_engine']) as fset_data:
         model_data = build_model.build_model_from_featureset(fset_data,
                                                              model_type=model_type)
         model_path = pjoin(cfg['paths']['models_folder'],
@@ -156,7 +157,7 @@ def create_test_prediction(dataset, model):
         The model to use to create prediction.
 
     """
-    with xr.open_dataset(model.featureset.file.uri, engine=cfg['xr_engine']) as fset_data:
+    with featureset.from_netcdf(model.featureset.file.uri, engine=cfg['xr_engine']) as fset_data:
         model_data = joblib.load(model.file.uri)
         pred_data = predict.model_predictions(fset_data.load(), model_data)
     pred_path = pjoin(cfg['paths']['predictions_folder'],

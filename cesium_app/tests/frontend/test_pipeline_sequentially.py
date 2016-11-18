@@ -86,7 +86,7 @@ def test_pipeline_sequentially(driver):
     driver.find_element_by_partial_link_text('Create New Model').click()
 
     model_select = Select(driver.find_element_by_css_selector('[name=modelType]'))
-    model_select.select_by_visible_text('RandomForestClassifier')
+    model_select.select_by_visible_text('RandomForestClassifier (fast)')
 
     model_name = driver.find_element_by_css_selector('[name=modelName]')
     test_model_name = str(uuid.uuid4())
