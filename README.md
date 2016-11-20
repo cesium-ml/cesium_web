@@ -1,41 +1,59 @@
 # Cesium Web Frontend
 
+
 [![Build Status](https://travis-ci.org/cesium-ml/cesium_web.svg?branch=master)](https://travis-ci.org/cesium-ml/cesium_web)
+
+
 
 
 ## About 
 
-Frontend for the [cesium library](https://github.com/cesium-ml/cesium).
-It is a user friendly platform that allows people to interactively compute features on a dataset, train a model, and make predictions. 
+
+This is a web frontend for the [cesium library](https://github.com/cesium-ml/cesium) for
+interactively setting up a complete time-series classification pipeline.  With a few clicks, a user can upload data, compute features, fit a model, and predict class labels.
+
+
+
 
 ## Getting started
 
+
 The easiest way to try the web app is to run it through docker:
+
 
 1. Download the docker-compose file for Cesium:
    `curl -Lo docker-compose.yml http://bit.ly/29GkVXY`
 
+
 2. Ensure you have Docker Compose up and running, then:
    `docker-compose up`
+
 
 3. Wait a few seconds and navigate to
    http://localhost:9000
 
+
 4. Create a project and go! If you want some test data, the header file is
+
 
    ```
    curl -Lo example-headers.dat http://bit.ly/29FtRXy
    ```
 
+
    and the time series data is
+
 
    ```
    curl -Lo example-series.tar.gz http://bit.ly/29HKmVZ
    ```
 
+
 ## Running the app on your local machine
 
+
 1. Install the following dependencies:
+
 
 - supervisor
 - nginx
@@ -44,39 +62,42 @@ The easiest way to try the web app is to run it through docker:
 - HDF5 and NetCDF4 headers, if available on your platform
 
 
+
+
 ### MacOS
-You can install these dependencies using brew. Don’t know what [brew](http://brew.sh/) is?
+You can install these dependencies using [brew](http://brew.sh/) by using the following command:
 
-Run:
-`
-brew install supervisor nginx postgresql npm hdf5
-`
 
-An alternative to installing these dependencies is to use pip. You can install each package by using the following:
+`brew install supervisor nginx postregsql node homebrew/science`
 
-`
-pip install supervisor nginx postgresql npm hdf5
-`
 
 ### Linux
 
+
 On Debian or Ubuntu, you can install these packages by using the following command:
 
+
 ```
-nginx supervisor postgresql libpq-dev npm nodejs-legacy libhdf5-dev libnetcdf-dev libpython3-dev
+sudo apt-get install nginx supervisor postgresql libpq-dev npm nodejs-legacy libhdf5-dev libnetcdf-dev libpython3-dev
 ```
+
 
 2. Install Python dependencies: `pip install -r requirements.txt`
 
-3. Configurate database permissions for postgresql.  In your `pg_hba.conf`
+
+3. Configure database permissions for postgresql.  In your `pg_hba.conf`
+
 
 On MacOS pg_hba.conf can typically be found at:
  `/usr/local/var/postgres`
 
+
 On Linux it can be typically be found at:
  `/etc/postgresql/9.5/main`
 
+
 At the end of the pg_hba.conf file, add the following lines:
+
 
 ```
 local   all             postgres                                peer
@@ -84,51 +105,70 @@ local cesium cesium trust
 local cesium_test cesium trust
 ```
 
+
 After modifying pg_hba.conf restart postgres:
+
+
 
 
 ### MacOS:
 `pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log restart `
 
+
 ### Linux (Debian, Ubuntu):
 `sudo service postgresql restart`
 
+
 4. Initialize the database with `make db_init`
 
-5. Run `make`to start the server and install additional dependencies. Then, navigate to `localhost:5000` in a browser.
+
+5. Run `make` to start the server and install additional dependencies. Then, navigate to `localhost:5000` in a browser.
+
 
 ## Dev
+
 
 1. `npm v^3.0.0` required.
 2. Run `make` to launch the web server.
 
+
 To execute the test suite:
+
 
 - Install ChromeDriver from:
   https://sites.google.com/a/chromium.org/chromedriver/home
 
+
   (The binary has to be placed somewhere on your path.)
+
 
 - Install Chrome or Chromium
 
+
 - Optional: install xfvb for headless tests (only available on Linux)
+
 
 - `make test_headless` or `make test`
 
+
 ## Dev tips
+
 
 - Run `make log` to watch log output
 - Run `make debug` to start webserver in debug mode
 - Run `make attach` to attach to output of webserver; you can then set pdb
   traces for interactive access:
 
+
     import pdb; pdb.set_trace()
+
 
 - To ensure that JavaScript & JSX code conforms with industry style
   recommendations, after adding or modifying any .js or .jsx files, run ESLint with
   `node_modules/eslint/bin/eslint.js -c .eslintrc --ext .jsx,.js public/scripts/`.
   To automatically run ESLint when you make changes to your JavaScript code, add
   a pre-commit hook by adding the following to your .git/hooks/pre-commit :
+
 
 ```
 #!/bin/bash
@@ -137,7 +177,9 @@ To execute the test suite:
 # If you absolutely must commit without testing,
 # use: git commit --no-verify (git commit -n)
 
+
 filenames=($(git diff --cached --name-only HEAD))
+
 
 for i in "${filenames[@]}"
 do
@@ -153,5 +195,5 @@ do
 done
 ```
 
-- Run `make docker-images` to build and push to Docker hub
 
+- Run `make docker-images` to build and push to Docker hub
