@@ -31,7 +31,7 @@ def _build_model(proj_id, model_type, driver):
         status_td = driver.find_element_by_xpath(
             "//div[contains(text(),'Model training begun')]")
 
-        driver.implicitly_wait(2)
+        driver.implicitly_wait(15)
         status_td = driver.find_element_by_xpath("//td[contains(.,'Completed')]")
     except:
         driver.save_screenshot("/tmp/models_fail.png")
@@ -41,7 +41,7 @@ def _build_model(proj_id, model_type, driver):
 def test_build_model_rfc(driver):
     driver.get('/')
     with create_test_project() as p, create_test_featureset(p) as fs:
-        _build_model(p.id, 'RandomForestClassifier', driver)
+        _build_model(p.id, 'RandomForestClassifier (fast)', driver)
 
 
 def test_build_model_lsgdc(driver):
@@ -84,7 +84,7 @@ def test_hyper_param_populate(driver):
         driver.find_element_by_partial_link_text('Create New Model').click()
         driver.find_element_by_partial_link_text('Choose Model Parameters').click()
         model_select = Select(driver.find_element_by_css_selector('[name=modelType]'))
-        model_select.select_by_visible_text("RandomForestClassifier")
+        model_select.select_by_visible_text("RandomForestClassifier (fast)")
         driver.implicitly_wait(0.1)
         driver.find_element_by_xpath("//label[contains(text(),'n_estimators')]")
         driver.find_element_by_xpath("//label[contains(text(),'max_features')]")

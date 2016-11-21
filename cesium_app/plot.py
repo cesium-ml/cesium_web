@@ -6,7 +6,7 @@ import plotly
 import plotly.offline as py
 from plotly.tools import FigureFactory as FF
 
-from cesium import build_model
+from cesium import featureset
 from .config import cfg
 
 
@@ -26,14 +26,12 @@ def feature_scatterplot(fset_path, features_to_plot):
         Returns (fig.data, fig.layout) where `fig` is an instance of
         `plotly.tools.FigureFactory`.
     """
-    with xr.open_dataset(fset_path, engine=cfg['xr_engine']) as fset:
-        fset_data = fset.load()
-        feat_df = build_model.rectangularize_featureset(fset_data)
-
+    with featureset.from_netcdf(fset_path, engine=cfg['xr_engine']) as fset:
+        feat_df = fset.to_dataframe()
         feat_df = feat_df[features_to_plot]
 
-        if 'target' in fset_data:
-            feat_df['target'] = fset_data.target.values
+        if 'target' in fset:
+            feat_df['target'] = fset.target.values
             index = 'target'
         else:
             index = None

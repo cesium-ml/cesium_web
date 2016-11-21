@@ -1,13 +1,14 @@
 from cesium.util import make_list
+from cesium.build_model import MODELS_TYPE_DICT
 
 
 model_descriptions = [
-    {"name": "RandomForestClassifier",
+    {"name": "RandomForestClassifier (fast)",
      "params": [
-         {"name": "n_estimators", "type": int, "default": 10},
-         {"name": "criterion", "type": str, "default": "gini"},
+         {"name": "n_estimators", "type": int, "default": 50},
+         {"name": "criterion", "type": str, "default": ["gini", "entropy"]},
          {"name": "max_features", "type": [int, float, str],
-          "default": "auto"},
+          "default": [0.05, 0.1, 0.15, 0.2]},
          {"name": "max_depth", "type": int, "default": None},
          {"name": "min_samples_split", "type": int, "default": 2},
          {"name": "min_samples_leaf", "type": int, "default": 1},
@@ -20,12 +21,30 @@ model_descriptions = [
      "type": "classifier",
      "url": "http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html"},
 
-    {"name": "RandomForestRegressor",
+    {"name": "RandomForestClassifier (comprehensive)",
      "params": [
-         {"name": "n_estimators", "type": int, "default": 10},
+         {"name": "n_estimators", "type": int, "default": [100, 250]},
+         {"name": "criterion", "type": str, "default": ["gini", "entropy"]},
+         {"name": "max_features", "type": [int, float, str],
+          "default": [0.05, 0.085, 0.1, 0.15, 0.13, 0.15, 0.2, 0.25]},
+         {"name": "max_depth", "type": int, "default": None},
+         {"name": "min_samples_split", "type": int, "default": 2},
+         {"name": "min_samples_leaf", "type": int, "default": [1, 2, 5]},
+         {"name": "min_weight_fraction_leaf", "type": float, "default": 0.},
+         {"name": "max_leaf_nodes", "type": int, "default": None},
+         {"name": "bootstrap", "type": bool, "default": True},
+         {"name": "oob_score", "type": bool, "default": False},
+         {"name": "random_state", "type": int, "default": None},
+         {"name": "class_weight", "type": dict, "default": None}],
+     "type": "classifier",
+     "url": "http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html"},
+
+    {"name": "RandomForestRegressor (fast)",
+     "params": [
+         {"name": "n_estimators", "type": int, "default": 50},
          {"name": "criterion", "type": str, "default": "mse"},
          {"name": "max_features", "type": [int, float, str],
-          "default": "auto"},
+          "default": [0.28, 0.33, 0.38]},
          {"name": "max_depth", "type": int, "default": None},
          {"name": "min_samples_split", "type": int, "default": 2},
          {"name": "min_samples_leaf", "type": int, "default": 1},
@@ -36,6 +55,24 @@ model_descriptions = [
          {"name": "random_state", "type": int, "default": None}],
      "type": "regressor",
      "url": "http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html"},
+
+    {"name": "RandomForestRegressor (comprehensive)",
+     "params": [
+         {"name": "n_estimators", "type": int, "default": [100, 250]},
+         {"name": "criterion", "type": str, "default": ["mse", "mae"]},
+         {"name": "max_features", "type": [int, float, str],
+          "default": [0.165, 0.28, 0.33, 0.38, 0.43, 0.5, 0.667]},
+         {"name": "max_depth", "type": int, "default": None},
+         {"name": "min_samples_split", "type": int, "default": 2},
+         {"name": "min_samples_leaf", "type": int, "default": 1},
+         {"name": "min_weight_fraction_leaf", "type": float, "default": 0.},
+         {"name": "max_leaf_nodes", "type": int, "default": None},
+         {"name": "bootstrap", "type": bool, "default": True},
+         {"name": "oob_score", "type": bool, "default": False},
+         {"name": "random_state", "type": int, "default": None}],
+     "type": "regressor",
+     "url": "http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html"},
+
 
     {"name": "LinearSGDClassifier",
      "params": [
@@ -104,11 +141,19 @@ model_descriptions = [
      "type": "regressor",
      "url": "http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.BayesianRidge.html"}]
 
+for model_dict in model_descriptions:
+    model_dict['description'] = (MODELS_TYPE_DICT[model_dict['name'].split()[0]]
+                                 .__doc__.split('\n')[0].strip())
+    if '(fast)' in model_dict['name']:
+        model_dict['description'] += (' (Optimized over a smaller number of '
+                                      'possible parameter values.)')
+    elif '(comprehensive)' in model_dict['name']:
+        model_dict['description'] += (' (Optimized over a larger number of '
+                                      'possible parameter values.)')
+
 
 def check_model_param_types(model_type, model_params, all_as_lists=False):
-    """Cast model parameter strings to expected types.
-
-    .. warning:: Modifies `model_params` dict in place.
+    """Ensure parameters are of expected type; split standard values and grids.
 
     Parameters
     ----------
@@ -121,6 +166,14 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
         Boolean indicating whether `model_params` values are wrapped in lists,
         as in the case of parameter grids for optimization.
 
+    Returns
+    -------
+    (dict, dict) tuple
+        Returns a tuple of two dictionaries, the first of which contains those
+        hyper-parameters that are to be passed into the model constructor as-is,
+        and the second containing hyper-parameter grids intended for
+        optimization (with GridSearchCV).
+
     Raises
     ------
     ValueError
@@ -129,7 +182,7 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
     """
     try:
         model_desc = next(md for md in model_descriptions
-                              if md['name'] == model_type)
+                          if model_type in [md['name'], md['name'].split()[0]])
     except StopIteration:
         raise ValueError("model_type not in list of allowable models.")
 
@@ -145,7 +198,9 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
             Check that value is one of these types.
 
         """
-        values = [value]
+        vtypes = set(make_list(vtype))
+        # Ensure that `values` is a list of parameter values
+        values = make_list(value) if list not in vtypes else [value]
 
         none_vals = [None, "None", ""]
         values = [None if v in none_vals else v for v in values]
@@ -160,6 +215,9 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
             raise TypeError('Value type does not match specification')
 
 
+    standard_params = {}
+    params_to_optimize = {}
+
     # Iterate through params and check against specification
     for param_name, param_value in model_params.items():
         try:
@@ -172,7 +230,16 @@ def check_model_param_types(model_type, model_params, all_as_lists=False):
 
         try:
             verify_type(param_value, required_type)
+            if (make_list(param_value) == param_value and list not in
+                set(make_list(required_type))):
+                params_to_optimize[param_name] = param_value
+            else:
+                standard_params[param_name] = param_value
         except TypeError as e:
             raise ValueError(
-                "Parameter {} in model {} has wrong type"
-                .format(param_name, model_desc["name"]))
+                "Parameter {} in model {} has wrong type. Expected {} and got "
+                "{} (type {})."
+                .format(param_name, model_desc["name"], required_type,
+                        param_value, type(param_value)))
+
+    return standard_params, params_to_optimize

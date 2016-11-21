@@ -13,9 +13,9 @@ from os.path import join as pjoin
 import uuid
 import datetime
 
-from cesium import build_model
+from cesium import build_model, featureset
 import tornado.ioloop
-from sklearn.externals import joblib
+import joblib
 import xarray as xr
 from distributed.client import _wait
 
@@ -84,10 +84,9 @@ class ModelHandler(BaseHandler):
         model_params = {k: robust_literal_eval(v)
                         for k, v in model_params.items()}
 
-        # TODO split out constant params / params to optimize
-        model_params, params_to_optimize = model_params, {}
-        check_model_param_types(model_type, model_params)
-
+        model_params, params_to_optimize = check_model_param_types(model_type,
+                                                                   model_params)
+        model_type = model_type.split()[0]
         model_path = pjoin(cfg['paths']['models_folder'],
                            '{}_model.pkl'.format(uuid.uuid4()))
 
@@ -98,15 +97,16 @@ class ModelHandler(BaseHandler):
 
         executor = yield self._get_executor()
 
-        fset_data = executor.submit(lambda path: xr.open_dataset(path, engine=cfg['xr_engine']),
-                                    fset.file.uri)
+        fset = executor.submit(lambda path: featureset.from_netcdf(path,
+            engine=cfg['xr_engine']), fset.file.uri)
+        imputed_fset = executor.submit(featureset.Featureset.impute, fset)
         computed_model = executor.submit(
             build_model.build_model_from_featureset,
-            featureset=fset_data, model_type=model_type,
+            featureset=imputed_fset, model_type=model_type,
             model_parameters=model_params,
             params_to_optimize=params_to_optimize)
         score_future = executor.submit(build_model.score_model, computed_model,
-                                       fset_data)
+                                       imputed_fset)
         save_future = executor.submit(joblib.dump, computed_model, model_file.uri)
 
         @tornado.gen.coroutine
@@ -118,7 +118,7 @@ class ModelHandler(BaseHandler):
         model.save()
 
         loop = tornado.ioloop.IOLoop.current()
-        loop.add_callback(_wait_and_call, xr.Dataset.close, fset_data,
+        loop.add_callback(_wait_and_call, xr.Dataset.close, imputed_fset,
                           futures=[computed_model, score_future, save_future])
         loop.spawn_callback(self._await_model, score_future, save_future, model)
 

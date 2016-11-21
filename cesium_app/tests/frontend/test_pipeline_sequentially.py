@@ -41,12 +41,13 @@ def test_pipeline_sequentially(driver):
     dataset_name.send_keys(test_dataset_name)
 
     header_file = driver.find_element_by_css_selector('[name=headerFile]')
-    header_file.send_keys(pjoin(os.path.dirname(os.path.dirname(__file__)), 'data',
-                                'asas_training_subset_classes.dat'))
+    header_file.send_keys(pjoin(
+        os.path.dirname(os.path.dirname(__file__)), 'data',
+        'larger_asas_training_subset_classes_with_metadata.dat'))
 
     tar_file = driver.find_element_by_css_selector('[name=tarFile]')
     tar_file.send_keys(pjoin(os.path.dirname(os.path.dirname(__file__)), 'data',
-                             'asas_training_subset.tar.gz'))
+                             'larger_asas_training_subset.tar.gz'))
 
     driver.find_element_by_class_name('btn-primary').click()
 
@@ -59,6 +60,9 @@ def test_pipeline_sequentially(driver):
     test_featureset_name = str(uuid.uuid4())
     driver.find_element_by_id('react-tabs-4').click()
     driver.find_element_by_partial_link_text('Compute New Features').click()
+    # Uncheck LS feats
+    driver.find_element_by_xpath("//li[contains(.,'Lomb-Scargle')]").click()
+    driver.find_element_by_partial_link_text('Check/Uncheck All').click()
 
     featureset_name = driver.find_element_by_css_selector('[name=featuresetName]')
     featureset_name.send_keys(test_featureset_name)
@@ -82,7 +86,7 @@ def test_pipeline_sequentially(driver):
     driver.find_element_by_partial_link_text('Create New Model').click()
 
     model_select = Select(driver.find_element_by_css_selector('[name=modelType]'))
-    model_select.select_by_visible_text('RandomForestClassifier')
+    model_select.select_by_visible_text('RandomForestClassifier (fast)')
 
     model_name = driver.find_element_by_css_selector('[name=modelName]')
     test_model_name = str(uuid.uuid4())
@@ -97,7 +101,7 @@ def test_pipeline_sequentially(driver):
     driver.implicitly_wait(0.5)
     driver.find_element_by_xpath("//div[contains(text(),'Model training begun')]")
 
-    driver.implicitly_wait(2)
+    driver.implicitly_wait(15)
     driver.find_element_by_xpath("//td[contains(.,'Completed')]")
 
     # Predict using dataset and model from this test
