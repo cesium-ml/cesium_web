@@ -101,7 +101,7 @@ def test_pipeline_sequentially(driver):
     driver.implicitly_wait(0.5)
     driver.find_element_by_xpath("//div[contains(text(),'Model training begun')]")
 
-    driver.implicitly_wait(2)
+    driver.implicitly_wait(15)
     driver.find_element_by_xpath("//td[contains(.,'Completed')]")
 
     # Predict using dataset and model from this test
