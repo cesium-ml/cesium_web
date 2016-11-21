@@ -105,6 +105,10 @@ class Dataset(BaseModel):
         return [f.uri for f in self.files]
 
     @property
+    def file_names(self):
+        return [f.name for f in self.files]
+
+    @property
     def files(self):
         query = File.select().join(DatasetFile).join(Dataset).where(Dataset.id
                                                                     == self.id)
@@ -115,8 +119,8 @@ class Dataset(BaseModel):
 
     def display_info(self):
         info = self.__dict__()
-        info['files'] = [os.path.basename(uri).split('.nc')[0]
-                         for uri in self.uris]
+        info['files'] = [os.path.basename(fname)
+                         for fname in self.file_names]
 
         return info
 
