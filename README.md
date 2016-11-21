@@ -70,10 +70,7 @@ Debugging:
 
 - Run `make log` to watch log output
 - Run `make debug` to start webserver in debug mode
-- Run `make attach` to attach to output of webserver; you can then set pdb
-  traces for interactive access:
-
-    import pdb; pdb.set_trace()
+- Run `make attach` to attach to output of webserver, e.g. for use with `pdb.set_trace()`
 
 ## Standards
 To ensure that JavaScript & JSX code conforms with industry style
