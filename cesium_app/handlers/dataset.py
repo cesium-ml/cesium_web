@@ -4,7 +4,9 @@ from .. import util
 from ..config import cfg
 
 from cesium import data_management, time_series
+from cesium.util import shorten_fname
 
+import os
 from os.path import join as pjoin
 import uuid
 
@@ -34,7 +36,7 @@ class DatasetHandler(BaseHandler):
         project_id = self.get_argument('projectID')
 
         zipfile_name = (str(uuid.uuid4()) + "_" +
-                        str(util.secure_filename(zipfile.filename)))
+                        util.secure_filename(zipfile.filename))
         zipfile_path = pjoin(cfg['paths']['upload_folder'], zipfile_name)
 
         with open(zipfile_path, 'wb') as f:
@@ -44,7 +46,7 @@ class DatasetHandler(BaseHandler):
         if 'headerFile' in self.request.files:
             headerfile = self.request.files['headerFile'][0]
             headerfile_name = (str(uuid.uuid4()) + "_" +
-                               str(util.secure_filename(headerfile.filename)))
+                               util.secure_filename(headerfile.filename))
             headerfile_path = pjoin(cfg['paths']['upload_folder'], headerfile_name)
 
             with open(headerfile_path, 'wb') as f:
@@ -61,8 +63,15 @@ class DatasetHandler(BaseHandler):
             headerfile_path)
         meta_features = list(time_series.from_netcdf(ts_paths[0])
                              .meta_features.keys())
-        d = Dataset.add(name=dataset_name, project=p, file_uris=ts_paths,
-                        meta_features=meta_features)
+        unique_ts_paths = [os.path.join(os.path.dirname(ts_path),
+                                        str(uuid.uuid4()) + "_" +
+                                        util.secure_filename(ts_path))
+                           for ts_path in ts_paths]
+        for old_path, new_path in zip(ts_paths, unique_ts_paths):
+            os.rename(old_path, new_path)
+        file_names = [shorten_fname(ts_path) for ts_path in ts_paths]
+        d = Dataset.add(name=dataset_name, project=p, file_names=file_names,
+                        file_uris=unique_ts_paths, meta_features=meta_features)
 
         return self.success(d, 'cesium/FETCH_DATASETS')
 
