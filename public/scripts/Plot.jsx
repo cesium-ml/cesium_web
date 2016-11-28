@@ -45,7 +45,6 @@ class Plot extends Component {
               }
             }}
         />
-
     );
   }
 }

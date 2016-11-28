@@ -1,10 +1,9 @@
+from itertools import cycle, islice
 import numpy as np
-import pandas as pd
-from sklearn.metrics import confusion_matrix
-import plotly
-import plotly.offline as py
-from plotly.tools import FigureFactory as FF
-
+from bokeh.plotting import figure
+from bokeh.embed import components
+from bokeh.layouts import gridplot
+from bokeh.palettes import PuBu as palette
 from cesium import featurize
 from .config import cfg
 
@@ -31,72 +30,43 @@ def feature_scatterplot(fset_path, features_to_plot):
 
     Returns
     -------
-    (fig.data, fig.layout)
-        Returns (fig.data, fig.layout) where `fig` is an instance of
-        `plotly.tools.FigureFactory`.
+    (str, str)
+        Returns (script, div) tags for the desired plot as output by
+        `bokeh.embed.components`.
     """
-    # fset, data = featurize.load_featureset(fset_path)
-    # fset = fset[features_to_plot]
-    #
-    # if 'label' in data:
-    #     fset['label'] = data['label']
-    #     index = 'label'
-    # else:
-    #     index = None
-    #
-    # # TODO replace 'trace {i}' with class labels
-    # fig = FF.create_scatterplotmatrix(fset, diag='box', index=index,
-    #                                   height=800, width=800)
-    #
-    # py.plot(fig, auto_open=False, output_type='div')
-    #
-    #
-    # return fig.data, fig.layout
+    fset, data = featurize.load_featureset(fset_path)
+    X = fset[features_to_plot]
+    if 'target' in fset and fset.target.values.dtype != np.float:
+        y = fset.target.values
+        labels = np.unique(y)
+    else:
+        y = [None] * len(X)
+        labels = [None]
 
-    # Try to return a Bokeh plot first
+    if len(labels) in palette:
+        colors = palette[len(labels)]
+    else:
+        all_colors = sorted(palette.items(), key=lambda x: x[0],
+                            reverse=True)[0][1]
+        colors = list(islice(cycle(all_colors), len(labels)))
 
-    # create some data
-    x1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    y1 = [0, 8, 2, 4, 6, 9, 5, 6, 25, 28, 4, 7]
-    x2 = [2, 5, 7, 15, 18, 19, 25, 28, 9, 10, 4]
-    y2 = [2, 4, 6, 9, 15, 18, 0, 8, 2, 25, 28]
-    x3 = [0, 1, 0, 8, 2, 4, 6, 9, 7, 8, 9]
-    y3 = [0, 8, 4, 6, 9, 15, 18, 19, 19, 25, 28]
+    plots = np.array([[figure(width=300, height=200)
+                       for j in range(len(features_to_plot))]
+                      for i in range(len(features_to_plot))])
+    for (i, j), p in np.ndenumerate(plots):
+        for l, c in zip(labels, colors):
+            if l is not None:
+                inds = np.where(y == l)[0]
+            else:
+                inds = np.arange(len(X))
+            p.circle(X.values[inds, i], X.values[inds, j], color=c,
+                     legend=(l if (i == j and l is not None) else None))
+            p.legend.location = 'bottom_right'
+            p.legend.label_text_font_size = '6pt'
+            p.legend.spacing = 0
+            p.legend.padding = 0
+            p.xaxis.axis_label = features_to_plot[i]
+            p.yaxis.axis_label = features_to_plot[j]
 
-    # select the tools we want
-    TOOLS="pan,wheel_zoom,box_zoom,reset,save"
-
-    # the red and blue graphs will share this data range
-    xr1 = Range1d(start=0, end=30)
-    yr1 = Range1d(start=0, end=30)
-
-    # only the green will use this data range
-    xr2 = Range1d(start=0, end=30)
-    yr2 = Range1d(start=0, end=30)
-
-    # build our figures
-    p1 = figure(x_range=xr1, y_range=yr1, tools=TOOLS, plot_width=300, plot_height=300)
-    p1.scatter(x1, y1, size=12, color="red", alpha=0.5)
-
-    js, div = components(p1, wrap_script=False)
-
-    return js, div
-
-
-#def prediction_heatmap(pred_path):
-#    with xr.open_dataset(pred_path) as pset:
-#        pred_df = pd.DataFrame(pset.prediction.values, index=pset.name,
-#                               columns=pset.class_label.values)
-#    pred_labels = pred_df.idxmax(axis=1)
-#    C = confusion_matrix(pset.label, pred_labels)
-#    row_sums = C.sum(axis=1)
-#    C = C / row_sums[:, np.newaxis]
-#    fig = FF.create_annotated_heatmap(C, x=[str(el) for el in
-#                                            pset.class_label.values],
-#                                      y=[str(el) for el in
-#                                         pset.class_label.values],
-#                                      colorscale='Viridis')
-#
-#    py.plot(fig, auto_open=False, output_type='div')
-#
-#    return fig.data, fig.layout
+    plot = gridplot(plots.tolist(), ncol=len(features_to_plot), mergetools=True)
+    return components(plot, wrap_script=False)
