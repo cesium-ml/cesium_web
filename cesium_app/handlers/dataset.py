@@ -24,7 +24,6 @@ class DatasetHandler(BaseHandler):
         return d
 
     def post(self):
-        print(self.request)
         if not 'tarFile' in self.request.files:
             return self.error('No tar file uploaded')
 
@@ -46,7 +45,6 @@ class DatasetHandler(BaseHandler):
         # Header file is optional for unlabled data w/o metafeatures
         if 'headerFile' in self.request.files:
             headerfile = self.request.files['headerFile'][0]
-            print(self.request.files['headerFile'])
             headerfile_name = (str(uuid.uuid4()) + "_" +
                                util.secure_filename(headerfile.filename))
             headerfile_path = pjoin(cfg['paths']['upload_folder'], headerfile_name)
