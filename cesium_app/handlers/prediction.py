@@ -5,11 +5,13 @@ from .. import util
 
 import tornado.gen
 from tornado.web import RequestHandler
+import tornado.escape
 
 import cesium.time_series
 import cesium.featurize
 import cesium.predict
 import cesium.featureset
+from cesium.features import CADENCE_FEATS, GENERAL_FEATS, LOMB_SCARGLE_FEATS
 
 import xarray as xr
 import joblib
@@ -137,3 +139,28 @@ class PredictionHandler(BaseHandler):
         prediction = self._get_prediction(prediction_id)
         prediction.delete_instance()
         return self.success(action='cesium/FETCH_PREDICTIONS')
+
+
+class PredictSingleHandler(BaseHandler):
+    def post(self):
+        ts_data = tornado.escape.json_decode(self.get_argument('ts_data'))
+        model_id = int(self.get_argument('modelID'))
+        features_to_use = tornado.escape.json_decode(
+            self.get_argument('features_to_use', '[]'))
+        meta_feats = tornado.escape.json_decode(
+            self.get_argument('meta_features', 'null'))
+
+        if features_to_use == 'all':
+            features_to_use = CADENCE_FEATS + GENERAL_FEATS + LOMB_SCARGLE_FEATS
+
+        model_uri = Model.get(Model.id == model_id).file.uri
+        model = joblib.load(model_uri)
+
+        fset_data = cesium.featurize.featurize_time_series(
+            *ts_data, features_to_use=features_to_use, meta_features=meta_feats)
+        fset = cesium.featureset.Featureset(fset_data).impute()
+
+        predset = cesium.predict.model_predictions(fset, model)
+        predset['name'] = predset.name.astype('str')
+
+        return self.success(predset)

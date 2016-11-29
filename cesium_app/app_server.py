@@ -12,7 +12,8 @@ from .handlers import (
     FeatureListHandler,
     SklearnModelsHandler,
     SocketAuthTokenHandler,
-    PlotFeaturesHandler
+    PlotFeaturesHandler,
+    PredictSingleHandler
     )
 
 
@@ -32,6 +33,7 @@ def make_app():
         (r'/models(/.*)?', ModelHandler),
         (r'/predictions(/[0-9]+)?', PredictionHandler),
         (r'/predictions/([0-9]+)/(download)', PredictionHandler),
+        (r'/predict_single(/.*)?', PredictSingleHandler),
         (r'/features_list', FeatureListHandler),
         (r'/socket_auth_token', SocketAuthTokenHandler),
         (r'/sklearn_models', SklearnModelsHandler),

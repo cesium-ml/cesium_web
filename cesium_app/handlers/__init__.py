@@ -5,6 +5,6 @@ from .feature import FeatureHandler
 from .feature_list import FeatureListHandler
 from .model import ModelHandler
 from .plot_features import PlotFeaturesHandler
-from .prediction import PredictionHandler
+from .prediction import PredictionHandler, PredictSingleHandler
 from .sklearn_models import SklearnModelsHandler
 from .socket_auth import SocketAuthTokenHandler
