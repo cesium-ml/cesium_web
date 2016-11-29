@@ -5,6 +5,7 @@ import os
 import distutils.spawn
 import types
 from cesium_app import models as m
+from cesium_app.config import cfg
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -35,7 +36,7 @@ def driver(request):
 
     driver._get = driver.get
     def get(self, uri):
-        return self._get('http://localhost:5000' + uri)
+        return self._get(cfg['server']['url'] + uri)
 
     driver.set_window_size(1920, 1080)
     driver.get = types.MethodType(get, driver)
