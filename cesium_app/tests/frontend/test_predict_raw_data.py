@@ -4,13 +4,15 @@ import requests
 import json
 
 
-def test_predict_single():
+def test_predict_raw_data():
     with create_test_project() as p, create_test_dataset(p) as ds,\
          create_test_featureset(p) as fs, create_test_model(fs) as m:
         ts_data = [[1, 2, 3, 4], [32.2, 53.3, 32.3, 32.52], [0.2, 0.3, 0.6, 0.3]]
-        query_string = ('http://localhost:5000/predict_single?ts_data={}'
-                        '&modelID={}&features_to_use="all"').format(
-                            json.dumps(ts_data), json.dumps(m.id))
+        impute_kwargs = {'strategy': 'constant', 'value': None}
+        query_string = ('http://localhost:5000/predict_raw_data?ts_data={}'
+                        '&modelID={}&impute_kwargs={}').format(
+                            json.dumps(ts_data), json.dumps(m.id),
+                            json.dumps(impute_kwargs))
         response = requests.post(query_string).json()
         assert response['status'] == 'success'
         assert response['data']['0']['features']['total_time'] == 3.0

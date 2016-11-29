@@ -13,7 +13,7 @@ from .handlers import (
     SklearnModelsHandler,
     SocketAuthTokenHandler,
     PlotFeaturesHandler,
-    PredictSingleHandler
+    PredictRawDataHandler
     )
 
 
@@ -33,7 +33,7 @@ def make_app():
         (r'/models(/.*)?', ModelHandler),
         (r'/predictions(/[0-9]+)?', PredictionHandler),
         (r'/predictions/([0-9]+)/(download)', PredictionHandler),
-        (r'/predict_single(/.*)?', PredictSingleHandler),
+        (r'/predict_raw_data(/.*)?', PredictRawDataHandler),
         (r'/features_list', FeatureListHandler),
         (r'/socket_auth_token', SocketAuthTokenHandler),
         (r'/sklearn_models', SklearnModelsHandler),

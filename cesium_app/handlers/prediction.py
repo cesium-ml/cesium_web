@@ -5,7 +5,7 @@ from .. import util
 
 import tornado.gen
 from tornado.web import RequestHandler
-import tornado.escape
+from tornado.escape import json_decode
 
 import cesium.time_series
 import cesium.featurize
@@ -141,26 +141,24 @@ class PredictionHandler(BaseHandler):
         return self.success(action='cesium/FETCH_PREDICTIONS')
 
 
-class PredictSingleHandler(BaseHandler):
+class PredictRawDataHandler(BaseHandler):
     def post(self):
-        ts_data = tornado.escape.json_decode(self.get_argument('ts_data'))
-        model_id = int(self.get_argument('modelID'))
-        features_to_use = tornado.escape.json_decode(
-            self.get_argument('features_to_use', '[]'))
-        meta_feats = tornado.escape.json_decode(
+        ts_data = json_decode(self.get_argument('ts_data'))
+        model_id = json_decode(self.get_argument('modelID'))
+        meta_feats = json_decode(
             self.get_argument('meta_features', 'null'))
+        impute_kwargs = json_decode(
+            self.get_argument('impute_kwargs', '{}'))
 
-        if features_to_use == 'all':
-            features_to_use = CADENCE_FEATS + GENERAL_FEATS + LOMB_SCARGLE_FEATS
-
-        model_uri = Model.get(Model.id == model_id).file.uri
-        model = joblib.load(model_uri)
+        model = Model.get(Model.id == model_id)
+        computed_model = joblib.load(model.file.uri)
+        features_to_use = model.featureset.features_list
 
         fset_data = cesium.featurize.featurize_time_series(
             *ts_data, features_to_use=features_to_use, meta_features=meta_feats)
-        fset = cesium.featureset.Featureset(fset_data).impute()
+        fset = cesium.featureset.Featureset(fset_data).impute(**impute_kwargs)
 
-        predset = cesium.predict.model_predictions(fset, model)
+        predset = cesium.predict.model_predictions(fset, computed_model)
         predset['name'] = predset.name.astype('str')
 
         return self.success(predset)
