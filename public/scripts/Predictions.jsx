@@ -126,8 +126,8 @@ let PredictionsTable = props => (
         return (
           <FoldableRow key={idx}>
             <tr key={`row${idx}`}>
-              <td style={{ textDecoration: 'underline' }}>{prediction.model_name}</td>
               <td>{prediction.dataset_name}</td>
+              <td style={{ textDecoration: 'underline' }}>{prediction.model_name}</td>
               <td>{reformatDatetime(prediction.created)}</td>
               {status}
               <td>
