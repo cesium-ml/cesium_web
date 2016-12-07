@@ -165,7 +165,7 @@ let ModelInfo = props => (
     <thead>
       <tr>
         <th>Model Type</th>
-        <th>Hyper Parameters</th>
+        <th>Hyperparameters</th>
         <th>Training Data Score</th>
       </tr>
     </thead>
@@ -175,7 +175,18 @@ let ModelInfo = props => (
           {props.model.type}
         </td>
         <td>
-          {JSON.stringify(props.model.params, null, 4)}
+          <table>
+            <tbody>
+              {
+                Object.keys(props.model.params).map(param => (
+                  <tr>
+                    <td>{param}</td>
+                    <td style={{ paddingLeft: "5px" }}>{JSON.stringify(props.model.params[param])}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
         </td>
         <td>
           {props.model.train_score}

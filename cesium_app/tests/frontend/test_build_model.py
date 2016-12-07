@@ -132,7 +132,7 @@ def test_model_info_display(driver):
         driver.find_element_by_xpath("//td[contains(text(),'{}')]".format(m.name)).click()
         assert driver.find_element_by_xpath("//th[contains(text(),'Model Type')]")\
                      .is_displayed()
-        assert driver.find_element_by_xpath("//th[contains(text(),'Hyper "
-                                            "Parameters')]").is_displayed()
+        assert driver.find_element_by_xpath("//th[contains(text(),'Hyper"
+                                            "parameters')]").is_displayed()
         assert driver.find_element_by_xpath("//th[contains(text(),'Training "
                                             "Data Score')]").is_displayed()
