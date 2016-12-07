@@ -42,14 +42,17 @@ class ModelHandler(BaseHandler):
         return self.success(model_info)
 
     @tornado.gen.coroutine
-    def _await_model(self, score_future, save_future, model):
+    def _await_model(self, score_future, best_params, save_future, model):
         try:
             yield save_future._result()
             score = yield score_future._result()
+            if best_params:
+                best_params = yield best_params._result()
 
             model.task_id = None
             model.finished = datetime.datetime.now()
             model.train_score = score
+            model.params.update(best_params)
             model.save()
 
             self.action('cesium/SHOW_NOTIFICATION',
@@ -107,6 +110,8 @@ class ModelHandler(BaseHandler):
             params_to_optimize=params_to_optimize)
         score_future = executor.submit(build_model.score_model, computed_model,
                                        imputed_fset)
+        best_params = executor.submit(lambda cmp_mod: cmp_mod.best_params_,
+                                      computed_model) if params_to_optimize else {}
         save_future = executor.submit(joblib.dump, computed_model, model_file.uri)
 
         @tornado.gen.coroutine
@@ -120,7 +125,8 @@ class ModelHandler(BaseHandler):
         loop = tornado.ioloop.IOLoop.current()
         loop.add_callback(_wait_and_call, xr.Dataset.close, imputed_fset,
                           futures=[computed_model, score_future, save_future])
-        loop.spawn_callback(self._await_model, score_future, save_future, model)
+        loop.spawn_callback(self._await_model, score_future, best_params,
+                            save_future, model)
 
         return self.success(data={'message': "Model training begun."},
                             action='cesium/FETCH_MODELS')
