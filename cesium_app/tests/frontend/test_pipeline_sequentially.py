@@ -25,8 +25,7 @@ def test_pipeline_sequentially(driver):
     driver.implicitly_wait(1)
     status_td = driver.find_element_by_xpath(
         "//div[contains(text(),'Added new project')]")
-    time.sleep(0.1)
-    assert test_proj_name in driver.page_source
+    driver.refresh()
 
     # Ensure new project is selected
     proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
@@ -54,7 +53,11 @@ def test_pipeline_sequentially(driver):
     driver.implicitly_wait(1)
     status_td = driver.find_element_by_xpath(
         "//div[contains(text(),'Successfully uploaded new dataset')]")
-    assert test_dataset_name in driver.page_source
+    driver.refresh()
+
+    # Ensure new project is selected
+    proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+    proj_select.select_by_visible_text(test_proj_name)
 
     # Generate new feature set
     test_featureset_name = str(uuid.uuid4())
