@@ -48,13 +48,15 @@ def _build_model_compute_statistics(fset_path, model_type, model_params,
 
     Returns
     -------
-    (float, dict) tuple
-        Tuple containing (train_score, best_params) where train_score is the
-        model's training accuracy and best_params is a dictionary of best
-        hyperparameter values determined by `scikit-learn`'s `GridSearchCV`.
-        If no hyperparameter optimization is performed (i.e. `params_to_optimize`
-        is None or is an empty dict, this will be an empty dict.
-'''
+    score : float
+        The model's training score.
+    best_params : dict
+        Dictionary of best hyperparameter values (keys are parameter names,
+        values are the corresponding best values) determined by `scikit-learn`'s
+        `GridSearchCV`. If no hyperparameter optimization is performed (i.e.
+        `params_to_optimize` is None or is an empty dict, this will be an empty
+        dict.
+    '''
     fset = featureset.from_netcdf(fset_path, engine=cfg['xr_engine'])
     computed_model = build_model.build_model_from_featureset(
         featureset=fset, model_type=model_type,
