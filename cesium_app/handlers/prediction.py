@@ -111,7 +111,7 @@ class PredictionHandler(BaseHandler):
         loop = tornado.ioloop.IOLoop.current()
         loop.spawn_callback(self._await_prediction, future, prediction)
 
-        return self.success(prediction, 'cesium/FETCH_PREDICTIONS')
+        return self.success(prediction.display_info(), 'cesium/FETCH_PREDICTIONS')
 
     def get(self, prediction_id=None, action=None):
         if action == 'download':
