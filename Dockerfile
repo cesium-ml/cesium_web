@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt-get -y upgrade && \
     apt-get install -y python3.5 python3-venv libpq-dev libhdf5-serial-dev \
                        libnetcdf-dev supervisor libpython3-dev supervisor \
-                       nginx npm nodejs && \
+                       nginx npm nodejs git && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     useradd --create-home --shell /bin/bash cesium
@@ -38,4 +38,3 @@ CMD bash -c "source /cesium_env/bin/activate && \
   (make log &) && \
   PYTHONPATH=. python -c \"from cesium_app.models import create_tables as c; c()\" && \
   make run"
-
