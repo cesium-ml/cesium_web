@@ -17,7 +17,6 @@ section_end "install.cesium.requirements"
 
 
 section "install.cesium_web.requirements"
-sudo ln -s /usr/bin/nodejs /usr/bin/node
 npm --version
 node --version
 make dependencies
