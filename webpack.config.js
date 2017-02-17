@@ -27,7 +27,7 @@ const config = {
           compact: false
         }
       },
-      { test: /\.css$/, loader: 'style!css' },
+      { test: /\.css$/, loader: 'style!css-loader' },
       { test: /node_modules/, loader: 'ify-loader' }
     ],
   },
