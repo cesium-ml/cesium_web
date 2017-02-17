@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-id -u postgres
+_=$(id -u postgres 2>&1)
 
 if [[ $? == 0 ]]; then
     echo "Configuring Linux postgres"
