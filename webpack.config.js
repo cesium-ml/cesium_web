@@ -28,7 +28,7 @@ const config = {
         }
       },
       { test: /\.css$/, loader: 'style!css' },
-      { test: /node_modules/, loader: 'ify' }
+      { test: /node_modules/, loader: 'ify-loader' }
     ],
   },
   plugins: [
