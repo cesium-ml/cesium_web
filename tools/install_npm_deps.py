@@ -23,7 +23,10 @@ for dep in all_deps:
     if not os.path.exists(pjoin(pkg_path, 'node_modules', dep)):
         print(("Development dependency '{}' unfulfilled. "
                "Installing requirements.").format(dep))
-        subprocess.call("npm install".split())
-        sys.exit(0)
+        p = subprocess.call(['npm', 'install'])
+        if int(p) == 0:
+            sys.exit(subprocess.call(['npm', 'update']))
+        else:
+            sys.exit(p)
 
 print('Dependencies from {} verified.'.format(pkg_file))
