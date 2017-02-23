@@ -1,4 +1,6 @@
 {
+    "comment": "off = 0, warn = 1, error = 2",
+
     "parser": "babel-eslint",
     "env": {
         "browser": true
@@ -25,7 +27,7 @@
         "no-class-assign": 0,
         "jsx-a11y/label-has-for": 0,
         "jsx-a11y/href-no-hash": 1,
-        "camelcase": 1,
+        "camelcase": 0,
         "no-fallthrough": 0,
         "no-restricted-syntax": 1,
         "guard-for-in": 1,

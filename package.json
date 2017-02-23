@@ -2,7 +2,8 @@
   "name": "Cesium",
   "license": "BSD-3-Clause",
   "scripts": {
-    "build": "webpack"
+    "build": "make bundle",
+    "test": "make test"
   },
   "dependencies": {
     "react": "^15.1.0",

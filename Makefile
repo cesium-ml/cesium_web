@@ -23,7 +23,7 @@ db_drop:
 db_test_data:
 	PYTHONPATH=. python ./cesium_app/models.py
 
-$(bundle): webpack.config.js
+$(bundle): webpack.config.js package.json
 	$(webpack)
 
 bundle: $(bundle)
