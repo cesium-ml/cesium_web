@@ -32,7 +32,6 @@ with open(req_file) as f:
         except ImportError:
             print(("Development dependency '{}' unfulfilled. "
                    "Installing requirements.").format(dep))
-            subprocess.call("pip install -r {}".format(req_file).split())
-            sys.exit(0)
-
+            p = subprocess.call("pip install -r {}".format(req_file).split())
+            sys.exit(p)
 print('Dependencies from {} verified.'.format(req_file))
