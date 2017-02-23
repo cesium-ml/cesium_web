@@ -67,6 +67,7 @@ matrix:
     - python: 3.5
       env:
         - TEST_TARGET=test
+        - TRAVIS_NODE_VERSION="7"
 
 before_install:
   - ccache -s
@@ -76,6 +77,7 @@ before_install:
   - export FLASK_APP=cesium_app/flask_server.py
 
 install:
+  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
   - .travis/travis_install.sh
 
 before_script:
