@@ -8,11 +8,11 @@ const config = {
     filename: 'bundle.js'
   },
   module: {
-    loaders: [
+    rules: [
       { test: /\.js?$/,
         exclude: /node_modules/,
         loader: 'babel-loader',
-        query:
+        options:
         {
           presets: ['es2015', 'react', 'stage-2'],
           compact: false
@@ -21,13 +21,18 @@ const config = {
       { test: /\.jsx?$/,
         exclude: /node_modules/,
         loader: 'babel-loader',
-        query:
+        options:
         {
           presets: ['es2015', 'react', 'stage-2'],
           compact: false
         }
       },
-      { test: /\.css$/, loader: 'style-loader!css-loader' },
+      { test: /\.css$/,
+        use: [
+          'style-loader',
+          'css-loader'
+        ]
+      },
       { test: /node_modules/, loader: 'ify-loader' }
     ],
   },
@@ -35,13 +40,9 @@ const config = {
     new webpack.ProvidePlugin({
       fetch: 'imports-loader?this=>global!exports-loader?global.fetch!whatwg-fetch'
     }),
-    new webpack.ProvidePlugin({
-      $: "jquery",
-      jQuery: "jquery",
-    }),
   ],
   resolve: {
-    extensions: ['', '.js', '.jsx']
+    extensions: ['.js', '.jsx']
   }
 };
 

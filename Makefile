@@ -66,3 +66,6 @@ docker-images:
 	docker build -t cesium/web . && docker push cesium/web
 	cd docker/postgres && docker build -t cesium/postgres . && docker push cesium/postgres
 
+npm-update:
+	npm install -g npm-check-updates
+	ncu
