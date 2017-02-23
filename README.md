@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/cesium-ml/cesium_web.svg?branch=master)](https://travis-ci.org/cesium-ml/cesium_web)
 
-## About 
+## About
 
 Web frontend for the [`cesium` library](https://github.com/cesium-ml/cesium). Within the browser, users can upload time series data data, extract features, fit a model, and generate predictions for new data.
 
@@ -25,36 +25,26 @@ The easiest way to try the web app is to run it through Docker:
    ```
 
 ## Running the app locally
-1. Install the following dependencies:
+1. Install the following dependencies: Supervisor, NGINX, PostgreSQL, Node.JS.
+  1. On macOS:
+    1. Using [Homebrew](http://brew.sh/): `brew install supervisor nginx postgresql node`
+    2. Start the postgresql server:
+      - to start automatically at login: `brew services start postgresql`
+      - to start manually: `pg_ctl -D /usr/local/var/postgres start`
+  2. On Linux:
+    1. Using `apt-get`: `sudo apt-get install nginx supervisor postgresql libpq-dev npm nodejs-legacy`
+    2. It may be necessary to configure your database permissions: at the end of your `pg_hba.conf` (typically in `/etc/postgresql/9.5/main`), add the following lines:
 
-- supervisor
-- nginx
-- postgresql (including libpq-dev on Debian)
-- npm
+    ```
+    local   all             postgres                                peer
+    local cesium cesium trust
+    local cesium_test cesium trust
+    ```
+    and restart `postgresl` (`sudo service postgresql restart`).
 
-### MacOS
-Using [Homebrew](http://brew.sh/):
-
-`brew install supervisor nginx postregsql node`
-
-### Linux
-On Debian or Ubuntu:
-```
-sudo apt-get install nginx supervisor postgresql libpq-dev npm nodejs-legacy
-```
-
-2. Install Python dependencies: `pip install -r requirements.txt`
-3. On Linux, it may be necessary to configure your database permissions: at the end of your `pg_hba.conf` (typically in `/etc/postgresql/9.5/main`), add the following lines:
-
-```
-local   all             postgres                                peer
-local cesium cesium trust
-local cesium_test cesium trust
-```
-and restart `postgresl` (`sudo service postgresql restart`).
-
-4. Initialize the database with `make db_init`
-5. Run `make` to start the server and install additional dependencies, and navigate to `localhost:5000`.
+2. Install Python and JavaScript dependencies with `make_dependencies`
+3. Initialize the database with `make db_init`
+4. Run `make` to start the server and navigate to `localhost:5000`
 
 ## Dev Tips
 To execute the test suite:
@@ -71,6 +61,8 @@ Debugging:
 - Run `make log` to watch log output
 - Run `make debug` to start webserver in debug mode
 - Run `make attach` to attach to output of webserver, e.g. for use with `pdb.set_trace()`
+
+NOTE: Requires Python 3.5 or later.
 
 ## Standards
 To ensure that JavaScript & JSX code conforms with industry style

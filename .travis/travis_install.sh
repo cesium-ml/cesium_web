@@ -11,6 +11,7 @@ section_end "install.base.requirements"
 
 
 section "install.cesium.requirements"
+pip install -e git://github.com/cesium-ml/cesium.git#egg=cesium
 pip install --retries 3 -r requirements.txt
 pip list
 section_end "install.cesium.requirements"
