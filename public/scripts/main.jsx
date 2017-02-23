@@ -2,6 +2,7 @@ import React from 'react';
 import { connect, Provider } from 'react-redux';
 import ReactDOM from 'react-dom';
 import ReactTabs from 'react-tabs';
+import Tour from 'react-user-tour';
 
 import 'bootstrap-css';
 import 'bootstrap';
@@ -32,10 +33,37 @@ const messageHandler = (new MessageHandler(store.dispatch)).handle;
 
 
 class MainContent extends React.Component {
+
+  constructor() {
+    super();
+    this.state = {
+      isTourActive: false,
+      tourStep: 1
+    }
+  }
+
   componentDidMount() {
     store.dispatch(Action.hydrate());
+    this.setState({
+      isTourActive: true
+    });
   }
+
   render() {
+
+      const tourTitleStyle = { //added this!
+      fontWeight: 700,
+      fontSize: 16,
+      paddingTop: 10,
+      paddingBottom: 10,
+      paddingLeft: 10
+    };
+
+    const tourMessageStyle = { //added this!
+      fontSize: 12,
+      paddingLeft: 10
+    };
+
     const config = {
       sidebar: 300,
       topbar: '4em',
@@ -203,8 +231,8 @@ class MainContent extends React.Component {
       transform: rotate
     };
     return (
-      <div>
 
+      <div> 
         <div style={style.topbar}>
           <div style={style.topbar.text}>
             <div style={style.topbar.header}>
@@ -213,6 +241,7 @@ class MainContent extends React.Component {
                 src="images/cesium-blue-dark.png"
                 alt="Cesium Logo"
                 onClick={this.props.spinLogo}
+                onClick={() => this.setState({isTourActive: true, tourStep: 1})} //added this
                 style={{ ...(style.logo.img), ...rotateStyle }}
               />
             </div>
@@ -226,18 +255,19 @@ class MainContent extends React.Component {
           <div style={style.sidebarContent}>
             <ProjectSelector label="Choose your project here:" style={style.projectSelector} />
             <AddProject id="newProjectExpander" label="Or click here to add a new one" style={style.addProject} />
+
           </div>
 
-          <div style={style.topic}>Progress</div>
+          <div style={style.topic} >Progress</div>
 
           <div style={style.sidebarContent}>
-            <div style={style.progress}>
+            <div style={style.progress} >
               <Progress type="data" />
             </div>
-            <div style={style.progress}>
+            <div style={style.progress} >
               <Progress type="features" />
             </div>
-            <div style={style.progress}>
+            <div style={style.progress} >
               <Progress type="models" />
             </div>
             <div style={style.progress}>
@@ -249,7 +279,61 @@ class MainContent extends React.Component {
 
         <div className="mainContent" style={style.main}>
 
+        <div
+          style={{width: 10, height: 20, left: "5%", top: "40%", position: "absolute", backgroundColor: "red"}}
+          className="stop-1"
+        />
+          <div
+          style={{width: 10, height: 20, left: "25%", top: "40%", position: "absolute", backgroundColor: "blue"}}
+          
+        />
+
           <Notifications style={style.notifications} />
+
+          <Tour //added this tour tag
+            active={this.state.isTourActive}
+            step={this.state.tourStep}
+            onNext={(step) => this.setState({tourStep: step})}
+            onBack={(step) => this.setState({tourStep: step})}
+            onCancel={() => this.setState({isTourActive: false})}
+            steps={[
+              {
+                step: 1,
+                selector: ".stop-1",
+                title: <div style={tourTitleStyle}>Welcome to Cesium!</div>,
+                body: <div style={tourMessageStyle}>Create a new project to begin. You can also choose from your existing projects.</div>,
+                //position: "bottom"
+              },
+              {
+                step: 2,
+                selector: ".stop-2",
+                title: <div style={tourTitleStyle}>Upload a dataset!</div>,
+                body: <div style={tourMessageStyle}>Upload the dataset you would like to analyze.</div>,
+                position: "bottom"
+              },
+              {
+                step: 3,
+                selector: ".stop-3",
+                title: <div style={tourTitleStyle}>Compute Features!</div>,
+                body: <div style={tourMessageStyle}>Select features you would like to compute!</div>,
+                position: "bottom"
+              },
+              {
+                step: 4,
+                selector: ".stop-4",
+                title: <div style={tourTitleStyle}>Create Models!</div>,
+                body: <div style={tourMessageStyle}>Create a new model by choosing the model type and selecting the parameters.</div>,
+                position: "bottom"
+              },
+              {
+                step: 5,
+                selector: ".stop-5",
+                title: <div style={tourTitleStyle}>Make predictions!</div>,
+                body: <div style={tourMessageStyle}>Select your dataset and model to make a prediction.</div>,
+                position: "bottom"
+              }
+            ]}
+          />
 
           <Tabs>
             <TabList style={style.tabs}>
@@ -264,6 +348,7 @@ class MainContent extends React.Component {
                 data-tip
                 data-for="datasetsTabTooltip"
                 style={style.disableable}
+                className="stop-2"
               >
                 Data
               </Tab>
@@ -271,6 +356,7 @@ class MainContent extends React.Component {
                 data-tip
                 data-for="featuresTabTooltip"
                 style={style.disableable}
+                className="stop-3"
               >
                 Features
               </Tab>
@@ -278,6 +364,7 @@ class MainContent extends React.Component {
                 data-tip
                 data-for="modelsTabTooltip"
                 style={style.disableable}
+                className="stop-4"
               >
                 Models
               </Tab>
@@ -285,6 +372,7 @@ class MainContent extends React.Component {
                 data-tip
                 data-for="predictTabTooltip"
                 style={style.disableable}
+                className="stop-5"
               >
                 Predict
               </Tab>
