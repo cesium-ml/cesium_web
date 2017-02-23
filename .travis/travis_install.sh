@@ -24,6 +24,7 @@ sudo n stable
 npm --version
 node --version
 make dependencies
+npm view webpack version
 section_end "install.cesium_web.requirements"
 
 
