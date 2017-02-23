@@ -3,26 +3,24 @@
   "license": "BSD-3-Clause",
   "scripts": {
     "build": "make bundle",
-    "test": "make test"
+    "test": "eslint -c .eslintrc --ext .jsx,.js public/scripts/ && make test"
   },
   "dependencies": {
+    "bootstrap": "^3.3.7",
+    "bootstrap-css": "^3.0.0",
+    "plotly.js": "^1.23.1",
     "react": "^15.1.0",
     "react-dom": "^15.1.0",
-    "react-modal": "latest",
-    "react-tabs": "latest",
-    "react-addons-css-transition-group": "latest",
-    "bootstrap": "latest",
-    "bootstrap-css": "latest",
-    "redux": "latest",
-    "react-redux": "latest",
-    "redux-thunk": "latest",
-    "redux-logger": "latest",
-    "whatwg-fetch": "latest",
+    "react-redux": "^5.0.3",
+    "react-tabs": "^0.8.2",
+    "react-tooltip": "^3.2.7",
+    "redux": "^3.6.0",
     "redux-form": "^5.3.3",
-    "plotly.js": "latest",
-    "react-tooltip": "latest",
+    "redux-logger": "^2.8.1",
+    "redux-thunk": "^2.2.0",
     "webpack": "^2.2.1",
-    "webpack-dev-server": "^2.4.1"
+    "webpack-dev-server": "^2.4.1",
+    "whatwg-fetch": "^2.0.2"
   },
   "devDependencies": {
     "babel": "^6.23.0",
