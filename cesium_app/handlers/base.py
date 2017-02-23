@@ -39,16 +39,18 @@ class BaseHandler(tornado.web.RequestHandler):
         N = 5
         for i in range(1, N + 1):
             try:
-                models.db.connect()
+                if models.db.is_closed():
+                    models.db.connect()
             except Exception as e:
                 if (i == N):
                     raise e
                 else:
-                  print('Error connecting to database -- sleeping for a while')
-                  time.sleep(5)
+                    print('Error connecting to database -- sleeping for a while')
+                    time.sleep(5)
 
     def on_finish(self):
-        models.db.close()
+        if not models.db.is_closed():
+            models.db.close()
 
     def error(self, message):
         print('APP ERROR:', message)
