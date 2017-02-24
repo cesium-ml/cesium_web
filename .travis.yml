@@ -73,7 +73,6 @@ before_install:
   - export PATH=/usr/lib/ccache:${PATH}
   - which python; python --version
   - source .travis/travis_funcs.sh
-  - export FLASK_APP=cesium_app/flask_server.py
 
 install:
   - .travis/travis_install.sh
