@@ -4,7 +4,10 @@
 
 ## About
 
-Web frontend for the [`cesium` library](https://github.com/cesium-ml/cesium). Within the browser, users can upload time series data data, extract features, fit a model, and generate predictions for new data.
+Web frontend for
+the [`cesium` library](https://github.com/cesium-ml/cesium). Within
+the browser, users can upload time series data data, extract features,
+fit a model, and generate predictions for new data.
 
 ## Getting started
 
@@ -18,20 +21,29 @@ The easiest way to try the web app is to run it through Docker:
 
 3. Wait a few seconds and navigate to `http://localhost:9000`
 
-4. Create a project and go! If you want some test data, an example header file and time series data are available at
+4. Create a project and go! If you want some test data, an example
+   header file and time series data are available at
+
    ```
    curl -Lo example-headers.dat https://raw.githubusercontent.com/cesium-ml/cesium-data/master/asas_training/asas_training_subset_classes.dat
    curl -Lo example-series.tar.gz https://raw.githubusercontent.com/cesium-ml/cesium-data/master/asas_training/asas_training_subset.tar.gz
    ```
 
 ## Running the app locally
+
+0. A Python 3.5 or later installation is required.
+
 1. Install the following dependencies: Supervisor, NGINX, PostgreSQL, Node.JS.
-  1. On macOS:
+
+  - On macOS:
+
     1. Using [Homebrew](http://brew.sh/): `brew install supervisor nginx postgresql node`
     2. Start the postgresql server:
       - to start automatically at login: `brew services start postgresql`
       - to start manually: `pg_ctl -D /usr/local/var/postgres start`
-  2. On Linux:
+
+  - On Linux:
+
     1. Using `apt-get`: `sudo apt-get install nginx supervisor postgresql libpq-dev npm nodejs-legacy`
     2. It may be necessary to configure your database permissions: at the end of your `pg_hba.conf` (typically in `/etc/postgresql/9.5/main`), add the following lines:
 
@@ -44,9 +56,14 @@ The easiest way to try the web app is to run it through Docker:
 
 2. Install Python and JavaScript dependencies with `make_dependencies`
 3. Initialize the database with `make db_init`
+
+If you've run this script before, you may see warnings here about the
+database already existing.  Ignore those.
+
 4. Run `make` to start the server and navigate to `localhost:5000`
 
 ## Dev Tips
+
 To execute the test suite:
 
 - Install ChromeDriver from:
@@ -62,9 +79,8 @@ Debugging:
 - Run `make debug` to start webserver in debug mode
 - Run `make attach` to attach to output of webserver, e.g. for use with `pdb.set_trace()`
 
-NOTE: Requires Python 3.5 or later.
-
 ## Standards
+
 To ensure that JavaScript & JSX code conforms with industry style
 recommendations, after adding or modifying any .js or .jsx files, run ESLint with
 `node_modules/eslint/bin/eslint.js -c .eslintrc --ext .jsx,.js public/scripts/`.
@@ -95,4 +111,5 @@ done
 ```
 
 ## Docker images
+
 Run `make docker-images` to build and push to Docker hub.
