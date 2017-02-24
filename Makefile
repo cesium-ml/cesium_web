@@ -12,7 +12,7 @@ dev_dependencies:
 
 dependencies:
 	@./tools/install_deps.py requirements.txt
-	@./tools/install_npm_deps.py package.json
+	npm update
 
 db_init:
 	./tools/db_create.sh
@@ -23,7 +23,7 @@ db_drop:
 db_test_data:
 	PYTHONPATH=. python ./cesium_app/models.py
 
-$(bundle): webpack.config.js
+$(bundle): webpack.config.js package.json
 	$(webpack)
 
 bundle: $(bundle)
@@ -66,3 +66,6 @@ docker-images:
 	docker build -t cesium/web . && docker push cesium/web
 	cd docker/postgres && docker build -t cesium/postgres . && docker push cesium/postgres
 
+npm-update:
+	npm install -g npm-check-updates
+	ncu

@@ -13,11 +13,12 @@ section_end "install.base.requirements"
 section "install.cesium.requirements"
 pip install -e git://github.com/cesium-ml/cesium.git#egg=cesium
 pip install --retries 3 -r requirements.txt
-pip list
+pip list --format=columns
 section_end "install.cesium.requirements"
 
 
 section "install.cesium_web.requirements"
+npm -g install npm@latest
 npm --version
 node --version
 make dependencies
