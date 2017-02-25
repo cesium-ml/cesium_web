@@ -51,7 +51,7 @@ config_files = [
     ]
 
 config_files.extend(glob.glob(
-    os.path.join(os.path.dirname(__file__), '../cesium-*.yaml')))
+    os.path.join(os.path.dirname(__file__), '../cesium*.yaml')))
 
 config_files = [os.path.abspath(cf) for cf in config_files]
 
