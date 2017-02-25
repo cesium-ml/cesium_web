@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     try:
         timeout = 0
-        while ((timeout < 10) and
+        while ((timeout < 30) and
                (not all([b'RUNNING' in line for line in supervisor_status()]))):
             time.sleep(1)
             timeout += 1
