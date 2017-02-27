@@ -68,8 +68,5 @@ docker-images:
 
 # Call this target to see which Javascript dependencies are not up to date
 check-js-updates:
-	@if [[ ! -x ./node_modules/.bin/npm-check-updates ]]; then \
-		npm install npm-check-updates > /dev/null 2>&1; \
-	fi
-	@ncu
+	@./tools/check_js_updates.sh
 
