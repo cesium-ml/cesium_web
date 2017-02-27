@@ -22,6 +22,7 @@ npm -g install npm@latest
 npm --version
 node --version
 make dependencies
+make check-js-updates
 section_end "install.cesium_web.requirements"
 
 
