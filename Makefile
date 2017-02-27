@@ -12,7 +12,7 @@ dev_dependencies:
 
 dependencies:
 	@./tools/install_deps.py requirements.txt
-	npm update
+	@./tools/check_js_deps.sh
 
 db_init:
 	./tools/db_create.sh
@@ -66,6 +66,10 @@ docker-images:
 	docker build -t cesium/web . && docker push cesium/web
 	cd docker/postgres && docker build -t cesium/postgres . && docker push cesium/postgres
 
-npm-update:
-	npm install -g npm-check-updates
-	ncu
+# Call this target to see which Javascript dependencies are not up to date
+check-js-updates:
+	@if [[ ! -x ./node_modules/.bin/npm-check-updates ]]; then \
+		npm install npm-check-updates > /dev/null 2>&1; \
+	fi
+	@ncu
+

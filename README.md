@@ -78,6 +78,8 @@ Debugging:
 - Run `make log` to watch log output
 - Run `make debug` to start webserver in debug mode
 - Run `make attach` to attach to output of webserver, e.g. for use with `pdb.set_trace()`
+- Run `make check-js-updates` to see which Javascript packages are eligible
+  for an upgrade.
 
 ## Standards
 
