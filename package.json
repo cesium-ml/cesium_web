@@ -8,6 +8,9 @@
   "dependencies": {
     "bootstrap": "^3.3.7",
     "bootstrap-css": "^3.0.0",
+    "css-loader": "^0.26.2",
+    "exports-loader": "^0.6.4",
+    "imports-loader": "^0.7.1",
     "jquery": "^3.1.1",
     "plotly.js": "^1.23.1",
     "react": "^15.1.0",
@@ -19,6 +22,7 @@
     "redux-form": "^5.3.3",
     "redux-logger": "^2.8.1",
     "redux-thunk": "^2.2.0",
+    "style-loader": "^0.13.2",
     "webpack": "^2.2.1",
     "webpack-dev-server": "^2.4.1",
     "whatwg-fetch": "^2.0.2"
