@@ -22,8 +22,6 @@ npm -g install npm@latest
 npm --version
 node --version
 make dependencies
-echo "The following report indicates Javascript packages that are eligible"
-echo "  for updates:"
 make check-js-updates
 section_end "install.cesium_web.requirements"
 
