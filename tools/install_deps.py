@@ -25,7 +25,7 @@ with open(req_file) as f:
         if '-e' in dep:
             dep = dep.split('#egg=')[-1]   # use the egg name
         else:
-            dep = re.split('\W+', dep)[0]  # discard version info
+            dep = re.split('[^\w\-]+', dep)[0]  # discard version info
 
         try:
             __import__(pkg_import.get(dep, dep))

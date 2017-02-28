@@ -7,21 +7,18 @@ bundle = ./public/build/bundle.js
 webpack = ./node_modules/.bin/webpack
 
 
-dev_dependencies:
-	@./tools/install_deps.py requirements.dev.txt
-
 dependencies:
-	@./tools/install_deps.py requirements.txt
-	@./tools/check_js_deps.sh
+	@./tools/silent_monitor.py ./tools/install_deps.py requirements.txt
+	@./tools/silent_monitor.py ./tools/check_js_deps.sh
 
 db_init:
-	./tools/db_create.sh
+	@./tools/silent_monitor.py ./tools/db_create.sh
 
 db_drop:
-	PYTHONPATH=. ./tools/db_drop.py
+	@PYTHONPATH=. ./tools/silent_monitor.py ./tools/db_drop.py
 
 db_test_data:
-	PYTHONPATH=. python ./cesium_app/models.py
+	@PYTHONPATH=. python ./cesium_app/models.py
 
 $(bundle): webpack.config.js package.json
 	$(webpack)
@@ -32,9 +29,9 @@ bundle-watch:
 	$(webpack) -w
 
 paths:
-	mkdir -p log run tmp
-	mkdir -p log/sv_child
-	mkdir -p ~/.local/cesium/logs
+	@mkdir -p log run tmp
+	@mkdir -p log/sv_child
+	@mkdir -p ~/.local/cesium/logs
 
 log: paths
 	./tools/watch_logs.py
@@ -68,5 +65,5 @@ docker-images:
 
 # Call this target to see which Javascript dependencies are not up to date
 check-js-updates:
-	@./tools/check_js_updates.sh
+	./tools/check_js_updates.sh
 
