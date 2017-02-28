@@ -32,8 +32,7 @@ const config = {
           'style-loader',
           'css-loader'
         ]
-      },
-      { test: /node_modules/, loader: 'ify-loader' }
+      }
     ],
   },
   plugins: [
