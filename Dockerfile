@@ -18,17 +18,19 @@ RUN python3.5 -m venv /cesium_env && \
     pip install --upgrade pip && \
     pip install --upgrade pip"
 
-ENV PIP_FIND_LINKS http://wheels.scikit-image.org
 ADD . /cesium
 WORKDIR /cesium
 
 RUN bash -c "source /cesium_env/bin/activate && \
     make paths && \
+    ln -s /usr/bin/nodejs /usr/bin/node && \
     make dependencies && \
     cp docker/cesium-docker.yaml . && \
-    ln -s /usr/bin/nodejs /usr/bin/node && \
     chown -R cesium.cesium /cesium_env && \
     chown -R cesium.cesium /cesium"
+
+ENV LC_ALL C.UTF-8
+ENV LANG C.UTF-8
 
 USER cesium
 
