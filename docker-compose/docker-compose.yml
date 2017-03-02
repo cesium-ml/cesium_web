@@ -6,8 +6,8 @@ web:
     - db
   volumes:
     - .:/home/cesium_app
-  environment:
-    - CELERY_BROKER=amqp://guest:guest@rabbit:5672//
+  # environment:
+  #   - CELERY_BROKER=amqp://guest:guest@rabbit:5672//
 db:
   image: postgres:9.5
   environment:

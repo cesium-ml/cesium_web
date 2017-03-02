@@ -46,19 +46,13 @@ paths:
 
 database:
     database: cesium
-    host: 
+    host:
     port: 5432
     user: cesium
-    password: 
-
-docker:
-    enabled: 0
+    password:
 
 server:
     url: http://localhost:5000
-
-xr_engine: netcdf4
-##xr_engine: h5netcdf
 
 ## testing:
 ##    ## Disable authentication
