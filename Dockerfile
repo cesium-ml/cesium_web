@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt-get -y upgrade && \
     apt-get install -y python3.5 python3-venv libpq-dev libhdf5-serial-dev \
                        libnetcdf-dev supervisor libpython3-dev supervisor \
-                       nginx npm nodejs && \
+                       nginx npm nodejs git && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     useradd --create-home --shell /bin/bash cesium
@@ -18,17 +18,19 @@ RUN python3.5 -m venv /cesium_env && \
     pip install --upgrade pip && \
     pip install --upgrade pip"
 
-ENV PIP_FIND_LINKS http://wheels.scikit-image.org
 ADD . /cesium
 WORKDIR /cesium
 
 RUN bash -c "source /cesium_env/bin/activate && \
     make paths && \
+    ln -s /usr/bin/nodejs /usr/bin/node && \
     make dependencies && \
     cp docker/cesium-docker.yaml . && \
-    ln -s /usr/bin/nodejs /usr/bin/node && \
     chown -R cesium.cesium /cesium_env && \
     chown -R cesium.cesium /cesium"
+
+ENV LC_ALL C.UTF-8
+ENV LANG C.UTF-8
 
 USER cesium
 
@@ -38,4 +40,3 @@ CMD bash -c "source /cesium_env/bin/activate && \
   (make log &) && \
   PYTHONPATH=. python -c \"from cesium_app.models import create_tables as c; c()\" && \
   make run"
-
