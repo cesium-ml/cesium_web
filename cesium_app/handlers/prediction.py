@@ -102,8 +102,7 @@ class PredictionHandler(BaseHandler):
         model_data = executor.submit(joblib.load, model.file.uri)
         predset = executor.submit(cesium.predict.model_predictions,
                                   fset_data, model_data)
-        future = executor.submit(xr.Dataset.to_netcdf, predset,
-                                 prediction_path, engine=cfg['xr_engine'])
+        future = executor.submit(xr.Dataset.to_netcdf, predset, prediction_path)
 
         prediction.task_id = future.key
         prediction.save()
