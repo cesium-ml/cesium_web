@@ -57,7 +57,7 @@ def _build_model_compute_statistics(fset_path, model_type, model_params,
         `params_to_optimize` is None or is an empty dict, this will be an empty
         dict.
     '''
-    fset = featureset.from_netcdf(fset_path, engine=cfg['xr_engine'])
+    fset = featureset.from_netcdf(fset_path)
     computed_model = build_model.build_model_from_featureset(
         featureset=fset, model_type=model_type,
         model_parameters=model_params,
