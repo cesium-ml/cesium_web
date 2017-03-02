@@ -2,6 +2,10 @@ import tornado.web
 import tornado.escape
 import tornado.ioloop
 
+# The Python Social Auth base handler gives us:
+#   user_id, get_current_user, login_user
+from social_tornado.handlers import BaseHandler as PSABaseHandler
+
 from .. import models
 from ..json_util import to_json
 from ..flow import Flow
@@ -9,13 +13,22 @@ from ..flow import Flow
 import time
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler(PSABaseHandler):
     def __init__(self, application, request):
         tornado.web.RequestHandler.__init__(self, application, request)
+
         self.flow = Flow()
 
+        user_id = self.get_secure_cookie('user_id')
+
+        if user_id:
+            print('User id is:', user_id)
+            self.username = models.User.get(int(user_id)).username
+        else:
+            self.username = None
+
     def get_username(self):
-        return "testuser@gmail.com"
+        return self.username
 
     def push(action, payload={}):
         self.flow.push(self.get_username(), action, payload)

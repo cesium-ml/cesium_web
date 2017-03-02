@@ -7,7 +7,11 @@ import subprocess
 
 pkg_import = {'pyyaml': 'yaml',
               'pyzmq': 'zmq',
-              'pyjwt': 'jwt'}
+              'pyjwt': 'jwt',
+              'social-auth-core': 'social_core',
+              'social-auth-app-tornado': 'social_tornado',
+              'social-auth-storage-peewee': 'social_peewee'
+              }
 
 
 if len(sys.argv) != 2:

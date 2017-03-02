@@ -1,9 +1,16 @@
 import tornado.web
+from tornado.web import url
+
+from .config import cfg
 
 import sys
 
+from social_tornado.handlers import (
+    AuthHandler, CompleteHandler, DisconnectHandler
+    )
 
 from .handlers import (
+    MainPageHandler,
     ProjectHandler,
     DatasetHandler,
     FeatureHandler,
@@ -23,10 +30,33 @@ def make_app():
     """
     settings = {
         'static_path': '../public',
-        'autoreload': '--debug' in sys.argv
-        }
+        'autoreload': '--debug' in sys.argv,
+        'cookie_secret': cfg['app']['secret-key'],
+
+        # Python Social Auth configuration
+        'SOCIAL_AUTH_STORAGE': 'models.TornadoStorage',
+        'SOCIAL_AUTH_STRATEGY': 'social_tornado.strategy.TornadoStrategy',
+        'SOCIAL_AUTH_AUTHENTICATION_BACKENDS': (
+            'social_core.backends.google.GoogleOAuth2'
+        )
+    }
+
+    if settings['cookie_secret'] == 'abc01234':
+        print('!' * 80)
+        print('  Your server is insecure. Please update the secret string in the')
+        print('  configuration file!')
+        print('!' * 80)
 
     handlers = [
+        # Social Auth routes
+        url(r'/login/(?P<backend>[^/]+)/?', AuthHandler, name='begin'),
+        url(r'/complete/(?P<backend>[^/]+)/', CompleteHandler, name='complete'),
+        url(r'/disconnect/(?P<backend>[^/]+)/?',
+                DisconnectHandler, name='disconnect'),
+        url(r'/disconnect/(?P<backend>[^/]+)/(?P<association_id>\d+)/?',
+                DisconnectHandler, name='disconect_individual'),
+
+        (r'/(index.html)?', MainPageHandler),
         (r'/project(/.*)?', ProjectHandler),
         (r'/dataset(/.*)?', DatasetHandler),
         (r'/features(/.*)?', FeatureHandler),
@@ -38,8 +68,8 @@ def make_app():
         (r'/socket_auth_token', SocketAuthTokenHandler),
         (r'/sklearn_models', SklearnModelsHandler),
         (r'/plot_features/(.*)', PlotFeaturesHandler),
-        (r'/(.*)', tornado.web.StaticFileHandler,
-             {'path': 'public/', 'default_filename': 'index.html'})
+
+        (r'/(.*)', tornado.web.StaticFileHandler, {'path': 'public/'})
     ]
 
     return tornado.web.Application(handlers, **settings)

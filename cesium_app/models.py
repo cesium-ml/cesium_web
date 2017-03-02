@@ -13,9 +13,15 @@ import xarray as xr
 from cesium_app.json_util import to_json
 from cesium_app.config import cfg
 
+from social_peewee.storage import (
+    database_proxy,
+    BasePeeweeStorage, PeeweeAssociationMixin, PeeweeCodeMixin,
+    PeeweeNonceMixin, PeeweePartialMixin, PeeweeUserMixin)
+
 
 db = pw.PostgresqlDatabase(autocommit=True, autorollback=True,
                            **cfg['database'])
+database_proxy.initialize(db)
 
 
 class BaseModel(signals.Model):
@@ -27,6 +33,42 @@ class BaseModel(signals.Model):
 
     class Meta:
         database = db
+
+
+class TornadoStorage(BasePeeweeStorage):
+    class nonce(PeeweeNonceMixin):
+        """Single use numbers"""
+        pass
+
+    class association(PeeweeAssociationMixin):
+        """OpenId account association"""
+        pass
+
+    class code(PeeweeCodeMixin):
+        """Mail validation single one time use code"""
+        pass
+
+    class partial(PeeweePartialMixin):
+        pass
+
+
+class User(BaseModel):
+    username = pw.CharField(unique=True)
+    email = pw.CharField(unique=True)
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+
+class UserSocialAuth(BaseModel, PeeweeUserMixin):
+    user = pw.ForeignKeyField(User, related_name='social_auth')
+
+    @classmethod
+    def user_model(cls):
+        return User
 
 
 class Project(BaseModel):

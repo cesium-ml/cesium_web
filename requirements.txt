@@ -13,3 +13,8 @@ distributed>=1.14.3
 selenium
 pytest
 joblib
+
+social-auth-core
+social-auth-app-tornado
+social-auth-storage-peewee
+
