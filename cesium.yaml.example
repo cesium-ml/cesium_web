@@ -3,32 +3,6 @@ app:
                           # characters.  Typically ``os.urandom(24)`` is
                           # good enough.
 
-authentication:
-    # The Stormpath API keys can be downloaded from:
-    # https://api.stormpath.com
-
-    stormpath_api_key_id: 01234
-    stormpath_api_key_secret: 0124
-    stormpath_application: cesium
-
-    ## This section is optional.  If not filled in, Google Authentication
-    ## will be disabled.
-    ##
-    ## These values can be obtained from
-    ##   https://console.developers.google.com/project
-    ##
-    ## When filling in the form for running on localhost:
-    ##
-    ## - Appliation type: Web
-    ## - Authorized JavaScript origins: blank
-    ## - Authorized redirect URIs: http://localhost:5000/google
-    ##                             http://your.hosted.server.com
-    ##
-    ## Always include the localhost:5000 for unit testing purposes.
-
-    google_client_id:
-    google_client_secret:
-
 paths:
     # Note below that defined variables can be reused in subsequent
     # definitions.
@@ -51,20 +25,5 @@ database:
     user: cesium
     password: 
 
-docker:
-    enabled: 0
-
 server:
     url: http://localhost:5000
-
-xr_engine: netcdf4
-##xr_engine: h5netcdf
-
-## testing:
-##    ## Disable authentication
-##    disable_auth: 1
-##
-##    ## Use a separate test database
-##    test_db: 1
-##
-##    debug: 0
