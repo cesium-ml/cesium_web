@@ -61,9 +61,7 @@ status:
 docker-images:
 	# Add --no-cache flag to rebuild from scratch
 	docker build -t cesium/web . && docker push cesium/web
-	cd docker/postgres && docker build -t cesium/postgres . && docker push cesium/postgres
 
 # Call this target to see which Javascript dependencies are not up to date
 check-js-updates:
 	./tools/check_js_updates.sh
-
