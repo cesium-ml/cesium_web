@@ -4,26 +4,10 @@ web:
     - "9000:5000"
   links:
     - db
-    - rabbit
   volumes:
     - .:/home/cesium_app
-  environment:
-    - CELERY_BROKER=amqp://guest:guest@rabbit:5672//
-#  depends_on:
-#    - db
-#    - rabbit
 
 db:
-  image: cesium/postgres
-#  volumes:
-#    - ./_postgres_data:/var/lib/postgresql/data/
+  image: postgres:9.5
   environment:
     - POSTGRES_USER=cesium
-    - POSTGRES_PASSWORD=
-    - POSTGRES_DB=cesium
-#    - PGDATA=/var/lib/postgresql/data/pgdata
-
-rabbit:
-  image: rabbitmq:3
-  ports:
-    - "5672:5672"

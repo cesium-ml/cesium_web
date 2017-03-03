@@ -26,7 +26,7 @@ def feature_scatterplot(fset_path, features_to_plot):
         Returns (fig.data, fig.layout) where `fig` is an instance of
         `plotly.tools.FigureFactory`.
     """
-    with featureset.from_netcdf(fset_path, engine=cfg['xr_engine']) as fset:
+    with featureset.from_netcdf(fset_path) as fset:
         feat_df = fset.to_dataframe()
         feat_df = feat_df[features_to_plot]
 
@@ -46,7 +46,7 @@ def feature_scatterplot(fset_path, features_to_plot):
 
 
 #def prediction_heatmap(pred_path):
-#    with xr.open_dataset(pred_path, engine=cfg['xr_engine']) as pset:
+#    with xr.open_dataset(pred_path) as pset:
 #        pred_df = pd.DataFrame(pset.prediction.values, index=pset.name,
 #                               columns=pset.class_label.values)
 #    pred_labels = pred_df.idxmax(axis=1)
