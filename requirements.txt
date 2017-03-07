@@ -7,7 +7,7 @@ pyyaml
 tornado
 pyzmq
 pyjwt
-plotly
+plotly==2.0.2
 simplejson
 distributed>=1.14.3
 selenium
