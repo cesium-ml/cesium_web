@@ -67,6 +67,7 @@ class PredictionHandler(BaseHandler):
 
         dataset_id = data['datasetID']
         model_id = data['modelID']
+        ts_names = data.get('ts_names')
 
         dataset = Dataset.get(Dataset.id == data["datasetID"])
         model = Model.get(Model.id == data["modelID"])
@@ -88,7 +89,12 @@ class PredictionHandler(BaseHandler):
 
         executor = yield self._get_executor()
 
-        all_time_series = executor.map(time_series.load, dataset.uris)
+        if ts_names:
+            ts_uris = [f.uri for f in dataset.files if f.name in ts_names]
+        else:
+            ts_uris = dataset.uris
+
+        all_time_series = executor.map(time_series.load, ts_uris)
         all_labels = executor.map(lambda ts: ts.label, all_time_series)
         all_features = executor.map(featurize.featurize_single_ts,
                                     all_time_series,
