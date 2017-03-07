@@ -96,7 +96,7 @@ class Dataset(BaseModel):
             d = Dataset.create(name=name, project=project,
                                meta_features=meta_features)
             for fname, uri in zip(file_names, file_uris):
-                f, created = File.create_or_get(name=fname, uri=uri)
+                f, created = File.get_or_create(name=fname, uri=uri)
                 DatasetFile.create(dataset=d, file=f)
         return d
 
