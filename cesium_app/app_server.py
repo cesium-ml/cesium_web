@@ -29,15 +29,15 @@ def make_app():
     handlers and settings.
     """
     settings = {
-        'static_path': '../public',
+        'template_path': './static',
         'autoreload': '--debug' in sys.argv,
         'cookie_secret': cfg['app']['secret-key'],
 
         # Python Social Auth configuration
-        'SOCIAL_AUTH_STORAGE': 'models.TornadoStorage',
+        'SOCIAL_AUTH_STORAGE': 'cesium_app.models.TornadoStorage',
         'SOCIAL_AUTH_STRATEGY': 'social_tornado.strategy.TornadoStrategy',
         'SOCIAL_AUTH_AUTHENTICATION_BACKENDS': (
-            'social_core.backends.google.GoogleOAuth2'
+            'social_core.backends.google.GoogleOAuth2',
         )
     }
 
@@ -56,7 +56,7 @@ def make_app():
         url(r'/disconnect/(?P<backend>[^/]+)/(?P<association_id>\d+)/?',
                 DisconnectHandler, name='disconect_individual'),
 
-        (r'/(index.html)?', MainPageHandler),
+#        (r'/', MainPageHandler),
         (r'/project(/.*)?', ProjectHandler),
         (r'/dataset(/.*)?', DatasetHandler),
         (r'/features(/.*)?', FeatureHandler),
@@ -69,7 +69,9 @@ def make_app():
         (r'/sklearn_models', SklearnModelsHandler),
         (r'/plot_features/(.*)', PlotFeaturesHandler),
 
-        (r'/(.*)', tornado.web.StaticFileHandler, {'path': 'public/'})
+        (r'/()', tornado.web.StaticFileHandler,
+             {'path': 'static/', 'default_filename': 'index.html'}),
+        (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': 'static/'})
     ]
 
     return tornado.web.Application(handlers, **settings)

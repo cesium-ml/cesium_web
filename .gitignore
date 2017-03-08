@@ -1,7 +1,7 @@
 .#*
 log/
 .cache
-public/build
+static/build
 ghostdriver.log
 \#*
 *~

@@ -84,7 +84,7 @@ Debugging:
 
 To ensure that JavaScript & JSX code conforms with industry style
 recommendations, after adding or modifying any .js or .jsx files, run ESLint with
-`node_modules/eslint/bin/eslint.js -c .eslintrc --ext .jsx,.js public/scripts/`.
+`node_modules/eslint/bin/eslint.js -c .eslintrc --ext .jsx,.js static/scripts/`.
 To automatically run ESLint when you make changes to your JavaScript code, add
 a pre-commit hook by adding the following to your .git/hooks/pre-commit:
 

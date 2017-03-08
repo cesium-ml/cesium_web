@@ -98,6 +98,7 @@ with nostdout():
 
 watched.append(cfg['paths']['err_log_path'])
 watched.append('log/error.log')
+watched.append('log/nginx-bad-access.log')
 watched.append('log/nginx-error.log')
 
 

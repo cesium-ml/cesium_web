@@ -3,7 +3,7 @@ SUPERVISORD=supervisord
 
 .DEFAULT_GOAL := run
 
-bundle = ./public/build/bundle.js
+bundle = ./static/build/bundle.js
 webpack = ./node_modules/.bin/webpack
 
 

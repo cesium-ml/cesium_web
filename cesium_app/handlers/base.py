@@ -25,6 +25,7 @@ class BaseHandler(PSABaseHandler):
             print('User id is:', user_id)
             self.username = models.User.get(int(user_id)).username
         else:
+            print('User id is: nothing yet')
             self.username = None
 
     def get_username(self):
@@ -66,7 +67,7 @@ class BaseHandler(PSABaseHandler):
             models.db.close()
 
     def error(self, message):
-        print('APP ERROR:', message)
+        print('! App Error:', message)
         self.write({
             "status": "error",
             "message": message
@@ -85,8 +86,8 @@ class BaseHandler(PSABaseHandler):
                 "data": data
             }))
 
-
     def write_error(self, status_code, exc_info=None):
+        print('Error caught!', status_code)
         if exc_info is not None:
             err_cls, err, traceback = exc_info
         else:
