@@ -35,6 +35,34 @@ class BaseModel(signals.Model):
         database = db
 
 
+class User(BaseModel):
+    username = pw.CharField(unique=True)
+    email = pw.CharField(unique=True)
+
+    @classmethod
+    def user_model(cls):
+        return User
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+
+class UserSocialAuth(BaseModel, PeeweeUserMixin):
+    user = pw.ForeignKeyField(User, related_name='social_auth')
+
+    @classmethod
+    def user_model(cls):
+        return User
+
+class SocialAuthUser(BaseModel, PeeweeUserMixin):
+    @classmethod
+    def user_model(cls):
+        return User
+
+
 class TornadoStorage(BasePeeweeStorage):
     class nonce(PeeweeNonceMixin):
         """Single use numbers"""
@@ -51,24 +79,7 @@ class TornadoStorage(BasePeeweeStorage):
     class partial(PeeweePartialMixin):
         pass
 
-
-class User(BaseModel):
-    username = pw.CharField(unique=True)
-    email = pw.CharField(unique=True)
-
-    def is_authenticated(self):
-        return True
-
-    def is_active(self):
-        return True
-
-
-class UserSocialAuth(BaseModel, PeeweeUserMixin):
-    user = pw.ForeignKeyField(User, related_name='social_auth')
-
-    @classmethod
-    def user_model(cls):
-        return User
+    user = SocialAuthUser
 
 
 class Project(BaseModel):
@@ -78,33 +89,33 @@ class Project(BaseModel):
     created = pw.DateTimeField(default=datetime.datetime.now)
 
     @staticmethod
-    def all(username):
+    def all(user):
         return (Project
                 .select()
                 .join(UserProject)
-                .where(UserProject.username == username)
+                .where(UserProject.user == user)
                 .order_by(Project.created))
 
     @staticmethod
-    def add_by(name, description, username):
+    def add_by(name, description, user):
         with db.atomic():
             p = Project.create(name=name, description=description)
-            UserProject.create(username=username, project=p)
+            UserProject.create(user=user, project=p)
         return p
 
-    def is_owned_by(self, username):
-        users = [o.username for o in self.owners]
-        return username in users
+    def is_owned_by(self, user):
+        users = [owner.user for owner in self.owners]
+        return user in users
 
 
 class UserProject(BaseModel):
-    username = pw.CharField()
+    user = pw.ForeignKeyField(User, related_name='projects')
     project = pw.ForeignKeyField(Project, related_name='owners',
                                  on_delete='CASCADE')
 
     class Meta:
         indexes = (
-            (('username', 'project'), True),
+            (('user', 'project'), True),
         )
 
 
@@ -156,8 +167,8 @@ class Dataset(BaseModel):
                                                                     == self.id)
         return list(query.execute())
 
-    def is_owned_by(self, username):
-        return self.project.is_owned_by(username)
+    def is_owned_by(self, user):
+        return self.project.is_owned_by(user)
 
     def display_info(self):
         info = self.__dict__()
@@ -194,8 +205,8 @@ class Featureset(BaseModel):
     task_id = pw.CharField(null=True)
     finished = pw.DateTimeField(null=True)
 
-    def is_owned_by(self, username):
-        return self.project.is_owned_by(username)
+    def is_owned_by(self, user):
+        return self.project.is_owned_by(user)
 
 
 class Model(BaseModel):
@@ -213,8 +224,8 @@ class Model(BaseModel):
     finished = pw.DateTimeField(null=True)
     train_score = pw.FloatField(null=True)
 
-    def is_owned_by(self, username):
-        return self.project.is_owned_by(username)
+    def is_owned_by(self, user):
+        return self.project.is_owned_by(user)
 
 
 class Prediction(BaseModel):
@@ -229,8 +240,8 @@ class Prediction(BaseModel):
     task_id = pw.CharField(null=True)
     finished = pw.DateTimeField(null=True)
 
-    def is_owned_by(self, username):
-        return self.project.is_owned_by(username)
+    def is_owned_by(self, user):
+        return self.project.is_owned_by(user)
 
     def display_info(self):
         info = self.__dict__()
@@ -290,7 +301,8 @@ if __name__ == "__main__":
     print("Creating dummy project owners...")
     for i in range(3):
         p = Project.get(Project.id == i + 1)
-        u = UserProject.create(username=USERNAME, project=p)
+        # This will probably break; add a real user to the DB first
+        u = UserProject.create(user=USERNAME, project=p)
         print(u)
 
     print('ASSERT User should have 3 projects')

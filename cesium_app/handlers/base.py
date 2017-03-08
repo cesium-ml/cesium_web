@@ -4,6 +4,10 @@ import tornado.ioloop
 
 # The Python Social Auth base handler gives us:
 #   user_id, get_current_user, login_user
+#
+# `get_current_user` is needed by tornado.authentication,
+# and provides a cached version, `current_user`, that should
+# be used to look up the logged in user.
 from social_tornado.handlers import BaseHandler as PSABaseHandler
 
 from .. import models
@@ -14,30 +18,9 @@ import time
 
 
 class BaseHandler(PSABaseHandler):
-    def __init__(self, application, request):
-        tornado.web.RequestHandler.__init__(self, application, request)
-
+    def prepare(self):
         self.flow = Flow()
 
-        user_id = self.get_secure_cookie('user_id')
-
-        if user_id:
-            print('User id is:', user_id)
-            self.username = models.User.get(int(user_id)).username
-        else:
-            print('User id is: nothing yet')
-            self.username = None
-
-    def get_username(self):
-        return self.username
-
-    def push(action, payload={}):
-        self.flow.push(self.get_username(), action, payload)
-
-    def get_json(self):
-        return tornado.escape.json_decode(self.request.body)
-
-    def prepare(self):
         # Remove slash prefixes from arguments
         if self.path_args and self.path_args[0] is not None:
             self.path_args = [arg.lstrip('/') for arg in self.path_args]
@@ -62,19 +45,38 @@ class BaseHandler(PSABaseHandler):
                     print('Error connecting to database -- sleeping for a while')
                     time.sleep(5)
 
+        return super(BaseHandler, self).prepare()
+
+    def get_current_user(self):
+        user_id = self.get_secure_cookie('user_id')
+        if user_id is None:
+            return None
+        else:
+            return models.User.get(id=int(user_id))
+
+    def push(self, action, payload={}):
+        self.flow.push(self.current_user.username, action, payload)
+
+    def get_json(self):
+        return tornado.escape.json_decode(self.request.body)
+
     def on_finish(self):
         if not models.db.is_closed():
             models.db.close()
 
+        return super(BaseHandler, self).on_finish()
+
     def error(self, message):
         print('! App Error:', message)
+
+        self.set_status(200)
         self.write({
             "status": "error",
             "message": message
             })
 
     def action(self, action, payload={}):
-        self.flow.push(self.get_username(), action, payload)
+        self.push(action, payload)
 
     def success(self, data={}, action=None, payload={}):
         if action is not None:
@@ -87,7 +89,6 @@ class BaseHandler(PSABaseHandler):
             }))
 
     def write_error(self, status_code, exc_info=None):
-        print('Error caught!', status_code)
         if exc_info is not None:
             err_cls, err, traceback = exc_info
         else:

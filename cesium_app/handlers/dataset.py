@@ -10,6 +10,8 @@ import os
 from os.path import join as pjoin
 import uuid
 
+import tornado.web
+
 
 class DatasetHandler(BaseHandler):
     def _get_dataset(self, dataset_id):
@@ -18,11 +20,12 @@ class DatasetHandler(BaseHandler):
         except Dataset.DoesNotExist:
             raise AccessError('No such dataset')
 
-        if not d.is_owned_by(self.get_username()):
+        if not d.is_owned_by(self.current_user):
             raise AccessError('No such dataset')
 
         return d
 
+    @tornado.web.authenticated
     def post(self):
         if not 'tarFile' in self.request.files:
             return self.error('No tar file uploaded')
@@ -75,17 +78,19 @@ class DatasetHandler(BaseHandler):
 
         return self.success(d, 'cesium/FETCH_DATASETS')
 
+    @tornado.web.authenticated
     def get(self, dataset_id=None):
         if dataset_id is not None:
             dataset = self._get_dataset(dataset_id)
             dataset_info = dataset.display_info()
         else:
-            datasets = [d for p in Project.all(self.get_username())
+            datasets = [d for p in Project.all(self.current_user)
                             for d in p.datasets]
             dataset_info = [d.display_info() for d in datasets]
 
         return self.success(dataset_info)
 
+    @tornado.web.authenticated
     def delete(self, dataset_id):
         d = self._get_dataset(dataset_id)
         d.delete_instance()

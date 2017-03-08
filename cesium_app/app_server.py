@@ -32,13 +32,28 @@ def make_app():
         'template_path': './static',
         'autoreload': '--debug' in sys.argv,
         'cookie_secret': cfg['app']['secret-key'],
+        'login_url': '/',
 
         # Python Social Auth configuration
+        'SOCIAL_AUTH_USER_MODEL': 'cesium_app.models.User',
         'SOCIAL_AUTH_STORAGE': 'cesium_app.models.TornadoStorage',
         'SOCIAL_AUTH_STRATEGY': 'social_tornado.strategy.TornadoStrategy',
         'SOCIAL_AUTH_AUTHENTICATION_BACKENDS': (
             'social_core.backends.google.GoogleOAuth2',
-        )
+        ),
+        'SOCIAL_AUTH_LOGIN_URL': '/',
+        'SOCIAL_AUTH_LOGIN_REDIRECT_URL': '/',  # on success
+        'SOCIAL_AUTH_LOGIN_ERROR_URL': '/login-error/',
+
+        # From https://console.developers.google.com/
+        # - Create Client ID
+        # - Javascript origins: https://localhost:5000
+        # - Authorized redirect URLs: http://localhost:5000/complete/google-oauth2/
+        #
+        # You need to have Google+ API enabled; it takes a few minutes to activate.
+
+        'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY': '544669011322-76ebnoj0fhvle168682rvmivc3fpchpi.apps.googleusercontent.com',
+        'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET': 'b22Ya_1xljAqmM9gVh7KsppO',
     }
 
     if settings['cookie_secret'] == 'abc01234':
@@ -56,7 +71,6 @@ def make_app():
         url(r'/disconnect/(?P<backend>[^/]+)/(?P<association_id>\d+)/?',
                 DisconnectHandler, name='disconect_individual'),
 
-#        (r'/', MainPageHandler),
         (r'/project(/.*)?', ProjectHandler),
         (r'/dataset(/.*)?', DatasetHandler),
         (r'/features(/.*)?', FeatureHandler),
@@ -69,8 +83,7 @@ def make_app():
         (r'/sklearn_models', SklearnModelsHandler),
         (r'/plot_features/(.*)', PlotFeaturesHandler),
 
-        (r'/()', tornado.web.StaticFileHandler,
-             {'path': 'static/', 'default_filename': 'index.html'}),
+        (r'/()', MainPageHandler),
         (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': 'static/'})
     ]
 

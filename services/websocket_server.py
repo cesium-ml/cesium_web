@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from tornado import websocket, web, ioloop
+from tornado import websocket, web
 import json
 import zmq
 import jwt
@@ -70,10 +70,11 @@ class WebSocket(websocket.WebSocketHandler):
     @classmethod
     def broadcast(cls, data):
         channel, data = data[0].decode('utf-8').split(" ", 1)
-        user = json.loads(data)["user"]
+        username = json.loads(data)["username"]
 
         for p in cls.participants:
-            if p.authenticated and p.username == user:
+            if p.authenticated and p.username == username:
+                print('[WebSocket] Shipping message to', username)
                 p.write_message(data)
 
 
@@ -85,7 +86,6 @@ if __name__ == "__main__":
 
     # https://zeromq.github.io/pyzmq/eventloop.html
     from zmq.eventloop import ioloop, zmqstream
-
     ioloop.install()
 
     sub = ctx.socket(zmq.SUB)
