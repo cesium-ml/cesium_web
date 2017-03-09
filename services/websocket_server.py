@@ -37,6 +37,8 @@ class WebSocket(websocket.WebSocketHandler):
         if self in self.participants:
             self.participants.remove(self)
 
+            # do something here to unsubscribe
+
     def on_message(self, auth_token):
         self.authenticate(auth_token)
         if not self.authenticated and self.auth_failures < self.max_auth_fails:
@@ -56,6 +58,9 @@ class WebSocket(websocket.WebSocketHandler):
             self.authenticated = True
             self.auth_failures = 0
             self.send_json(action='AUTH OK')
+
+            # Do something here to subscribe
+
         except jwt.DecodeError:
             self.send_json(action='AUTH FAILED')
         except jwt.ExpiredSignatureError:
@@ -68,14 +73,13 @@ class WebSocket(websocket.WebSocketHandler):
 
     # http://mrjoes.github.io/2013/06/21/python-realtime.html
     @classmethod
-    def broadcast(cls, data):
-        channel, data = data[0].decode('utf-8').split(" ", 1)
-        username = json.loads(data)["username"]
+    def broadcast(cls, stream, data):
+        username, payload = [d.decode('utf-8') for d in data]
 
         for p in cls.participants:
             if p.authenticated and p.username == username:
-                print('[WebSocket] Shipping message to', username)
-                p.write_message(data)
+                print('[WebSocket] Forwarding message to', username)
+                p.write_message(payload)
 
 
 if __name__ == "__main__":
@@ -94,7 +98,7 @@ if __name__ == "__main__":
 
     print('[websocket_server] Broadcasting {} to all websockets'.format(LOCAL_OUTPUT))
     stream = zmqstream.ZMQStream(sub)
-    stream.on_recv(WebSocket.broadcast)
+    stream.on_recv_stream(WebSocket.broadcast)
 
     server = web.Application([
         (r'/websocket', WebSocket),
