@@ -5,6 +5,8 @@ import json
 import zmq
 import jwt
 
+import collections
+
 from cesium_app import config
 secret = config.cfg['app']['secret-key']
 
@@ -15,29 +17,54 @@ ctx = zmq.Context()
 
 
 class WebSocket(websocket.WebSocketHandler):
-    participants = set()
+    sockets = collections.defaultdict(set)
+    _zmq_stream = None
 
     def __init__(self, *args, **kwargs):
         websocket.WebSocketHandler.__init__(self, *args, **kwargs)
+
+        if WebSocket._zmq_stream is None:
+            raise RuntimeError("Please install a stream before instantiating "
+                               "any websockets")
 
         self.authenticated = False
         self.auth_failures = 0
         self.max_auth_fails = 3
         self.username = None
 
+    @classmethod
+    def install_stream(cls, stream):
+        cls._zmq_stream = stream
+
+    @classmethod
+    def subscribe(cls, username):
+        cls._zmq_stream.socket.setsockopt(zmq.SUBSCRIBE,
+                                          username.encode('utf-8'))
+
+    @classmethod
+    def unsubscribe(cls, username):
+        cls._zmq_stream.socket.setsockopt(zmq.UNSUBSCRIBE,
+                                          username.encode('utf-8'))
+
     def check_origin(self, origin):
         return True
 
     def open(self):
-        if self not in self.participants:
-            self.participants.add(self)
-            self.request_auth()
+        self.request_auth()
 
     def on_close(self):
-        if self in self.participants:
-            self.participants.remove(self)
+        sockets = WebSocket.sockets
 
-            # do something here to unsubscribe
+        if self.username is not None:
+            try:
+                sockets[self.username].remove(self)
+            except KeyError:
+                pass
+
+            # If we are the last of the user's websockets, since we're leaving
+            # we unsubscribe to the message feed
+            if len(sockets[self.username]) == 0:
+                WebSocket.unsubscribe(self.username)
 
     def on_message(self, auth_token):
         self.authenticate(auth_token)
@@ -54,12 +81,19 @@ class WebSocket(websocket.WebSocketHandler):
     def authenticate(self, auth_token):
         try:
             token_payload = jwt.decode(auth_token, secret)
-            self.username = token_payload['username']
+            username = token_payload['username']
+
+            self.username = username
             self.authenticated = True
             self.auth_failures = 0
             self.send_json(action='AUTH OK')
 
-            # Do something here to subscribe
+            # If we are the first websocket connecting on behalf of
+            # a given user, subscribe to the feed for that user
+            if len(WebSocket.sockets[username]) == 0:
+                WebSocket.subscribe(username)
+
+            WebSocket.sockets[username].add(self)
 
         except jwt.DecodeError:
             self.send_json(action='AUTH FAILED')
@@ -68,18 +102,18 @@ class WebSocket(websocket.WebSocketHandler):
 
     @classmethod
     def heartbeat(cls):
-        for p in cls.participants:
-            p.write_message(b'<3')
+        for username in cls.sockets:
+            for socket in cls.sockets[username]:
+                socket.write_message(b'<3')
 
     # http://mrjoes.github.io/2013/06/21/python-realtime.html
     @classmethod
-    def broadcast(cls, stream, data):
+    def broadcast(cls, data):
         username, payload = [d.decode('utf-8') for d in data]
 
-        for p in cls.participants:
-            if p.authenticated and p.username == username:
-                print('[WebSocket] Forwarding message to', username)
-                p.write_message(payload)
+        for socket in cls.sockets[username]:
+            print('[WebSocket] Forwarding message to', username)
+            socket.write_message(payload)
 
 
 if __name__ == "__main__":
@@ -94,11 +128,11 @@ if __name__ == "__main__":
 
     sub = ctx.socket(zmq.SUB)
     sub.connect(LOCAL_OUTPUT)
-    sub.setsockopt(zmq.SUBSCRIBE, b'')
 
     print('[websocket_server] Broadcasting {} to all websockets'.format(LOCAL_OUTPUT))
     stream = zmqstream.ZMQStream(sub)
-    stream.on_recv_stream(WebSocket.broadcast)
+    WebSocket.install_stream(stream)
+    stream.on_recv(WebSocket.broadcast)
 
     server = web.Application([
         (r'/websocket', WebSocket),
