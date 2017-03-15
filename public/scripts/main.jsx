@@ -324,7 +324,7 @@ class MainContent extends React.Component {
           <div style={style.footer}>
             Cesium is an open source Machine Learning Time-Series Platform
             &middot;
-            Follow the <a style={style.footer.a} href="http://cesium.ml">Cesium project</a> on <a style={style.footer.a} href="https://github.com/cesium-ml">GitHub</a>
+            Follow the <a style={style.footer.a} href="http://cesium-ml.org">Cesium project</a> on <a style={style.footer.a} href="https://github.com/cesium-ml">GitHub</a>
           </div>
 
         </div>
