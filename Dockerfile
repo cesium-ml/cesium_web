@@ -1,11 +1,12 @@
 FROM ubuntu:16.04
 
 RUN apt-get update && \
-    apt-get install -y software-properties-common && \
+    apt-get install -y curl build-essential software-properties-common && \
+    curl -sL https://deb.nodesource.com/setup_7.x | bash - && \
     apt-get update && \
     apt-get -y upgrade && \
     apt-get install -y python3-venv libpq-dev supervisor libpython3-dev \
-                       git nginx npm nodejs && \
+                       git nginx nodejs && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     useradd --create-home --shell /bin/bash cesium
@@ -23,7 +24,6 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
 RUN bash -c "source /cesium_env/bin/activate && \
-    ln -s /usr/bin/nodejs /usr/bin/node && \
     make paths && \
     make dependencies && \
     cp docker/cesium-docker.yaml . && \
