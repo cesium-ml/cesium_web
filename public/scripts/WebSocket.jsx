@@ -113,7 +113,6 @@ class WebSocket extends React.Component {
     let statusColor;
     if (!this.state.connected) {
       statusColor = 'red';
-      console.log(this.props);
     } else {
       statusColor = this.state.authenticated ? 'lightgreen' : 'orange';
     }
