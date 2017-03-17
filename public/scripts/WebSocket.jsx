@@ -105,6 +105,7 @@ class WebSocket extends React.Component {
     ws.onclose = (event) => {
       this.setState({ connected: false,
                      authenticated: false });
+      this.props.dispatcher(showNotification("Couldn't connect to websocket", 'error', 0));
     };
   }
 
@@ -112,6 +113,7 @@ class WebSocket extends React.Component {
     let statusColor;
     if (!this.state.connected) {
       statusColor = 'red';
+      console.log(this.props);
     } else {
       statusColor = this.state.authenticated ? 'lightgreen' : 'orange';
     }
