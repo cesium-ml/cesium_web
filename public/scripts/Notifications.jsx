@@ -4,11 +4,18 @@ import { connect } from 'react-redux';
 
 export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION';
 export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION';
+export const HIDE_STICKY_NOTIFICATIONS = 'cesium/HIDE_STICKY_NOTIFICATIONS';
 
 export function hideNotification(id) {
   return {
     type: HIDE_NOTIFICATION,
     payload: { id }
+  };
+}
+
+export function hideStickyNotifications() {
+  return {
+    type: HIDE_STICKY_NOTIFICATIONS
   };
 }
 
@@ -70,12 +77,18 @@ Notifications = connect(mapStateToProps)(Notifications);
 
 
 let nextNotificationId = 0;
-export function showNotification(note, type='info') {
+let stickyNotificationsIds = [];
+export function showNotification(note, type='info', duration=3000) {
   const thisId = nextNotificationId++;
 
   if (type === 'error') {
     console.error(note);
   }
+
+  if (duration <= 0) {
+    stickyNotificationsIds.push(thisId);
+  }
+  console.log(duration);
 
   return (dispatch) => {
     dispatch({
@@ -86,7 +99,9 @@ export function showNotification(note, type='info') {
         type
       }
     });
-    setTimeout(() => dispatch(hideNotification(thisId)), 3000);
+    if (duration > 0) {
+      setTimeout(() => dispatch(hideNotification(thisId)), duration);
+    }
   };
 }
 
@@ -102,6 +117,10 @@ export function reducer(state={ notes: [] }, action) {
       return {
         notes: state.notes.filter(n => (n.id !== action.payload.id))
       };
+    case HIDE_STICKY_NOTIFICATIONS:
+      return {
+        notes: state.notes.filter(n => (!stickyNotificationsIds.includes(n.id)))
+      }
     default:
       return state;
   }

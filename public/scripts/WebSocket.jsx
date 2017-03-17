@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { createCookie, readCookie, eraseCookie } from './cookies';
 import ReconnectingWebSocket from './reconnecting-websocket';
+import { showNotification, hideStickyNotifications } from './Notifications';
 
 
 function getTime() {
@@ -66,8 +67,11 @@ class WebSocket extends React.Component {
 
     const ws = new ReconnectingWebSocket(props.url);
 
+    this.props.dispatcher(showNotification("Couldn't connect to websocket", 'error', 0));
+
     ws.onopen = (event) => {
       this.setState({ connected: true });
+      this.props.dispatcher(hideStickyNotifications('error'));
     };
 
     ws.onmessage = (event) => {
@@ -130,7 +134,7 @@ class WebSocket extends React.Component {
     };
 
     const connected_desc = (`WebSocket is
-      ${(this.state.connected ? 'connected' : 'disconnected')} & 
+      ${(this.state.connected ? 'connected' : 'disconnected')} &
       ${(this.state.authenticated ? 'authenticated' : 'unauthenticated')}.`);
     return (
       <div
