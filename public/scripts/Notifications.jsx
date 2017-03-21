@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION';
 export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION';
-export const HIDE_STICKY_NOTIFICATIONS = 'cesium/HIDE_STICKY_NOTIFICATIONS';
+export const HIDE_WEBSOCKET_NOTIFICATION = 'cesium/HIDE_WEBSOCKET_NOTIFICATION';
 
 export function hideNotification(id) {
   return {
@@ -13,9 +13,9 @@ export function hideNotification(id) {
   };
 }
 
-export function hideStickyNotifications() {
+export function hideWebsocketNotification() {
   return {
-    type: HIDE_STICKY_NOTIFICATIONS
+    type: HIDE_WEBSOCKET_NOTIFICATION
   };
 }
 
@@ -46,7 +46,8 @@ export let Notifications = (props) => {
 
   const noteColor = {
     error: 'Crimson',
-    info: 'MediumAquaMarine'
+    info: 'MediumAquaMarine',
+    websocket: 'Orange'
   };
 
   return (
@@ -78,17 +79,12 @@ Notifications = connect(mapStateToProps)(Notifications);
 
 let nextNotificationId = 0;
 let stickyNotificationsIds = [];
-export function showNotification(note, type='info', duration=3000) {
+export function showNotification(note, type='info') {
   const thisId = nextNotificationId++;
 
   if (type === 'error') {
     console.error(note);
   }
-
-  if (duration <= 0) {
-    stickyNotificationsIds.push(thisId);
-  }
-  console.log(duration);
 
   return (dispatch) => {
     dispatch({
@@ -99,8 +95,8 @@ export function showNotification(note, type='info', duration=3000) {
         type
       }
     });
-    if (duration > 0) {
-      setTimeout(() => dispatch(hideNotification(thisId)), duration);
+    if (type !== 'websocket') {
+      setTimeout(() => dispatch(hideNotification(thisId)), 3000);
     }
   };
 }
@@ -117,9 +113,9 @@ export function reducer(state={ notes: [] }, action) {
       return {
         notes: state.notes.filter(n => (n.id !== action.payload.id))
       };
-    case HIDE_STICKY_NOTIFICATIONS:
+    case HIDE_WEBSOCKET_NOTIFICATION:
       return {
-        notes: state.notes.filter(n => (!stickyNotificationsIds.includes(n.id)))
+        notes: state.notes.filter(n => (n.type !== 'websocket'))
       }
     default:
       return state;
