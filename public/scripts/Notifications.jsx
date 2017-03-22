@@ -85,8 +85,10 @@ export function showNotification(note, type='info') {
   if (type === 'error') {
     console.error(note);
   }
-
   return (dispatch) => {
+    if (type === 'websocket') {
+      dispatch(hideWebsocketNotification());
+    }
     dispatch({
       type: SHOW_NOTIFICATION,
       payload: {

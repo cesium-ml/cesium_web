@@ -67,8 +67,6 @@ class WebSocket extends React.Component {
 
     const ws = new ReconnectingWebSocket(props.url);
 
-    this.props.dispatch(showNotification("Couldn't connect to websocket", 'websocket'));
-
     ws.onopen = (event) => {
       this.setState({ connected: true });
       this.props.dispatch(hideWebsocketNotification());
@@ -105,7 +103,7 @@ class WebSocket extends React.Component {
     ws.onclose = (event) => {
       this.setState({ connected: false,
                      authenticated: false });
-      this.props.dispatch(showNotification("Couldn't connect to websocket", 'websocket'));
+      this.props.dispatch(showNotification("No WebSocket connection: limited functionality may be available", 'websocket'));
     };
   }
 
