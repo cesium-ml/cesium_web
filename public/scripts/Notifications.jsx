@@ -85,10 +85,8 @@ export function showNotification(note, type='info') {
   if (type === 'error') {
     console.error(note);
   }
+  
   return (dispatch) => {
-    if (type === 'websocket') {
-      dispatch(hideWebsocketNotification());
-    }
     dispatch({
       type: SHOW_NOTIFICATION,
       payload: {
@@ -107,8 +105,15 @@ export function reducer(state={ notes: [] }, action) {
   switch (action.type) {
     case SHOW_NOTIFICATION: {
       let { id, note, type } = action.payload;
+      var notes;
+      if (type === 'websocket') {
+        notes = state.notes.filter(n => (n.type !== 'websocket'));
+      } else {
+        notes = state.notes;
+      }
+      notes = notes.concat({ id, note, type });
       return {
-        notes: state.notes.concat({ id, note, type })
+        notes: notes
       };
     }
     case HIDE_NOTIFICATION:
