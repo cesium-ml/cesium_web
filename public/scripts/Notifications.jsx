@@ -78,14 +78,13 @@ Notifications = connect(mapStateToProps)(Notifications);
 
 
 let nextNotificationId = 0;
-let stickyNotificationsIds = [];
 export function showNotification(note, type='info') {
   const thisId = nextNotificationId++;
 
   if (type === 'error') {
     console.error(note);
   }
-  
+
   return (dispatch) => {
     dispatch({
       type: SHOW_NOTIFICATION,
