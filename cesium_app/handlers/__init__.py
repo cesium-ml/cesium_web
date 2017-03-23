@@ -9,3 +9,4 @@ from .plot_features import PlotFeaturesHandler
 from .prediction import PredictionHandler, PredictRawDataHandler
 from .sklearn_models import SklearnModelsHandler
 from .socket_auth import SocketAuthTokenHandler
+from .profile import ProfileHandler

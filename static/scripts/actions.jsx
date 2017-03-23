@@ -46,6 +46,8 @@ export const SPIN_LOGO = 'cesium/SPIN_LOGO';
 export const GROUP_TOGGLE_FEATURES = 'cesium/GROUP_TOGGLE_FEATURES';
 export const CLICK_FEATURE_TAG_CHECKBOX = 'cesium/CLICK_FEATURE_TAG_CHECKBOX';
 
+export const FETCH_USER_PROFILE = 'cesium/FETCH_USER_PROFILE';
+export const RECEIVE_USER_PROFILE = 'cesium/FETCH_USER_PROFILE';
 
 import { showNotification, reduceNotifications } from './Notifications';
 import promiseAction from './action_tools';
@@ -661,11 +663,46 @@ export function clickFeatureTagCheckbox(tag) {
 }
 
 
+export function fetchUserProfile() {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      FETCH_USER_PROFILE,
+
+      fetch('/profile', {
+        credentials: 'same-origin'
+      })
+        .then(response => response.json())
+        .then((json) => {
+          if (json.status == 'success') {
+            dispatch(receiveUserProfile(json.data));
+          } else {
+            dispatch(
+              showNotification(
+                'Error downloading user profile ({})'.format(json.message)
+              ));
+          }
+          return json;
+        }
+        ).catch(ex => console.log('fetchUserProfile exception:', ex))
+      );
+}
+
+function receiveUserProfile(userProfile) {
+  return {
+    type: RECEIVE_USER_PROFILE,
+    payload: userProfile
+  };
+}
+
+
+
 export function hydrate() {
   return (dispatch) => {
     dispatch(fetchProjects())
       .then((proj) => {
         Promise.all([
+          dispatch(fetchUserProfile()),
           dispatch(fetchDatasets()),
           dispatch(fetchFeaturesets()),
           dispatch(fetchFeatures()),
