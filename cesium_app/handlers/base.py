@@ -52,7 +52,10 @@ class BaseHandler(PSABaseHandler):
         if user_id is None:
             return None
         else:
-            return models.User.get(id=int(user_id))
+            try:
+                return models.User.get(id=int(user_id))
+            except models.User.DoesNotExist:
+                return None
 
     def push(self, action, payload={}):
         self.flow.push(self.current_user.username, action, payload)

@@ -5,9 +5,7 @@ from .config import cfg
 
 import sys
 
-from social_tornado.handlers import (
-    AuthHandler, CompleteHandler, DisconnectHandler
-    )
+from social_tornado.routes import SOCIAL_AUTH_ROUTES
 
 from .handlers import (
     MainPageHandler,
@@ -45,6 +43,8 @@ def make_app():
         'SOCIAL_AUTH_LOGIN_REDIRECT_URL': '/',  # on success
         'SOCIAL_AUTH_LOGIN_ERROR_URL': '/login-error/',
 
+        'SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL': True,
+
         # From https://console.developers.google.com/
         # - Create Client ID
         # - Javascript origins: https://localhost:5000
@@ -62,15 +62,7 @@ def make_app():
         print('  configuration file!')
         print('!' * 80)
 
-    handlers = [
-        # Social Auth routes
-        url(r'/login/(?P<backend>[^/]+)/?', AuthHandler, name='begin'),
-        url(r'/complete/(?P<backend>[^/]+)/', CompleteHandler, name='complete'),
-        url(r'/disconnect/(?P<backend>[^/]+)/?',
-                DisconnectHandler, name='disconnect'),
-        url(r'/disconnect/(?P<backend>[^/]+)/(?P<association_id>\d+)/?',
-                DisconnectHandler, name='disconect_individual'),
-
+    handlers = SOCIAL_AUTH_ROUTES + [
         (r'/project(/.*)?', ProjectHandler),
         (r'/dataset(/.*)?', DatasetHandler),
         (r'/features(/.*)?', FeatureHandler),
