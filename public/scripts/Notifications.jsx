@@ -82,7 +82,7 @@ Notifications = connect(mapStateToProps)(Notifications);
 
 
 let nextNotificationId = 0;
-export function showNotification(note, type='info', duration=3000, unique=false, tag='default') {
+export function showNotification(note, type='info', duration=3000, tag='default') {
   const thisId = nextNotificationId++;
 
   if (type === 'error') {
@@ -96,7 +96,6 @@ export function showNotification(note, type='info', duration=3000, unique=false,
         id: thisId,
         note: note,
         type: type,
-        unique: unique,
         tag: tag
       }
     });
@@ -107,16 +106,9 @@ export function showNotification(note, type='info', duration=3000, unique=false,
 export function reducer(state={ notes: [] }, action) {
   switch (action.type) {
     case SHOW_NOTIFICATION: {
-      let { id, note, type, unique, tag } = action.payload;
-      var notes;
-      if (unique == true) {
-        notes = state.notes.filter(n => (n.tag !== tag));
-      } else {
-        notes = state.notes;
-      }
-      notes = notes.concat({ id, note, type, tag });
+      let { id, note, type, tag } = action.payload;
       return {
-        notes: notes
+        notes: state.notes.concat({ id, note, type, tag })
       };
     }
     case HIDE_NOTIFICATION:
