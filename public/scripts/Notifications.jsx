@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION';
 export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION';
-export const HIDE_NOTIFICATION_BY_KEY = 'cesium/HIDE_NOTIFICATION_BY_KEY';
+export const HIDE_NOTIFICATION_BY_TAG = 'cesium/HIDE_NOTIFICATION_BY_TAG';
 
 export const MS_PER_YEAR = 31540000000;
 
@@ -16,10 +16,10 @@ export function hideNotification(id) {
   };
 }
 
-export function hideNotificationByKey(key) {
+export function hideNotificationByTag(tag) {
   return {
-    type: HIDE_NOTIFICATION_BY_KEY,
-    payload: { key }
+    type: HIDE_NOTIFICATION_BY_TAG,
+    payload: { tag }
   };
 }
 
@@ -82,7 +82,7 @@ Notifications = connect(mapStateToProps)(Notifications);
 
 
 let nextNotificationId = 0;
-export function showNotification(note, type='info', duration=3000, unique=false, key='default') {
+export function showNotification(note, type='info', duration=3000, unique=false, tag='default') {
   const thisId = nextNotificationId++;
 
   if (type === 'error') {
@@ -97,7 +97,7 @@ export function showNotification(note, type='info', duration=3000, unique=false,
         note: note,
         type: type,
         unique: unique,
-        key: key
+        tag: tag
       }
     });
     setTimeout(() => dispatch(hideNotification(thisId)), duration);
@@ -107,14 +107,14 @@ export function showNotification(note, type='info', duration=3000, unique=false,
 export function reducer(state={ notes: [] }, action) {
   switch (action.type) {
     case SHOW_NOTIFICATION: {
-      let { id, note, type, unique, key } = action.payload;
+      let { id, note, type, unique, tag } = action.payload;
       var notes;
       if (unique == true) {
-        notes = state.notes.filter(n => (n.key !== key));
+        notes = state.notes.filter(n => (n.tag !== tag));
       } else {
         notes = state.notes;
       }
-      notes = notes.concat({ id, note, type, key });
+      notes = notes.concat({ id, note, type, tag });
       return {
         notes: notes
       };
@@ -123,9 +123,9 @@ export function reducer(state={ notes: [] }, action) {
       return {
         notes: state.notes.filter(n => (n.id !== action.payload.id))
       };
-    case HIDE_NOTIFICATION_BY_KEY:
+    case HIDE_NOTIFICATION_BY_TAG:
       return {
-        notes: state.notes.filter(n => (n.key !== action.payload.key))
+        notes: state.notes.filter(n => (n.tag !== action.payload.tag))
       }
     default:
       return state;

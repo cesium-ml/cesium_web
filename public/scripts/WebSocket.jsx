@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { createCookie, readCookie, eraseCookie } from './cookies';
 import ReconnectingWebSocket from './reconnecting-websocket';
-import { showNotification, hideNotificationByKey, MS_PER_YEAR } from './Notifications';
+import { showNotification, hideNotificationByTag, MS_PER_YEAR } from './Notifications';
 
 
 function getTime() {
@@ -70,7 +70,7 @@ class WebSocket extends React.Component {
 
     ws.onopen = (event) => {
       this.setState({ connected: true });
-      this.props.dispatch(hideNotificationByKey(notificationKey));
+      this.props.dispatch(hideNotificationByTag(notificationKey));
     };
 
     ws.onerror = (event) => {
@@ -112,7 +112,7 @@ class WebSocket extends React.Component {
           break;
         case "AUTH OK":
           this.setState({ authenticated: true });
-          this.props.dispatch(hideNotificationByKey(notificationKey));
+          this.props.dispatch(hideNotificationByTag(notificationKey));
           break;
         default:
           this.props.messageHandler(data);
