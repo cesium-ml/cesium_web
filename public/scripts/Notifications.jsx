@@ -4,7 +4,10 @@ import { connect } from 'react-redux';
 
 export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION';
 export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION';
-export const HIDE_WEBSOCKET_NOTIFICATION = 'cesium/HIDE_WEBSOCKET_NOTIFICATION';
+export const HIDE_NOTIFICATION_BY_KEY = 'cesium/HIDE_NOTIFICATION_BY_KEY';
+
+export const MS_PER_YEAR = 31540000000;
+
 
 export function hideNotification(id) {
   return {
@@ -13,9 +16,10 @@ export function hideNotification(id) {
   };
 }
 
-export function hideWebsocketNotification() {
+export function hideNotificationByKey(key) {
   return {
-    type: HIDE_WEBSOCKET_NOTIFICATION
+    type: HIDE_NOTIFICATION_BY_KEY,
+    payload: { key }
   };
 }
 
@@ -46,8 +50,8 @@ export let Notifications = (props) => {
 
   const noteColor = {
     error: 'Crimson',
-    info: 'MediumAquaMarine',
-    websocket: 'Orange'
+    warning: 'Orange',
+    info: 'MediumAquaMarine'
   };
 
   return (
@@ -78,7 +82,7 @@ Notifications = connect(mapStateToProps)(Notifications);
 
 
 let nextNotificationId = 0;
-export function showNotification(note, type='info') {
+export function showNotification(note, type='info', duration=3000, unique=false, key='default') {
   const thisId = nextNotificationId++;
 
   if (type === 'error') {
@@ -90,27 +94,27 @@ export function showNotification(note, type='info') {
       type: SHOW_NOTIFICATION,
       payload: {
         id: thisId,
-        note,
-        type
+        note: note,
+        type: type,
+        unique: unique,
+        key: key
       }
     });
-    if (type !== 'websocket') {
-      setTimeout(() => dispatch(hideNotification(thisId)), 3000);
-    }
+    setTimeout(() => dispatch(hideNotification(thisId)), duration);
   };
 }
 
 export function reducer(state={ notes: [] }, action) {
   switch (action.type) {
     case SHOW_NOTIFICATION: {
-      let { id, note, type } = action.payload;
+      let { id, note, type, unique, key } = action.payload;
       var notes;
-      if (type === 'websocket') {
-        notes = state.notes.filter(n => (n.type !== 'websocket'));
+      if (unique == true) {
+        notes = state.notes.filter(n => (n.key !== key));
       } else {
         notes = state.notes;
       }
-      notes = notes.concat({ id, note, type });
+      notes = notes.concat({ id, note, type, key });
       return {
         notes: notes
       };
@@ -119,9 +123,9 @@ export function reducer(state={ notes: [] }, action) {
       return {
         notes: state.notes.filter(n => (n.id !== action.payload.id))
       };
-    case HIDE_WEBSOCKET_NOTIFICATION:
+    case HIDE_NOTIFICATION_BY_KEY:
       return {
-        notes: state.notes.filter(n => (n.type !== 'websocket'))
+        notes: state.notes.filter(n => (n.key !== action.payload.key))
       }
     default:
       return state;
