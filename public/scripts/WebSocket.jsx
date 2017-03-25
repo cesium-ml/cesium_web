@@ -57,13 +57,14 @@ function getAuthToken(auth_url) {
 }
 
 
-function clearNotifications(dispatch, tag) {
-  return new Promise(
-    (resolve, reject) => {
-      dispatch(hideNotificationByTag(tag));
-      resolve();
-    }
-  );
+function showWebsocketNotification(dispatch, msg, tag) {
+  dispatch(hideNotificationByTag(tag))
+  .then(dispatch(showNotification(msg, 'warning', 50 * MS_PER_YEAR, tag)));
+}
+
+
+function clearWebsocketNotification(dispatch, tag) {
+  dispatch(hideNotificationByTag(tag));
 }
 
 
@@ -76,25 +77,18 @@ class WebSocket extends React.Component {
     };
 
     const ws = new ReconnectingWebSocket(props.url);
-    const notificationTag = 'websocket';
+    const tag = 'websocket';
 
     ws.onopen = (event) => {
       this.setState({ connected: true });
-      this.props.dispatch(hideNotificationByTag(notificationTag));
+      clearWebsocketNotification(this.props.dispatch, tag);
     };
 
     ws.onerror = (event) => {
-      clearNotifications(this.props.dispatch, notificationTag).then(
-        () => {
-          this.props.dispatch(
-            showNotification(
-              "No WebSocket connection: limited functionality may be available",
-              'warning',
-              50 * MS_PER_YEAR,
-              notificationTag
-            )
-          );
-        }
+      showWebsocketNotification(
+        this.props.dispatch,
+        "No WebSocket connection: limited functionality may be available",
+        tag
       );
     }
 
@@ -117,22 +111,15 @@ class WebSocket extends React.Component {
         case "AUTH FAILED":
           this.setState({ authenticated: false });
           eraseCookie('auth_token');
-          clearNotifications(this.props.dispatch, notificationTag).then(
-            () => {
-              this.props.dispatch(
-                showNotification(
-                  "WebSocket connection authentication failed: limited functionality may be available",
-                  'warning',
-                  50 * MS_PER_YEAR,
-                  notificationTag
-                )
-              );
-            }
+          showWebsocketNotification(
+            this.props.dispatch,
+            "WebSocket connection authentication failed: limited functionality may be available",
+            tag
           );
           break;
         case "AUTH OK":
           this.setState({ authenticated: true });
-          this.props.dispatch(hideNotificationByTag(notificationTag));
+          this.props.dispatch(hideNotificationByTag(tag));
           break;
         default:
           this.props.messageHandler(data);
@@ -142,17 +129,10 @@ class WebSocket extends React.Component {
     ws.onclose = (event) => {
       this.setState({ connected: false,
                      authenticated: false });
-      clearNotifications(this.props.dispatch, notificationTag).then(
-        () => {
-         this.props.dispatch(
-           showNotification(
-             "No WebSocket connection: limited functionality may be available",
-             'warning',
-             50 * MS_PER_YEAR,
-             notificationTag
-           )
-         );
-        }
+      showWebsocketNotification(
+         this.props.dispatch,
+         "No WebSocket connection: limited functionality may be available",
+         tag
       );
     };
   }

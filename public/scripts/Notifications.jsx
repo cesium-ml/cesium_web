@@ -17,9 +17,14 @@ export function hideNotification(id) {
 }
 
 export function hideNotificationByTag(tag) {
-  return {
-    type: HIDE_NOTIFICATION_BY_TAG,
-    payload: { tag }
+  return (dispatch) => {
+    dispatch(
+      {
+        type: HIDE_NOTIFICATION_BY_TAG,
+        payload: { tag }
+      }
+    );
+    return Promise.resolve();
   };
 }
 
