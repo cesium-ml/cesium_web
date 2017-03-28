@@ -93,9 +93,6 @@ features_to_plot = [
 TEST_N = 5
 
 for path_name, path in cfg['paths'].items():
-    if path_name == 'err_log_path':
-        path = os.path.dirname(path)
-
     if not os.path.exists(path):
         print("Creating %s" % path)
         try:
