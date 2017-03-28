@@ -11,7 +11,20 @@ section_end "install.base.requirements"
 
 
 section "install.cesium.requirements"
-pip install -e git://github.com/cesium-ml/cesium.git#egg=cesium
+
+if [[ -n ${TRIGGERED_FROM_REPO} ]]; then
+    mkdir cesium-clone
+    cd cesium-clone
+    git init
+    git remote add origin git://github.com/${TRIGGERED_FROM_REPO}
+    git fetch --depth=1 origin ${TRIGGERED_FROM_BRANCH}
+    git checkout -b ${TRIGGERED_FROM_BRANCH} ${TRIGGERED_FROM_SHA}
+    pip install .
+    cd ..
+else
+    pip install -e git://github.com/cesium-ml/cesium.git#egg=cesium
+fi
+
 pip install --retries 3 -r requirements.txt
 pip list --format=columns
 section_end "install.cesium.requirements"
