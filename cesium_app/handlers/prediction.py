@@ -25,10 +25,10 @@ class PredictionHandler(BaseHandler):
         try:
             d = Prediction.get(Prediction.id == prediction_id)
         except Prediction.DoesNotExist:
-            raise AccessError('No such dataset')
+            raise AccessError('No such prediction')
 
         if not d.is_owned_by(self.get_username()):
-            raise AccessError('No such dataset')
+            raise AccessError('No such prediction')
 
         return d
 
@@ -90,7 +90,9 @@ class PredictionHandler(BaseHandler):
         executor = yield self._get_executor()
 
         if ts_names:
-            ts_uris = [f.uri for f in dataset.files if f.name in ts_names]
+            ts_uris = [f.uri for f in dataset.files if os.path.basename(f.name)
+                       in ts_names or os.path.basename(f.name).split('.npz')[0]
+                       in ts_names]
         else:
             ts_uris = dataset.uris
 
