@@ -25,6 +25,9 @@ else
     pip install -e git://github.com/cesium-ml/cesium.git#egg=cesium
 fi
 
+# Remove Cesium from requirements, already installed
+cat requirements.txt | grep -v cesium > _ && mv _ requirements.txt
+
 pip install --retries 3 -r requirements.txt
 pip list --format=columns
 section_end "install.cesium.requirements"
