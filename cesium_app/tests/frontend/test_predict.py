@@ -172,7 +172,7 @@ def test_download_prediction_csv_class(driver):
         try:
             npt.assert_equal(
                 np.genfromtxt('/tmp/cesium_prediction_results.csv', dtype='str'),
-                ['ts_name,true_target,prediction',
+                ['ts_name,label,prediction',
                  '0,Mira,Mira',
                  '1,Classical_Cepheid,Classical_Cepheid',
                  '2,Mira,Mira',
@@ -194,7 +194,7 @@ def test_download_prediction_csv_regr(driver):
             results = np.genfromtxt('/tmp/cesium_prediction_results.csv',
                                     dtype='str', delimiter=',')
             npt.assert_equal(results[0],
-                             ['ts_name', 'true_target', 'prediction'])
+                             ['ts_name', 'label', 'prediction'])
             npt.assert_array_almost_equal(
                 [[float(e) for e in row] for row in results[1:]],
                 [[0, 2.2, 2.2],

@@ -46,7 +46,7 @@ def test_file_upload_tooltips(driver):
         hover.perform()
         time.sleep(1)
         assert driver.find_element_by_xpath(
-            "//span[contains(.,'filename,target')]"
+            "//span[contains(.,'filename,label')]"
         ).is_displayed()
 
         tar_file = driver.find_element_by_css_selector('[name=tarFile]')

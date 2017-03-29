@@ -61,8 +61,7 @@ class DatasetHandler(BaseHandler):
             zipfile_path,
             cfg['paths']['ts_data_folder'],
             headerfile_path)
-        meta_features = list(time_series.from_netcdf(ts_paths[0])
-                             .meta_features.keys())
+        meta_features = list(time_series.load(ts_paths[0]).meta_features.keys())
         unique_ts_paths = [os.path.join(os.path.dirname(ts_path),
                                         str(uuid.uuid4()) + "_" +
                                         util.secure_filename(ts_path))

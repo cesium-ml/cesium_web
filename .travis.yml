@@ -50,8 +50,6 @@ addons:
     packages:
     - ccache
     - wget
-    - libhdf5-serial-dev
-    - libnetcdf-dev
     - nodejs
     - supervisor
     - nginx
