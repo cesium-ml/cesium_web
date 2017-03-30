@@ -4,19 +4,19 @@ from .base import BaseHandler, AccessError
 from ..models import Project, Model, Featureset, File
 from ..ext.sklearn_models import (
     model_descriptions as sklearn_model_descriptions,
-    check_model_param_types
+    check_model_param_types, MODELS_TYPE_DICT
     )
 from ..util import robust_literal_eval
 from ..config import cfg
+from cesium import featurize
 
 from os.path import join as pjoin
 import uuid
 import datetime
 
-from cesium import build_model, featureset
 import tornado.ioloop
+from sklearn.model_selection import GridSearchCV
 import joblib
-import xarray as xr
 from distributed.client import _wait
 
 
@@ -27,7 +27,7 @@ def _build_model_compute_statistics(fset_path, model_type, model_params,
     Parameters
     ----------
     fset_path : str
-        Path to feature set NetCDF file.
+        Path to feature set .npz file.
     model_type : str
         Type of model to be built, e.g. 'RandomForestClassifier'.
     model_params : dict
@@ -57,15 +57,16 @@ def _build_model_compute_statistics(fset_path, model_type, model_params,
         `params_to_optimize` is None or is an empty dict, this will be an empty
         dict.
     '''
-    fset = featureset.from_netcdf(fset_path)
-    computed_model = build_model.build_model_from_featureset(
-        featureset=fset, model_type=model_type,
-        model_parameters=model_params,
-        params_to_optimize=params_to_optimize)
-    score = build_model.score_model(computed_model, fset)
-    best_params = computed_model.best_params_ if params_to_optimize else {}
-    joblib.dump(computed_model, model_path)
-    fset.close()
+    fset, data = featurize.load_featureset(fset_path)
+    if len(data['labels']) != len(fset):
+        raise ValueError("Cannot build model for unlabeled feature set.")
+    model = MODELS_TYPE_DICT[model_type](**model_params)
+    if params_to_optimize:
+        model = GridSearchCV(model, params_to_optimize)
+    model.fit(fset, data['labels'])
+    score = model.score(fset, data['labels'])
+    best_params = model.best_params_ if params_to_optimize else {}
+    joblib.dump(model, model_path)
 
     return score, best_params
 
