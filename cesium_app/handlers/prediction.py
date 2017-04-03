@@ -25,10 +25,10 @@ class PredictionHandler(BaseHandler):
         try:
             d = Prediction.get(Prediction.id == prediction_id)
         except Prediction.DoesNotExist:
-            raise AccessError('No such dataset')
+            raise AccessError('No such prediction')
 
         if not d.is_owned_by(self.get_username()):
-            raise AccessError('No such dataset')
+            raise AccessError('No such prediction')
 
         return d
 
@@ -67,6 +67,9 @@ class PredictionHandler(BaseHandler):
 
         dataset_id = data['datasetID']
         model_id = data['modelID']
+        # If only a subset of specified dataset is to be used, a list of the
+        # corresponding time series file names can be provided
+        ts_names = data.get('ts_names')
 
         dataset = Dataset.get(Dataset.id == data["datasetID"])
         model = Model.get(Model.id == data["modelID"])
@@ -88,7 +91,15 @@ class PredictionHandler(BaseHandler):
 
         executor = yield self._get_executor()
 
-        all_time_series = executor.map(time_series.load, dataset.uris)
+        # If only a subset of the dataset is to be used, get specified files
+        if ts_names:
+            ts_uris = [f.uri for f in dataset.files if os.path.basename(f.name)
+                       in ts_names or os.path.basename(f.name).split('.npz')[0]
+                       in ts_names]
+        else:
+            ts_uris = dataset.uris
+
+        all_time_series = executor.map(time_series.load, ts_uris)
         all_labels = executor.map(lambda ts: ts.label, all_time_series)
         all_features = executor.map(featurize.featurize_single_ts,
                                     all_time_series,
