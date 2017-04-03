@@ -67,6 +67,8 @@ class PredictionHandler(BaseHandler):
 
         dataset_id = data['datasetID']
         model_id = data['modelID']
+        # If only a subset of specified dataset is to be used, a list of the
+        # corresponding time series file names can be provided
         ts_names = data.get('ts_names')
 
         dataset = Dataset.get(Dataset.id == data["datasetID"])
@@ -89,6 +91,7 @@ class PredictionHandler(BaseHandler):
 
         executor = yield self._get_executor()
 
+        # If only a subset of the dataset is to be used, get specified files
         if ts_names:
             ts_uris = [f.uri for f in dataset.files if os.path.basename(f.name)
                        in ts_names or os.path.basename(f.name).split('.npz')[0]

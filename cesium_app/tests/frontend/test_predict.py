@@ -217,17 +217,14 @@ def test_predict_specific_ts_name():
         data = {'datasetID': ds.id,
                 'ts_names': ['217801'],
                 'modelID': m.id}
-        print('data:', data)
         response = requests.post('{}/predictions'.format(cfg['server']['url']),
                                  data=json.dumps(data)).json()
-        print('response dict:', response)
         assert response['status'] == 'success'
 
         n_secs = 0
         while n_secs < 5:
             pred_info = requests.get('{}/predictions/{}'.format(
                 cfg['server']['url'], response['data']['id'])).json()
-            print(pred_info)
             if pred_info['status'] == 'success' and pred_info['data']['finished']:
                 assert isinstance(pred_info['data']['results']['217801']
                                   ['features']['total_time'],
