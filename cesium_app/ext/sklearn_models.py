@@ -1,5 +1,37 @@
-from cesium.util import make_list
-from cesium.build_model import MODELS_TYPE_DICT
+import collections
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.linear_model import (LinearRegression, SGDClassifier,
+                                  RidgeClassifierCV, ARDRegression,
+                                  BayesianRidge)
+
+MODELS_TYPE_DICT = {'RandomForestClassifier': RandomForestClassifier,
+                    'RandomForestRegressor': RandomForestRegressor,
+                    'LinearSGDClassifier': SGDClassifier,
+                    'LinearRegressor': LinearRegression,
+                    'RidgeClassifierCV': RidgeClassifierCV,
+                    'BayesianARDRegressor': ARDRegression,
+                    'BayesianRidgeRegressor': BayesianRidge}
+
+
+def make_list(x):
+    """Wrap `x` in a list if it isn't already a list or tuple.
+
+    Parameters
+    ----------
+    x : any valid object
+        The parameter to be wrapped in a list.
+
+    Returns
+    -------
+    list or tuple
+        Returns `[x]` if `x` is not already a list or tuple, otherwise
+        returns `x`.
+
+    """
+    if isinstance(x, collections.Iterable) and not isinstance(x, (str, dict)):
+        return x
+    else:
+        return [x]
 
 
 model_descriptions = [

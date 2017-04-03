@@ -7,6 +7,9 @@ import os
 from os.path import join as pjoin
 import numpy as np
 import numpy.testing as npt
+from cesium_app.config import cfg
+import json
+import requests
 from cesium_app.tests.fixtures import (create_test_project, create_test_dataset,
                                        create_test_featureset, create_test_model,
                                        create_test_prediction)
@@ -172,7 +175,7 @@ def test_download_prediction_csv_class(driver):
         try:
             npt.assert_equal(
                 np.genfromtxt('/tmp/cesium_prediction_results.csv', dtype='str'),
-                ['ts_name,true_target,prediction',
+                ['ts_name,label,prediction',
                  '0,Mira,Mira',
                  '1,Classical_Cepheid,Classical_Cepheid',
                  '2,Mira,Mira',
@@ -194,7 +197,7 @@ def test_download_prediction_csv_regr(driver):
             results = np.genfromtxt('/tmp/cesium_prediction_results.csv',
                                     dtype='str', delimiter=',')
             npt.assert_equal(results[0],
-                             ['ts_name', 'true_target', 'prediction'])
+                             ['ts_name', 'label', 'prediction'])
             npt.assert_array_almost_equal(
                 [[float(e) for e in row] for row in results[1:]],
                 [[0, 2.2, 2.2],
@@ -204,3 +207,31 @@ def test_download_prediction_csv_regr(driver):
                  [4, 3.1, 3.1]])
         finally:
             os.remove('/tmp/cesium_prediction_results.csv')
+
+
+def test_predict_specific_ts_name():
+    with create_test_project() as p, create_test_dataset(p) as ds,\
+         create_test_featureset(p) as fs, create_test_model(fs) as m:
+        ts_data = [[1, 2, 3, 4], [32.2, 53.3, 32.3, 32.52], [0.2, 0.3, 0.6, 0.3]]
+        impute_kwargs = {'strategy': 'constant', 'value': None}
+        data = {'datasetID': ds.id,
+                'ts_names': ['217801'],
+                'modelID': m.id}
+        response = requests.post('{}/predictions'.format(cfg['server']['url']),
+                                 data=json.dumps(data)).json()
+        assert response['status'] == 'success'
+
+        n_secs = 0
+        while n_secs < 5:
+            pred_info = requests.get('{}/predictions/{}'.format(
+                cfg['server']['url'], response['data']['id'])).json()
+            if pred_info['status'] == 'success' and pred_info['data']['finished']:
+                assert isinstance(pred_info['data']['results']['217801']
+                                  ['features']['total_time'],
+                                  float)
+                assert 'Mira' in pred_info['data']['results']['217801']['prediction']
+                break
+            n_secs += 1
+            time.sleep(1)
+        else:
+            raise Exception('test_predict_specific_ts_name timed out')

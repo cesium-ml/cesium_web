@@ -4,11 +4,27 @@ import { connect } from 'react-redux';
 
 export const SHOW_NOTIFICATION = 'cesium/SHOW_NOTIFICATION';
 export const HIDE_NOTIFICATION = 'cesium/HIDE_NOTIFICATION';
+export const HIDE_NOTIFICATION_BY_TAG = 'cesium/HIDE_NOTIFICATION_BY_TAG';
+
+export const MS_PER_YEAR = 31540000000;
+
 
 export function hideNotification(id) {
   return {
     type: HIDE_NOTIFICATION,
     payload: { id }
+  };
+}
+
+export function hideNotificationByTag(tag) {
+  return (dispatch) => {
+    dispatch(
+      {
+        type: HIDE_NOTIFICATION_BY_TAG,
+        payload: { tag }
+      }
+    );
+    return Promise.resolve();
   };
 }
 
@@ -39,6 +55,7 @@ export let Notifications = (props) => {
 
   const noteColor = {
     error: 'Crimson',
+    warning: 'Orange',
     info: 'MediumAquaMarine'
   };
 
@@ -70,7 +87,7 @@ Notifications = connect(mapStateToProps)(Notifications);
 
 
 let nextNotificationId = 0;
-export function showNotification(note, type='info') {
+export function showNotification(note, type='info', duration=3000, tag='default') {
   const thisId = nextNotificationId++;
 
   if (type === 'error') {
@@ -82,26 +99,31 @@ export function showNotification(note, type='info') {
       type: SHOW_NOTIFICATION,
       payload: {
         id: thisId,
-        note,
-        type
+        note: note,
+        type: type,
+        tag: tag
       }
     });
-    setTimeout(() => dispatch(hideNotification(thisId)), 3000);
+    setTimeout(() => dispatch(hideNotification(thisId)), duration);
   };
 }
 
 export function reducer(state={ notes: [] }, action) {
   switch (action.type) {
     case SHOW_NOTIFICATION: {
-      let { id, note, type } = action.payload;
+      let { id, note, type, tag } = action.payload;
       return {
-        notes: state.notes.concat({ id, note, type })
+        notes: state.notes.concat({ id, note, type, tag })
       };
     }
     case HIDE_NOTIFICATION:
       return {
         notes: state.notes.filter(n => (n.id !== action.payload.id))
       };
+    case HIDE_NOTIFICATION_BY_TAG:
+      return {
+        notes: state.notes.filter(n => (n.tag !== action.payload.tag))
+      }
     default:
       return state;
   }

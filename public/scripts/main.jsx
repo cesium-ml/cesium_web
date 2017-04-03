@@ -296,6 +296,7 @@ class MainContent extends React.Component {
                   url={`ws://${this.props.root}websocket`}
                   auth_url={`${location.protocol}//${this.props.root}socket_auth_token`}
                   messageHandler={messageHandler}
+                  dispatch={store.dispatch}
                 />
               </Tab>
             </TabList>

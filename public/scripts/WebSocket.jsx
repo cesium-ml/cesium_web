@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { createCookie, readCookie, eraseCookie } from './cookies';
 import ReconnectingWebSocket from './reconnecting-websocket';
+import { showNotification, hideNotificationByTag, MS_PER_YEAR } from './Notifications';
 
 
 function getTime() {
@@ -56,6 +57,17 @@ function getAuthToken(auth_url) {
 }
 
 
+function showWebsocketNotification(dispatch, msg, tag) {
+  dispatch(hideNotificationByTag(tag))
+  .then(dispatch(showNotification(msg, 'warning', 50 * MS_PER_YEAR, tag)));
+}
+
+
+function clearWebsocketNotification(dispatch, tag) {
+  dispatch(hideNotificationByTag(tag));
+}
+
+
 class WebSocket extends React.Component {
   constructor(props) {
     super(props);
@@ -65,10 +77,20 @@ class WebSocket extends React.Component {
     };
 
     const ws = new ReconnectingWebSocket(props.url);
+    const tag = 'websocket';
 
     ws.onopen = (event) => {
       this.setState({ connected: true });
+      clearWebsocketNotification(this.props.dispatch, tag);
     };
+
+    ws.onerror = (event) => {
+      showWebsocketNotification(
+        this.props.dispatch,
+        "No WebSocket connection: limited functionality may be available",
+        tag
+      );
+    }
 
     ws.onmessage = (event) => {
       const message = event.data;
@@ -89,9 +111,15 @@ class WebSocket extends React.Component {
         case "AUTH FAILED":
           this.setState({ authenticated: false });
           eraseCookie('auth_token');
+          showWebsocketNotification(
+            this.props.dispatch,
+            "WebSocket connection authentication failed: limited functionality may be available",
+            tag
+          );
           break;
         case "AUTH OK":
           this.setState({ authenticated: true });
+          this.props.dispatch(hideNotificationByTag(tag));
           break;
         default:
           this.props.messageHandler(data);
@@ -101,6 +129,11 @@ class WebSocket extends React.Component {
     ws.onclose = (event) => {
       this.setState({ connected: false,
                      authenticated: false });
+      showWebsocketNotification(
+         this.props.dispatch,
+         "No WebSocket connection: limited functionality may be available",
+         tag
+      );
     };
   }
 
@@ -130,7 +163,7 @@ class WebSocket extends React.Component {
     };
 
     const connected_desc = (`WebSocket is
-      ${(this.state.connected ? 'connected' : 'disconnected')} & 
+      ${(this.state.connected ? 'connected' : 'disconnected')} &
       ${(this.state.authenticated ? 'authenticated' : 'unauthenticated')}.`);
     return (
       <div

@@ -7,19 +7,17 @@ import tornado.gen
 from tornado.web import RequestHandler
 from tornado.escape import json_decode
 
-import cesium.time_series
-import cesium.featurize
-import cesium.predict
-import cesium.featureset
+from cesium import featurize, time_series
 from cesium.features import CADENCE_FEATS, GENERAL_FEATS, LOMB_SCARGLE_FEATS
 
-import xarray as xr
 import joblib
 from os.path import join as pjoin
 import uuid
 import datetime
 import os
 import tempfile
+import numpy as np
+import pandas as pd
 
 
 class PredictionHandler(BaseHandler):
@@ -27,10 +25,10 @@ class PredictionHandler(BaseHandler):
         try:
             d = Prediction.get(Prediction.id == prediction_id)
         except Prediction.DoesNotExist:
-            raise AccessError('No such dataset')
+            raise AccessError('No such prediction')
 
         if not d.is_owned_by(self.get_username()):
-            raise AccessError('No such dataset')
+            raise AccessError('No such prediction')
 
         return d
 
@@ -69,6 +67,9 @@ class PredictionHandler(BaseHandler):
 
         dataset_id = data['datasetID']
         model_id = data['modelID']
+        # If only a subset of specified dataset is to be used, a list of the
+        # corresponding time series file names can be provided
+        ts_names = data.get('ts_names')
 
         dataset = Dataset.get(Dataset.id == data["datasetID"])
         model = Model.get(Model.id == data["modelID"])
@@ -82,27 +83,47 @@ class PredictionHandler(BaseHandler):
         if (model.finished is None) or (fset.finished is None):
             return self.error('Computation of model or feature set still in progress')
 
-        prediction_path = pjoin(cfg['paths']['predictions_folder'],
-                                '{}_prediction.nc'.format(uuid.uuid4()))
-        prediction_file = File.create(uri=prediction_path)
+        pred_path = pjoin(cfg['paths']['predictions_folder'],
+                          '{}_prediction.npz'.format(uuid.uuid4()))
+        prediction_file = File.create(uri=pred_path)
         prediction = Prediction.create(file=prediction_file, dataset=dataset,
                                        project=dataset.project, model=model)
 
         executor = yield self._get_executor()
 
-        all_time_series = executor.map(cesium.time_series.from_netcdf,
-                                       dataset.uris)
-        all_features = executor.map(cesium.featurize.featurize_single_ts,
+        # If only a subset of the dataset is to be used, get specified files
+        if ts_names:
+            ts_uris = [f.uri for f in dataset.files if os.path.basename(f.name)
+                       in ts_names or os.path.basename(f.name).split('.npz')[0]
+                       in ts_names]
+        else:
+            ts_uris = dataset.uris
+
+        all_time_series = executor.map(time_series.load, ts_uris)
+        all_labels = executor.map(lambda ts: ts.label, all_time_series)
+        all_features = executor.map(featurize.featurize_single_ts,
                                     all_time_series,
                                     features_to_use=fset.features_list,
                                     custom_script_path=fset.custom_features_script)
-        fset_data = executor.submit(cesium.featurize.assemble_featureset,
+        fset_data = executor.submit(featurize.assemble_featureset,
                                     all_features, all_time_series)
-        fset_data = executor.submit(cesium.featureset.Featureset.impute, fset_data)
-        model_data = executor.submit(joblib.load, model.file.uri)
-        predset = executor.submit(cesium.predict.model_predictions,
-                                  fset_data, model_data)
-        future = executor.submit(xr.Dataset.to_netcdf, predset, prediction_path)
+        imputed_fset = executor.submit(featurize.impute_featureset,
+                                       fset_data, inplace=False)
+        model_or_gridcv = executor.submit(joblib.load, model.file.uri)
+        model_data = executor.submit(lambda model: model.best_estimator_
+                                     if hasattr(model, 'best_estimator_') else model,
+                                     model_or_gridcv)
+        preds = executor.submit(lambda fset, model: model.predict(fset),
+                                imputed_fset, model_data)
+        pred_probs = executor.submit(lambda fset, model: model.predict_proba(fset)
+                                     if hasattr(model, 'predict_proba') else [],
+                                     imputed_fset, model_data)
+        all_classes = executor.submit(lambda model: model.classes_
+                                      if hasattr(model, 'classes_') else [],
+                                      model_data)
+        future = executor.submit(featurize.save_featureset, imputed_fset,
+                                 pred_path, labels=all_labels, preds=preds,
+                                 pred_probs=pred_probs, all_classes=all_classes)
 
         prediction.task_id = future.key
         prediction.save()
@@ -114,14 +135,18 @@ class PredictionHandler(BaseHandler):
 
     def get(self, prediction_id=None, action=None):
         if action == 'download':
-            prediction = cesium.featureset.from_netcdf(self._get_prediction(prediction_id).file.uri)
-            with tempfile.NamedTemporaryFile() as tf:
-                util.prediction_to_csv(prediction, tf.name)
-                with open(tf.name) as f:
-                    self.set_header("Content-Type", 'text/csv; charset="utf-8"')
-                    self.set_header("Content-Disposition",
-                                    "attachment; filename=cesium_prediction_results.csv")
-                    self.write(f.read())
+            pred_path = self._get_prediction(prediction_id).file.uri
+            fset, data = featurize.load_featureset(pred_path)
+            result = pd.DataFrame({'ts_name': fset.index,
+                                   'label': data['labels'],
+                                   'prediction': data['preds']},
+                                  columns=['ts_name', 'label', 'prediction'])
+            if data.get('pred_probs'):
+                result['probability'] = np.max(data['pred_probs'], axis=1)
+            self.set_header("Content-Type", 'text/csv; charset="utf-8"')
+            self.set_header("Content-Disposition", "attachment; "
+                            "filename=cesium_prediction_results.csv")
+            self.write(result.to_csv(index=False))
         else:
             if prediction_id is None:
                 predictions = [prediction
@@ -144,20 +169,22 @@ class PredictRawDataHandler(BaseHandler):
     def post(self):
         ts_data = json_decode(self.get_argument('ts_data'))
         model_id = json_decode(self.get_argument('modelID'))
-        meta_feats = json_decode(
-            self.get_argument('meta_features', 'null'))
-        impute_kwargs = json_decode(
-            self.get_argument('impute_kwargs', '{}'))
+        meta_feats = json_decode(self.get_argument('meta_features', 'null'))
+        impute_kwargs = json_decode(self.get_argument('impute_kwargs', '{}'))
 
         model = Model.get(Model.id == model_id)
-        computed_model = joblib.load(model.file.uri)
+        model_data = joblib.load(model.file.uri)
+        if hasattr(model_data, 'best_estimator_'):
+            model_data = model_data.best_estimator_
         features_to_use = model.featureset.features_list
 
-        fset_data = cesium.featurize.featurize_time_series(
-            *ts_data, features_to_use=features_to_use, meta_features=meta_feats)
-        fset = cesium.featureset.Featureset(fset_data).impute(**impute_kwargs)
-
-        predset = cesium.predict.model_predictions(fset, computed_model)
-        predset['name'] = predset.name.astype('str')
-
-        return self.success(predset)
+        fset = featurize.featurize_time_series(*ts_data,
+                                               features_to_use=features_to_use,
+                                               meta_features=meta_feats)
+        fset = featurize.impute_featureset(fset, **impute_kwargs)
+        data = {'preds': model_data.predict(fset),
+                'all_classes': model_data.classes_}
+        if hasattr(model_data, 'predict_proba'):
+            data['pred_probs'] = model_data.predict_proba(fset)
+        pred_info = Prediction.format_pred_data(fset, data)
+        return self.success(pred_info)

@@ -7,16 +7,14 @@ paths:
     # Note below that defined variables can be reused in subsequent
     # definitions.
 
-    data_path:        '~/.local/cesium'
-    err_log_path:     '{data_path}/logs/errors_and_warnings.log'
-    models_folder:    '{data_path}/models'
-    features_folder:  '{data_path}/extracted_features'
-    predictions_folder:  '{data_path}/predictions'
-    ts_data_folder:  '{data_path}/ts_data'
+    data_path: '~/.local/cesium'
+    models_folder: '{data_path}/models'
+    features_folder: '{data_path}/extracted_features'
+    predictions_folder: '{data_path}/predictions'
+    ts_data_folder: '{data_path}/ts_data'
 
-    upload_folder:    '{data_path}/uploads'
+    upload_folder: '{data_path}/uploads'
     custom_feature_script_folder: '{data_path}/uploads/custom_feature_scripts'
-    temp: '/tmp/cesium'
 
 database:
     database: cesium

@@ -96,7 +96,6 @@ sys.path.insert(0, basedir)
 with nostdout():
     from cesium_app.config import cfg
 
-watched.append(cfg['paths']['err_log_path'])
 watched.append('log/error.log')
 watched.append('log/nginx-error.log')
 

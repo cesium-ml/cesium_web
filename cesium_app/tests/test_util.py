@@ -2,8 +2,6 @@ from cesium_app import util
 from cesium_app.ext import sklearn_models
 import numpy.testing as npt
 import pytest
-import xarray as xr
-from cesium import featureset
 from cesium_app.tests.fixtures import (create_test_project, create_test_dataset,
                                        create_test_featureset, create_test_model,
                                        create_test_prediction)
@@ -88,40 +86,3 @@ def test_check_model_param_types():
     params = {"invalid_param_name": "some_value"}
     pytest.raises(ValueError, sklearn_models.check_model_param_types,
                   model_type, params)
-
-
-def test_prediction_to_csv_class():
-    """Test util.prediction_to_csv"""
-    with create_test_project() as p, create_test_dataset(p) as ds,\
-         create_test_featureset(p) as fs,\
-         create_test_model(fs, model_type='LinearSGDClassifier') as m,\
-         create_test_prediction(ds, m) as pred:
-        pred = featureset.from_netcdf(pred.file.uri)
-        assert util.prediction_to_csv(pred) ==\
-            [['ts_name', 'true_target', 'prediction'],
-             ['0', 'Mira', 'Mira'],
-             ['1', 'Classical_Cepheid', 'Classical_Cepheid'],
-             ['2', 'Mira', 'Mira'],
-             ['3', 'Classical_Cepheid', 'Classical_Cepheid'],
-             ['4', 'Mira', 'Mira']]
-
-
-def test_prediction_to_csv_regr():
-    """Test util.prediction_to_csv"""
-    with create_test_project() as p, create_test_dataset(p, label_type='regr') as ds,\
-         create_test_featureset(p, label_type='regr') as fs,\
-         create_test_model(fs, model_type='LinearRegressor') as m,\
-         create_test_prediction(ds, m) as pred:
-
-        pred = featureset.from_netcdf(pred.file.uri)
-        results = util.prediction_to_csv(pred)
-
-        assert results[0] == ['ts_name', 'true_target', 'prediction']
-
-        npt.assert_array_almost_equal(
-            [[float(e) for e in row] for row in results[1:]],
-            [[0, 2.2, 2.2],
-             [1, 3.4, 3.4],
-             [2, 4.4, 4.4],
-             [3, 2.2, 2.2],
-             [4, 3.1, 3.1]])

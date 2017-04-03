@@ -1,9 +1,7 @@
 import tornado.ioloop
 
-import xarray as xr
 from cesium import featurize, time_series
 from cesium.features import dask_feature_graph
-from cesium import featureset
 
 from .base import BaseHandler, AccessError
 from ..models import Dataset, Featureset, Project, File
@@ -79,7 +77,7 @@ class FeatureHandler(BaseHandler):
             return self.error('Cannot access dataset')
 
         fset_path = pjoin(cfg['paths']['features_folder'],
-                          '{}_featureset.nc'.format(uuid.uuid4()))
+                          '{}_featureset.npz'.format(uuid.uuid4()))
 
         fset = Featureset.create(name=featureset_name,
                                  file=File.create(uri=fset_path),
@@ -89,15 +87,18 @@ class FeatureHandler(BaseHandler):
 
         executor = yield self._get_executor()
 
-        all_time_series = executor.map(time_series.from_netcdf, dataset.uris)
+        all_time_series = executor.map(time_series.load, dataset.uris)
+        all_labels = executor.map(lambda ts: ts.label, all_time_series)
         all_features = executor.map(featurize.featurize_single_ts,
                                     all_time_series,
                                     features_to_use=features_to_use,
                                     custom_script_path=custom_script_path)
         computed_fset = executor.submit(featurize.assemble_featureset,
                                         all_features, all_time_series)
-        imputed_fset = executor.submit(featureset.Featureset.impute, computed_fset)
-        future = executor.submit(xr.Dataset.to_netcdf, imputed_fset, fset_path)
+        imputed_fset = executor.submit(featurize.impute_featureset,
+                                       computed_fset, inplace=False)
+        future = executor.submit(featurize.save_featureset, imputed_fset,
+                                 fset_path, labels=all_labels)
         fset.task_id = future.key
         fset.save()
 

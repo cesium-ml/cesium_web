@@ -48,7 +48,7 @@ let DatasetForm = (props) => {
         />
 
         <div style={description}>
-          Format: comma-separated with columns "filename" (of a time series from the uploaded archive), "target" (class label or numerical value), and any metafeatures (numerical).
+          Format: comma-separated with columns "filename" (of a time series from the uploaded archive), "label" (class label or numerical value), and any metafeatures (numerical).
         </div>
 
         <FileInput
@@ -66,7 +66,7 @@ let DatasetForm = (props) => {
 
       <CesiumTooltip
         id="headerfileTooltip"
-        text={["filename,target", <br />, "ts1.dat,class_A", <br />, "..."]}
+        text={["filename,label", <br />, "ts1.dat,class_A", <br />, "..."]}
       />
       <CesiumTooltip
         id="tarfileTooltip"

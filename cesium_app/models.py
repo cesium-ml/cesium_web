@@ -3,15 +3,16 @@ import inspect
 import os
 import sys
 import time
+import numpy as np
 
 import peewee as pw
 from playhouse.postgres_ext import ArrayField, BinaryJSONField
 from playhouse.shortcuts import model_to_dict
 from playhouse import signals
-import xarray as xr
 
 from cesium_app.json_util import to_json
 from cesium_app.config import cfg
+from cesium import featurize
 
 
 db = pw.PostgresqlDatabase(autocommit=True, autorollback=True,
@@ -190,6 +191,21 @@ class Prediction(BaseModel):
     def is_owned_by(self, username):
         return self.project.is_owned_by(username)
 
+    def format_pred_data(fset, data):
+        fset.columns = fset.columns.droplevel('channel')
+        fset.index = fset.index.astype(str)  # can't use ints as JSON keys
+        result = {}
+        for i, name in enumerate(fset.index):
+            result[name] = {'features': fset.loc[name].to_dict()}
+            if 'labels' in data:
+                result[name]['label'] = data['labels'][i]
+            if len(data['pred_probs']) > 0:
+                result[name]['prediction'] = dict(zip(data['all_classes'],
+                                                      data['pred_probs'][i]))
+            else:
+                result[name]['prediction'] = data['preds'][i]
+        return result
+
     def display_info(self):
         info = self.__dict__()
         info['model_type'] = self.model.type
@@ -197,16 +213,9 @@ class Prediction(BaseModel):
         info['model_name'] = self.model.name
         info['featureset_name'] = self.model.featureset.name
         if self.task_id is None:
-            try:
-                with xr.open_dataset(self.file.uri) as pset:
-                    info['results'] = pset.load()
-            except (RuntimeError, OSError):
-                info['results'] = None
-        if 'results' in info and info['results']:
-            first_result = info['results'].sel(name=info['results'].name.values[0])
-            if 'prediction' in first_result:
-                info['isProbabilistic'] = 'class_label' in\
-                                          first_result.prediction
+            fset, data = featurize.load_featureset(self.file.uri)
+            info['isProbabilistic'] = (len(data['pred_probs']) > 0)
+            info['results'] = Prediction.format_pred_data(fset, data)
         return info
 
 
@@ -256,7 +265,7 @@ if __name__ == "__main__":
     assert(len(list(p.all('testuser@gmail.com'))) == 3)
 
     print("Inserting dummy dataset and time series...")
-    file_uris = ['/dir/ts{}.nc'.format(i) for i in range(3)]
+    file_uris = ['/dir/ts{}.npz'.format(i) for i in range(3)]
     d = Dataset.add(name='test dataset', project=p, file_uris=file_uris)
 
     print("Inserting dummy featureset...")
