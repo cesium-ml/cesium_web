@@ -158,6 +158,18 @@ class Featureset(BaseModel):
     def is_owned_by(self, username):
         return self.project.is_owned_by(username)
 
+    @staticmethod
+    def get_if_owned(fset_id, username):
+        try:
+            f = Featureset.get(Featureset.id == fset_id)
+        except Featureset.DoesNotExist:
+            raise AccessError('No such feature set')
+
+        if not f.is_owned_by(username):
+            raise AccessError('No such feature set')
+
+        return f
+
 
 class Model(BaseModel):
     """ORM model of the Model table"""
