@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import Plotly from './custom-plotly';
 import { showNotification } from './Notifications';
 
-
 class Plot extends Component {
   constructor(props) {
     super(props);
@@ -32,17 +31,21 @@ class Plot extends Component {
     if (!plotData) {
       return <b>Please wait while we load your plotting data...</b>;
     }
-
-    let { data, layout } = plotData;
+    var js = plotData.js;
+    var div = plotData.div;
 
     return (
       plotData &&
         <div
           ref={
             (node) => {
-              node && Plotly.plot(node, data, layout);
+              if (node) {
+                node.innerHTML = div;
+                eval(js);
+              }
             }}
         />
+
     );
   }
 }

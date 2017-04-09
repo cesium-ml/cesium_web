@@ -18,6 +18,6 @@ class PlotFeaturesHandler(BaseHandler):
     def get(self, featureset_id=None):
         fset = self._get_featureset(featureset_id)
         features_to_plot = sorted(fset.features_list)[0:4]
-        data, layout = plot.feature_scatterplot(fset.file.uri, features_to_plot)
+        js, div = plot.feature_scatterplot(fset.file.uri, features_to_plot)
 
-        self.success({'data': data, 'layout': layout})
+        self.success({'js': js, 'div': div})
