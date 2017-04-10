@@ -32,7 +32,8 @@ class Plot extends Component {
       return <b>Please wait while we load your plotting data...</b>;
     }
     var js = plotData.js;
-    var div = plotData.div;
+    var render_items = plotData.render_items;
+    var div = '<div class="bk-root"><div class="bk-plotdiv" id="'+ render_items.elementid +'"></div></div>';
 
     return (
       plotData &&

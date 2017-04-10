@@ -69,4 +69,9 @@ def feature_scatterplot(fset_path, features_to_plot):
             p.yaxis.axis_label = features_to_plot[j]
 
     plot = gridplot(plots.tolist(), ncol=len(features_to_plot), mergetools=True)
-    return components(plot, wrap_script=False)
+    js, render_items = components(plot, wrap_script=False, wrap_plot_info=False)
+    print("###### JS ##### ")
+    print(js)
+    print(render_items)
+
+    return js, render_items
