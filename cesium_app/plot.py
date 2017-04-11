@@ -9,13 +9,8 @@ from .config import cfg
 
 # Testing bokeh
 from bokeh.plotting import figure
-from bokeh.models import Range1d
-from bokeh.embed import components, file_html
-from bokeh.io import curdoc
-from bokeh.resources import CDN
-from bokeh.document import Document
-
-from .json_util import to_json
+from bokeh.embed import components, file_html, _standalone_docs_json_and_render_items, _ModelInDocument
+from bokeh.core.json_encoder import serialize_json
 
 
 def feature_scatterplot(fset_path, features_to_plot):
@@ -69,9 +64,11 @@ def feature_scatterplot(fset_path, features_to_plot):
             p.yaxis.axis_label = features_to_plot[j]
 
     plot = gridplot(plots.tolist(), ncol=len(features_to_plot), mergetools=True)
-    js, render_items = components(plot, wrap_script=False, wrap_plot_info=False)
-    print("###### JS ##### ")
-    print(js)
-    print(render_items)
 
-    return js, render_items
+    with _ModelInDocument(plot):
+        (docs_json, render_items) = _standalone_docs_json_and_render_items(plot)
+
+    docs_json = serialize_json(docs_json)
+    render_items = serialize_json(render_items)
+
+    return docs_json, render_items

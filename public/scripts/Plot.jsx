@@ -31,9 +31,10 @@ class Plot extends Component {
     if (!plotData) {
       return <b>Please wait while we load your plotting data...</b>;
     }
-    var js = plotData.js;
-    var render_items = plotData.render_items;
-    var div = '<div class="bk-root"><div class="bk-plotdiv" id="'+ render_items.elementid +'"></div></div>';
+    var docs_json = JSON.parse(plotData.docs_json);
+    var render_items = JSON.parse(plotData.render_items);
+
+    var div = '<div class="bk-root"><div class="bk-plotdiv" id="'+ render_items[0].elementid +'"></div></div>';
 
     return (
       plotData &&
@@ -42,7 +43,15 @@ class Plot extends Component {
             (node) => {
               if (node) {
                 node.innerHTML = div;
-                eval(js);
+                (function() {
+                  var fn = function() {
+                    Bokeh.safely(function() {
+                      Bokeh.embed.embed_items(docs_json, render_items);
+                    });
+                  };
+                  if (document.readyState != "loading") fn();
+                  else document.addEventListener("DOMContentLoaded", fn);
+                })();
               }
             }}
         />
