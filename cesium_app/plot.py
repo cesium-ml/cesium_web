@@ -1,7 +1,6 @@
 from itertools import cycle, islice
 import numpy as np
 from cesium import featurize
-from .config import cfg
 from bokeh.plotting import figure
 from bokeh.layouts import gridplot
 from bokeh.palettes import PuBu as palette
