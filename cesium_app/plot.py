@@ -63,12 +63,12 @@ def feature_scatterplot(fset_path, features_to_plot):
 
     # Convert plot to json objects necessary for rendering with bokeh on the
     # frontend
-    render_items = [{'docid':plot._id, 'elementid':make_id()}]
+    render_items = [{'docid': plot._id, 'elementid': make_id()}]
 
     doc = Document()
     doc.add_root(plot)
     docs_json_inner = doc.to_json()
-    docs_json = {render_items[0]['docid']:docs_json_inner}
+    docs_json = {render_items[0]['docid']: docs_json_inner}
 
     docs_json = serialize_json(docs_json)
     render_items = serialize_json(render_items)
