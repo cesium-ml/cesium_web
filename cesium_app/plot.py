@@ -1,16 +1,18 @@
 from itertools import cycle, islice
 import numpy as np
 from bokeh.plotting import figure
-from bokeh.embed import components
 from bokeh.layouts import gridplot
 from bokeh.palettes import PuBu as palette
 from cesium import featurize
 from .config import cfg
 
+import json
+
 # Testing bokeh
 from bokeh.plotting import figure
-from bokeh.embed import components, file_html, _standalone_docs_json_and_render_items, _ModelInDocument
 from bokeh.core.json_encoder import serialize_json
+from bokeh.document import Document
+from bokeh.util.serialization import make_id
 
 
 def feature_scatterplot(fset_path, features_to_plot):
@@ -65,8 +67,12 @@ def feature_scatterplot(fset_path, features_to_plot):
 
     plot = gridplot(plots.tolist(), ncol=len(features_to_plot), mergetools=True)
 
-    with _ModelInDocument(plot):
-        (docs_json, render_items) = _standalone_docs_json_and_render_items(plot)
+    render_items = [{'docid':plot._id, 'elementid':make_id()}]
+
+    doc = Document()
+    doc.add_root(plot)
+    docs_json_inner = doc.to_json()
+    docs_json = {render_items[0]['docid']:docs_json_inner}
 
     docs_json = serialize_json(docs_json)
     render_items = serialize_json(render_items)
