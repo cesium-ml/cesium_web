@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import sys
-import re
 import subprocess
 
 if len(sys.argv) != 2:
