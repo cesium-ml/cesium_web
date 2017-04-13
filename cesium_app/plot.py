@@ -67,6 +67,8 @@ def feature_scatterplot(fset_path, features_to_plot):
 
     plot = gridplot(plots.tolist(), ncol=len(features_to_plot), mergetools=True)
 
+    # Convert plot to json objects necessary for rendering with bokeh on the
+    # frontend
     render_items = [{'docid':plot._id, 'elementid':make_id()}]
 
     doc = Document()

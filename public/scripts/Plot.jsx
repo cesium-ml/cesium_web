@@ -1,7 +1,22 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Plotly from './custom-plotly';
 import { showNotification } from './Notifications';
+
+function bokeh_render_plot(node, docs_json, render_items) {
+  // Create bokeh div element
+  var bokeh_div = document.createElement("div");
+  var inner_div = document.createElement("div");
+  bokeh_div.setAttribute("class", "bk-root" );
+  inner_div.setAttribute("class", "bk-plotdiv");
+  inner_div.setAttribute("id", render_items[0].elementid);
+  bokeh_div.appendChild(inner_div);
+  node.appendChild(bokeh_div);
+
+  // Generate plot
+  Bokeh.safely(function() {
+    Bokeh.embed.embed_items(docs_json, render_items);
+  });
+}
 
 class Plot extends Component {
   constructor(props) {
@@ -34,26 +49,14 @@ class Plot extends Component {
     var docs_json = JSON.parse(plotData.docs_json);
     var render_items = JSON.parse(plotData.render_items);
 
-    var div = '<div class="bk-root"><div class="bk-plotdiv" id="'+ render_items[0].elementid +'"></div></div>';
-
     return (
       plotData &&
         <div
           ref={
             (node) => {
-              if (node) {
-                node.innerHTML = div;
-                (function() {
-                  var fn = function() {
-                    Bokeh.safely(function() {
-                      Bokeh.embed.embed_items(docs_json, render_items);
-                    });
-                  };
-                  if (document.readyState != "loading") fn();
-                  else document.addEventListener("DOMContentLoaded", fn);
-                })();
+              node && bokeh_render_plot(node, docs_json, render_items)
               }
-            }}
+            }
         />
     );
   }
