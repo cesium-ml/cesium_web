@@ -3,7 +3,7 @@ import inspect
 import os
 import sys
 import time
-import numpy as np
+import pandas as pd
 
 import peewee as pw
 from playhouse.postgres_ext import ArrayField, BinaryJSONField
@@ -73,6 +73,7 @@ class File(BaseModel):
     name = pw.CharField(null=True)
     created = pw.DateTimeField(default=datetime.datetime.now)
 
+
 @signals.post_delete(sender=File)
 def remove_file_after_delete(sender, instance):
     try:
@@ -135,6 +136,7 @@ class DatasetFile(BaseModel):
             (('dataset', 'file'), True),
         )
 
+
 @signals.pre_delete(sender=Dataset)
 def remove_related_files(sender, instance):
     for f in instance.files:
@@ -148,7 +150,7 @@ class Featureset(BaseModel):
     name = pw.CharField()
     created = pw.DateTimeField(default=datetime.datetime.now)
     features_list = ArrayField(pw.CharField)
-    custom_features_script = pw.CharField(null=True) # move to fset file?
+    custom_features_script = pw.CharField(null=True)  # move to fset file?
     file = pw.ForeignKeyField(File, on_delete='CASCADE')
     task_id = pw.CharField(null=True)
     finished = pw.DateTimeField(null=True)
@@ -194,16 +196,15 @@ class Prediction(BaseModel):
     def format_pred_data(fset, data):
         fset.columns = fset.columns.droplevel('channel')
         fset.index = fset.index.astype(str)  # can't use ints as JSON keys
-        result = {}
-        for i, name in enumerate(fset.index):
-            result[name] = {'features': fset.loc[name].to_dict()}
-            if 'labels' in data:
-                result[name]['label'] = data['labels'][i]
-            if len(data['pred_probs']) > 0:
-                result[name]['prediction'] = dict(zip(data['all_classes'],
-                                                      data['pred_probs'][i]))
-            else:
-                result[name]['prediction'] = data['preds'][i]
+        labels = pd.Series(data.get('labels'), index=fset.index)
+        if len(data.get('pred_probs', [])) > 0:
+            preds = pd.DataFrame(data.get('pred_probs', []),
+                                 index=fset.index).to_dict(orient='index')
+        else:
+            preds = pd.Series(data['preds'], index=fset.index).to_dict()
+        result = {name: {'features': feats, 'label': labels.loc[name],
+                         'prediction': preds[name]}
+                  for name, feats in fset.to_dict(orient='index').items()}
         return result
 
     def display_info(self):
@@ -237,6 +238,7 @@ def create_tables(retry=5):
             else:
                 print('Could not connect to database...sleeping 5')
                 time.sleep(5)
+
 
 def drop_tables():
     db.drop_tables(models, safe=True, cascade=True)

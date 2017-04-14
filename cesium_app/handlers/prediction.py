@@ -115,15 +115,15 @@ class PredictionHandler(BaseHandler):
                                      model_or_gridcv)
         preds = executor.submit(lambda fset, model: model.predict(fset),
                                 imputed_fset, model_data)
-        pred_probs = executor.submit(lambda fset, model: model.predict_proba(fset)
+        pred_probs = executor.submit(lambda fset, model:
+                                     pd.DataFrame(model.predict_proba(fset),
+                                                  index=fset.index,
+                                                  columns=model.classes_)
                                      if hasattr(model, 'predict_proba') else [],
                                      imputed_fset, model_data)
-        all_classes = executor.submit(lambda model: model.classes_
-                                      if hasattr(model, 'classes_') else [],
-                                      model_data)
         future = executor.submit(featurize.save_featureset, imputed_fset,
                                  pred_path, labels=all_labels, preds=preds,
-                                 pred_probs=pred_probs, all_classes=all_classes)
+                                 pred_probs=pred_probs)
 
         prediction.task_id = future.key
         prediction.save()
@@ -182,9 +182,12 @@ class PredictRawDataHandler(BaseHandler):
                                                features_to_use=features_to_use,
                                                meta_features=meta_feats)
         fset = featurize.impute_featureset(fset, **impute_kwargs)
-        data = {'preds': model_data.predict(fset),
-                'all_classes': model_data.classes_}
+        data = {'preds': model_data.predict(fset)}
         if hasattr(model_data, 'predict_proba'):
-            data['pred_probs'] = model_data.predict_proba(fset)
+            data['pred_probs'] = pd.DataFrame(model_data.predict_proba(fset),
+                                              index=fset.index,
+                                              columns=model_data.classes_)
+        else:
+            data['pred_probs'] = []
         pred_info = Prediction.format_pred_data(fset, data)
         return self.success(pred_info)
