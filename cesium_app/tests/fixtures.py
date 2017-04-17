@@ -14,6 +14,7 @@ import shutil
 import peewee
 import datetime
 import joblib
+import pandas as pd
 
 
 @contextmanager
@@ -160,14 +161,14 @@ def create_test_prediction(dataset, model):
     if hasattr(model_data, 'best_estimator_'):
         model_data = model_data.best_estimator_
     preds = model_data.predict(fset)
-    pred_probs = (model_data.predict_proba(fset)
+    pred_probs = (pd.DataFrame(model_data.predict_proba(fset),
+                               index=fset.index, columns=model_data.classes_)
                   if hasattr(model_data, 'predict_proba') else [])
     all_classes = model_data.classes_ if hasattr(model_data, 'classes_') else []
     pred_path = pjoin(cfg['paths']['predictions_folder'],
                       '{}.npz'.format(str(uuid.uuid4())))
     featurize.save_featureset(fset, pred_path, labels=data['labels'],
-                              preds=preds, pred_probs=pred_probs,
-                              all_classes=all_classes)
+                              preds=preds, pred_probs=pred_probs)
     f, created = m.File.get_or_create(uri=pred_path)
     pred = m.Prediction.create(file=f, dataset=dataset, project=dataset.project,
                                model=model, finished=datetime.datetime.now())
