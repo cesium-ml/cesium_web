@@ -4,6 +4,7 @@ import sys
 import re
 import subprocess
 
+from importlib.util import find_spec
 
 pkg_import = {'pyyaml': 'yaml',
               'pyzmq': 'zmq',
@@ -27,11 +28,10 @@ with open(req_file) as f:
         else:
             dep = re.split('[^\w\-]+', dep)[0]  # discard version info
 
-        try:
-            __import__(pkg_import.get(dep, dep))
-        except ImportError:
+        if find_spec(pkg_import.get(dep, dep)) is None:
             print(("Development dependency '{}' unfulfilled. "
                    "Installing requirements.").format(dep))
             p = subprocess.call("pip install -r {}".format(req_file).split())
             sys.exit(p)
+
 print('Dependencies from {} verified.'.format(req_file))
