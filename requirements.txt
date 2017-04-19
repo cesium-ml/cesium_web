@@ -12,3 +12,4 @@ distributed>=1.14.3
 selenium
 pytest
 joblib>=0.11
+bokeh==0.12.5
