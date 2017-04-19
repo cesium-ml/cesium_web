@@ -6,13 +6,13 @@
     "test": "eslint -c .eslintrc --ext .jsx,.js public/scripts/ && make test"
   },
   "dependencies": {
+    "bokehjs": "^0.12.5",
     "bootstrap": "^3.3.7",
     "bootstrap-css": "^3.0.0",
     "css-loader": "^0.26.2",
     "exports-loader": "^0.6.4",
     "imports-loader": "^0.7.1",
     "jquery": "^3.1.1",
-    "plotly.js": "^1.23.1",
     "react": "^15.1.0",
     "react-dom": "^15.1.0",
     "react-redux": "^5.0.3",

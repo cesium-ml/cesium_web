@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { showNotification } from './Notifications';
+import "../../node_modules/bokehjs/build/js/bokeh.js";
+import "../../node_modules/bokehjs/build/css/bokeh.css";
 
 function bokeh_render_plot(node, docs_json, render_items) {
   // Create bokeh div element
