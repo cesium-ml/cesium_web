@@ -8,7 +8,7 @@ webpack = ./node_modules/.bin/webpack
 
 
 dependencies:
-	@./tools/silent_monitor.py ./tools/install_deps.py requirements.txt
+	@./tools/silent_monitor.py pip install -r requirements.txt
 	@./tools/silent_monitor.py ./tools/check_js_deps.sh
 
 db_init:
