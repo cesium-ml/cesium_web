@@ -167,7 +167,7 @@ def test_plot_features(driver):
         driver.find_element_by_xpath("//b[contains(text(),'Please wait while we load your plotting data...')]")
 
         driver.implicitly_wait(3)
-        driver.find_element_by_css_selector("[class=svg-container]")
+        driver.find_element_by_css_selector("[class=bk-plotdiv]")
 
 
 def test_delete_featureset(driver):

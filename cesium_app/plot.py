@@ -1,12 +1,12 @@
+from itertools import cycle
 import numpy as np
-import pandas as pd
-from sklearn.metrics import confusion_matrix
-import plotly
-import plotly.offline as py
-from plotly.tools import FigureFactory as FF
-
 from cesium import featurize
-from .config import cfg
+from bokeh.plotting import figure
+from bokeh.layouts import gridplot
+from bokeh.palettes import Viridis as palette
+from bokeh.core.json_encoder import serialize_json
+from bokeh.document import Document
+from bokeh.util.serialization import make_id
 
 
 def feature_scatterplot(fset_path, features_to_plot):
@@ -21,42 +21,39 @@ def feature_scatterplot(fset_path, features_to_plot):
 
     Returns
     -------
-    (fig.data, fig.layout)
-        Returns (fig.data, fig.layout) where `fig` is an instance of
-        `plotly.tools.FigureFactory`.
+    (str, str)
+        Returns (docs_json, render_items) json for the desired plot.
     """
     fset, data = featurize.load_featureset(fset_path)
     fset = fset[features_to_plot]
+    colors = cycle(palette[5])
+    plots = np.array([[figure(width=300, height=200)
+                       for j in range(len(features_to_plot))]
+                      for i in range(len(features_to_plot))])
 
-    if 'label' in data:
-        fset['label'] = data['label']
-        index = 'label'
-    else:
-        index = None
+    for (j, i), p in np.ndenumerate(plots):
+        if (j == i == 0):
+            p.title.text = "Scatterplot matrix"
+        p.circle(fset.values[:,i], fset.values[:,j], color=next(colors))
+        p.xaxis.minor_tick_line_color = None
+        p.yaxis.minor_tick_line_color = None
+        p.ygrid[0].ticker.desired_num_ticks = 2
+        p.xgrid[0].ticker.desired_num_ticks = 4
+        p.outline_line_color = None
+        p.axis.visible = None
 
-    # TODO replace 'trace {i}' with class labels
-    fig = FF.create_scatterplotmatrix(fset, diag='box', index=index,
-                                      height=800, width=800)
+    plot = gridplot(plots.tolist(), ncol=len(features_to_plot), mergetools=True, responsive=True, title="Test")
 
-    py.plot(fig, auto_open=False, output_type='div')
+    # Convert plot to json objects necessary for rendering with bokeh on the
+    # frontend
+    render_items = [{'docid': plot._id, 'elementid': make_id()}]
 
-    return fig.data, fig.layout
+    doc = Document()
+    doc.add_root(plot)
+    docs_json_inner = doc.to_json()
+    docs_json = {render_items[0]['docid']: docs_json_inner}
 
+    docs_json = serialize_json(docs_json)
+    render_items = serialize_json(render_items)
 
-#def prediction_heatmap(pred_path):
-#    with xr.open_dataset(pred_path) as pset:
-#        pred_df = pd.DataFrame(pset.prediction.values, index=pset.name,
-#                               columns=pset.class_label.values)
-#    pred_labels = pred_df.idxmax(axis=1)
-#    C = confusion_matrix(pset.label, pred_labels)
-#    row_sums = C.sum(axis=1)
-#    C = C / row_sums[:, np.newaxis]
-#    fig = FF.create_annotated_heatmap(C, x=[str(el) for el in
-#                                            pset.class_label.values],
-#                                      y=[str(el) for el in
-#                                         pset.class_label.values],
-#                                      colorscale='Viridis')
-#
-#    py.plot(fig, auto_open=False, output_type='div')
-#
-#    return fig.data, fig.layout
+    return docs_json, render_items
