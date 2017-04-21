@@ -7,6 +7,7 @@ import os
 from os.path import join as pjoin
 import numpy as np
 import numpy.testing as npt
+import pandas as pd
 from cesium_app.config import cfg
 import json
 import requests
@@ -181,6 +182,26 @@ def test_download_prediction_csv_class(driver):
                  '2,Mira,Mira',
                  '3,Classical_Cepheid,Classical_Cepheid',
                  '4,Mira,Mira'])
+        finally:
+            os.remove('/tmp/cesium_prediction_results.csv')
+
+
+def test_download_prediction_csv_class_prob(driver):
+    driver.get('/')
+    with create_test_project() as p, create_test_dataset(p) as ds,\
+         create_test_featureset(p) as fs,\
+         create_test_model(fs, model_type='RandomForestClassifier') as m,\
+         create_test_prediction(ds, m):
+        _click_download(p.id, driver)
+        assert os.path.exists('/tmp/cesium_prediction_results.csv')
+        try:
+            result = pd.read_csv('/tmp/cesium_prediction_results.csv')
+            npt.assert_array_equal(result.ts_name, np.arange(5))
+            npt.assert_array_equal(result.label, ['Mira', 'Classical_Cepheid',
+                                                  'Mira', 'Classical_Cepheid',
+                                                  'Mira'])
+            npt.assert_array_equal(result.label, result.prediction)
+            assert (result.probability >= 0.0).all()
         finally:
             os.remove('/tmp/cesium_prediction_results.csv')
 
