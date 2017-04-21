@@ -141,8 +141,8 @@ class PredictionHandler(BaseHandler):
                                    'label': data['labels'],
                                    'prediction': data['preds']},
                                   columns=['ts_name', 'label', 'prediction'])
-            if data.get('pred_probs'):
-                result['probability'] = np.max(data['pred_probs'], axis=1)
+            if len(data.get('pred_probs', [])) > 0:
+                result['probability'] = data['pred_probs'].max(axis=1).values
             self.set_header("Content-Type", 'text/csv; charset="utf-8"')
             self.set_header("Content-Disposition", "attachment; "
                             "filename=cesium_prediction_results.csv")
