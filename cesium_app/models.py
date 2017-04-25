@@ -208,7 +208,10 @@ class Prediction(BaseModel):
     def format_pred_data(fset, data):
         fset.columns = fset.columns.droplevel('channel')
         fset.index = fset.index.astype(str)  # can't use ints as JSON keys
-        labels = pd.Series(data.get('labels'), index=fset.index)
+
+        labels = pd.Series(data['labels'] if len(data.get('labels', [])) > 0
+                           else None, index=fset.index)
+
         if len(data.get('pred_probs', [])) > 0:
             preds = pd.DataFrame(data.get('pred_probs', []),
                                  index=fset.index).to_dict(orient='index')

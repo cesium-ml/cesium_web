@@ -137,6 +137,25 @@ def test_pred_results_table_regr(driver):
             raise
 
 
+def test_add_prediction_unlabeled(driver):
+    driver.get('/')
+    with create_test_project() as p,\
+         create_test_dataset(p, label_type=None) as ds,\
+         create_test_featureset(p) as fs, create_test_model(fs) as m:
+        _add_prediction(p.id, driver)
+        _click_prediction_row(p.id, driver)
+        try:
+            rows = _grab_pred_results_table_rows(driver, 'Mira')
+            for row in rows:
+                probs = [float(v.text)
+                         for v in row.find_elements_by_tag_name('td')[2::2]]
+                assert sorted(probs, reverse=True) == probs
+            driver.find_element_by_xpath("//th[contains(text(),'Time Series')]")
+        except:
+            driver.save_screenshot("/tmp/pred_click_tr_fail.png")
+            raise
+
+
 def test_delete_prediction(driver):
     driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds,\
