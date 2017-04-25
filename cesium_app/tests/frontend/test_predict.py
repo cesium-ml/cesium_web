@@ -200,8 +200,10 @@ def test_download_prediction_csv_class_prob(driver):
             npt.assert_array_equal(result.label, ['Mira', 'Classical_Cepheid',
                                                   'Mira', 'Classical_Cepheid',
                                                   'Mira'])
-            npt.assert_array_equal(result.label, result.prediction)
-            assert (result.probability >= 0.0).all()
+            pred_probs = result[['Classical_Cepheid', 'Mira']]
+            npt.assert_array_equal(np.argmax(pred_probs.values, axis=1),
+                                   [1, 0, 1, 0, 1])
+            assert (pred_probs.values >= 0.0).all()
         finally:
             os.remove('/tmp/cesium_prediction_results.csv')
 

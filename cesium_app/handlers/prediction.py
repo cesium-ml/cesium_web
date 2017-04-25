@@ -137,16 +137,17 @@ class PredictionHandler(BaseHandler):
         if action == 'download':
             pred_path = self._get_prediction(prediction_id).file.uri
             fset, data = featurize.load_featureset(pred_path)
-            result = pd.DataFrame({'ts_name': fset.index,
-                                   'label': data['labels'],
-                                   'prediction': data['preds']},
-                                  columns=['ts_name', 'label', 'prediction'])
+            result = pd.DataFrame({'label': data['labels']},
+                                  index=fset.index)
             if len(data.get('pred_probs', [])) > 0:
-                result['probability'] = data['pred_probs'].max(axis=1).values
+                result = pd.concat((result, data['pred_probs']), axis=1)
+            else:
+                result['prediction'] = data['preds']
+            result.index.name = 'ts_name'
             self.set_header("Content-Type", 'text/csv; charset="utf-8"')
             self.set_header("Content-Disposition", "attachment; "
                             "filename=cesium_prediction_results.csv")
-            self.write(result.to_csv(index=False))
+            self.write(result.to_csv(index=True))
         else:
             if prediction_id is None:
                 predictions = [prediction
