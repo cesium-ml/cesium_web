@@ -120,7 +120,7 @@ def create_test_model(fset, model_type='RandomForestClassifier'):
         "RandomForestClassifier": {
             "bootstrap": True, "criterion": "gini",
             "oob_score": False, "max_features": "auto",
-            "n_estimators": 10},
+            "n_estimators": 10, "random_state": 0},
         "RandomForestRegressor": {
             "bootstrap": True, "criterion": "mse",
             "oob_score": False, "max_features": "auto",
