@@ -17,6 +17,7 @@ export const FETCH_DATASETS = 'cesium/FETCH_DATASETS';
 export const RECEIVE_DATASETS = 'cesium/RECEIVE_DATASETS';
 export const UPLOAD_DATASET = 'cesium/UPLOAD_DATASET';
 export const DELETE_DATASET = 'cesium/DELETE_DATASET';
+export const CREATE_EXAMPLE_DATASET = 'cesium/CREATE_EXAMPLE_DATASET';
 
 export const FETCH_FEATURES = 'cesium/FETCH_FEATURES';
 export const FETCH_FEATURESETS = 'cesium/FETCH_FEATURESETS';
@@ -225,6 +226,31 @@ function receiveDatasets(datasets) {
     type: RECEIVE_DATASETS,
     payload: datasets
   };
+}
+
+
+// Create example dataset
+export function createExampleDataset(projectID) {
+  var form_data = new FormData();
+  form_data.append('projectID', projectID);
+  form_data.append('create_example', true);
+
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      CREATE_EXAMPLE_DATASET,
+
+      fetch('/dataset', {
+        method: 'POST',
+        body: form_data,
+      })
+        .then(response => response.json())
+        .then((json) => {
+            dispatch(fetchDatasets());
+            dispatch(hideExpander('newDatasetExpander'));
+            dispatch(resetForm('newDataset'));
+          }).catch(ex => console.log('createExampleDataset', ex))
+    );
 }
 
 

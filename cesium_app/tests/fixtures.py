@@ -29,7 +29,7 @@ def create_test_project():
 
 
 @contextmanager
-def create_test_dataset(project, label_type='class'):
+def create_test_dataset(project, label_type='class', delete_after=True):
     """Create and yield test labeled dataset, then delete.
 
     Params
@@ -57,12 +57,16 @@ def create_test_dataset(project, label_type='class'):
     tarball = shutil.copy2(tarball, cfg['paths']['upload_folder'])
     ts_paths = data_management.parse_and_store_ts_data(
         tarball, cfg['paths']['ts_data_folder'], header)
-    d = m.Dataset.add(name='test_ds', project=project, file_uris=ts_paths)
+    
+    name = 'Example Dataset'
+    d = m.Dataset.add(name=name, project=project, file_uris=ts_paths)
     d.save()
+    
     try:
         yield d
     finally:
-        d.delete_instance()
+        if delete_after:
+            d.delete_instance()
 
 
 @contextmanager

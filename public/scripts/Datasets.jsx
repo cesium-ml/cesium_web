@@ -63,6 +63,11 @@ let DatasetForm = (props) => {
 
         <SubmitButton label="Upload Dataset" disabled={submitting} />
       </Form>
+      <button
+        onClick={props.createExampleDataset}
+      >
+        Use Example Dataset
+      </button>
 
       <CesiumTooltip
         id="headerfileTooltip"
@@ -101,7 +106,8 @@ const dsMapDispatchToProps = (dispatch, ownProps) => (
   {
     onSubmit: form => (
       dispatch(Action.uploadDataset(form))
-    )
+    ),
+    createExampleDataset: () => dispatch(Action.createExampleDataset(ownProps.selectedProject.id))
   }
 );
 

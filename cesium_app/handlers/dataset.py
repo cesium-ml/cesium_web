@@ -5,6 +5,7 @@ from ..config import cfg
 
 from cesium import data_management, time_series
 from cesium.util import shorten_fname
+from ..tests.fixtures import create_test_dataset
 
 import os
 from os.path import join as pjoin
@@ -24,6 +25,12 @@ class DatasetHandler(BaseHandler):
         return d
 
     def post(self):
+        if self.get_argument('create_example'):
+            project_id = self.get_argument('projectID')
+            p = Project.get(Project.id == project_id)
+            with create_test_dataset(p, delete_after=False) as d:
+                return self.success(d, 'cesium/FETCH_DATASETS')
+
         if not 'tarFile' in self.request.files:
             return self.error('No tar file uploaded')
 
