@@ -36,11 +36,11 @@ def create_test_dataset(project, label_type='class'):
     ------
     project : `models.Project` instance
         The project under which to create test dataset.
-    label_type : str
-        String indicating whether data labels are class names ('class')
-        for classification, or numerical values for regression (anything other
-        than 'class'). Defaults to 'class'.
-
+    label_type : str, optional
+        String indicating whether data labels are class names for
+        classification ('class'), numerical values for regression ('regr'),
+        or no labels (anything else).
+        Defaults to 'class'.
     """
     if label_type == 'class':
         header = pjoin(os.path.dirname(__file__),
@@ -48,6 +48,9 @@ def create_test_dataset(project, label_type='class'):
     elif label_type == 'regr':
         header = pjoin(os.path.dirname(__file__),
                        'data', 'asas_training_subset_targets.dat')
+    else:
+        header = pjoin(os.path.dirname(__file__),
+                       'data', 'asas_training_subset_unlabeled.dat')
     tarball = pjoin(os.path.dirname(__file__),
                     'data', 'asas_training_subset.tar.gz')
     header = shutil.copy2(header, cfg['paths']['upload_folder'])

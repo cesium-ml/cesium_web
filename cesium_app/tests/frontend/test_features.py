@@ -37,6 +37,30 @@ def test_add_new_featureset(driver):
         status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
 
 
+def test_featurize_unlabeled(driver):
+    driver.get('/')
+    with create_test_project() as p, create_test_dataset(p, label_type=None) as ds:
+        driver.refresh()
+        proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+        proj_select.select_by_value(str(p.id))
+
+        driver.find_element_by_id('react-tabs-4').click()
+        driver.find_element_by_partial_link_text('Compute New Features').click()
+
+        featureset_name = driver.find_element_by_css_selector('[name=featuresetName]')
+        featureset_name.send_keys(test_featureset_name)
+
+        driver.find_element_by_class_name('btn-primary').click()
+
+        driver.implicitly_wait(1)
+        status_td = driver.find_element_by_xpath(
+            "//div[contains(text(),'Feature computation begun')]")
+        status_td = driver.find_element_by_xpath("//td[contains(text(),'In progress')]")
+
+        driver.implicitly_wait(30)
+        status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
+
+
 def test_check_uncheck_features(driver):
     driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds:
