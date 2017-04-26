@@ -31,7 +31,7 @@ The easiest way to try the web app is to run it through Docker:
 
 ## Running the app locally
 
-0. A Python 3.5 or later installation is required.
+0. A Python 3.6 or later installation is required.
 
 1. Install the following dependencies: Supervisor, NGINX, PostgreSQL, Node.JS.
 
@@ -62,6 +62,14 @@ database already existing.  Ignore those.
 
 4. Run `make` to start the server and navigate to `localhost:5000`
 
+## Configuration
+
+Copy `cesium.yaml.example` to `cesium.yaml` and customize.
+
+- Under `server`, set 'multi_user' to True to enable logins.  Also provide the
+  Google credentials, obtained as described in the config file.
+- Under `app`, modify the `secret-key`.
+
 ## Dev Tips
 
 To execute the test suite:
@@ -82,7 +90,7 @@ To execute the test suite:
 Debugging:
 
 - Run `make log` to watch log output
-- Run `make debug` to start webserver in debug mode
+- Run `make stop` to stop any running web services.
 - Run `make attach` to attach to output of webserver, e.g. for use with `pdb.set_trace()`
 - Run `make check-js-updates` to see which Javascript packages are eligible for an upgrade.
 
