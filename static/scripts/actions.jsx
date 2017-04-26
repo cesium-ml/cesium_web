@@ -46,6 +46,8 @@ export const SPIN_LOGO = 'cesium/SPIN_LOGO';
 export const GROUP_TOGGLE_FEATURES = 'cesium/GROUP_TOGGLE_FEATURES';
 export const CLICK_FEATURE_TAG_CHECKBOX = 'cesium/CLICK_FEATURE_TAG_CHECKBOX';
 
+export const FETCH_USER_PROFILE = 'cesium/FETCH_USER_PROFILE';
+export const RECEIVE_USER_PROFILE = 'cesium/FETCH_USER_PROFILE';
 
 import { showNotification, reduceNotifications } from './Notifications';
 import promiseAction from './action_tools';
@@ -76,7 +78,9 @@ export function fetchProjects() {
       dispatch,
       FETCH_PROJECTS,
 
-      fetch('/project')
+      fetch('/project', {
+        credentials: 'same-origin'
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -102,11 +106,14 @@ export function addProject(form) {
       ADD_PROJECT,
 
       fetch('/project',
-            { method: 'POST',
-             body: JSON.stringify(form),
-             headers: new Headers({
-               'Content-Type': 'application/json'
-             }) })
+            {
+              credentials: 'same-origin',
+              method: 'POST',
+              body: JSON.stringify(form),
+              headers: new Headers({
+                'Content-Type': 'application/json'
+              })
+            })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -130,11 +137,14 @@ export function updateProject(form) {
       UPDATE_PROJECT,
 
       fetch('/project/{}'.format(form.projectId),
-            { method: 'PUT',
-             body: JSON.stringify(form),
-             headers: new Headers({
-               'Content-Type': 'application/json'
-             }) })
+            {
+              credentials: 'same-origin',
+              method: 'PUT',
+              body: JSON.stringify(form),
+              headers: new Headers({
+                'Content-Type': 'application/json'
+              })
+            })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -155,7 +165,10 @@ export function deleteProject(id) {
       dispatch,
       DELETE_PROJECT,
 
-      fetch(`/project/${id}`, { method: 'DELETE' })
+      fetch(`/project/${id}`, {
+        credentials: 'same-origin',
+        method: 'DELETE'
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -188,7 +201,11 @@ export function uploadDataset(form) {
       dispatch,
       UPLOAD_DATASET,
 
-      fetch('/dataset', { method: 'POST', body: formData })
+      fetch('/dataset', {
+        credentials: 'same-origin',
+        method: 'POST',
+        body: formData
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -210,7 +227,9 @@ export function fetchDatasets() {
       dispatch,
       FETCH_DATASETS,
 
-      fetch('/dataset')
+      fetch('/dataset', {
+        credentials: 'same-origin'
+      })
         .then(response => response.json())
         .then((json) => (
           dispatch(receiveDatasets(json.data))
@@ -235,7 +254,9 @@ export function fetchFeaturesets() {
       dispatch,
       FETCH_FEATURESETS,
 
-      fetch('/features')
+      fetch('/features', {
+        credentials: 'same-origin'
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -266,12 +287,14 @@ export function createModel(form) {
       dispatch,
       CREATE_MODEL,
 
-      fetch('/models',
-            { method: 'POST',
-             body: JSON.stringify(form),
-             headers: new Headers({
-               'Content-Type': 'application/json'
-             }) })
+      fetch('/models', {
+        credentials: 'same-origin',
+        method: 'POST',
+        body: JSON.stringify(form),
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        })
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -333,7 +356,9 @@ export function fetchFeatures() {
       dispatch,
       FETCH_FEATURES,
 
-      fetch('/features_list')
+      fetch('/features_list', {
+        credentials: 'same-origin'
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -365,12 +390,14 @@ export function computeFeatures(form) {
       dispatch,
       COMPUTE_FEATURES,
 
-      fetch('/features',
-            { method: 'POST',
-             body: JSON.stringify(form),
-             headers: new Headers({
-               'Content-Type': 'application/json'
-             }) }
+      fetch('/features', {
+        credentials: 'same-origin',
+        method: 'POST',
+        body: JSON.stringify(form),
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        })
+      }
       ).then(response => response.json()
       ).then((json) => {
         if (json.status == 'success') {
@@ -392,7 +419,10 @@ export function deleteDataset(id) {
       dispatch,
       DELETE_DATASET,
 
-      fetch(`/dataset/${id}`, { method: 'DELETE' })
+      fetch(`/dataset/${id}`, {
+        credentials: 'same-origin',
+        method: 'DELETE'
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -414,7 +444,10 @@ export function deleteFeatureset(id) {
       dispatch,
       DELETE_FEATURESET,
 
-      fetch(`/features/${id}`, { method: 'DELETE' })
+      fetch(`/features/${id}`, {
+        credentials: 'same-origin',
+        method: 'DELETE'
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -436,7 +469,9 @@ export function fetchSklearnModels() {
       dispatch,
       FETCH_SKLEARN_MODELS,
 
-      fetch('/sklearn_models')
+      fetch('/sklearn_models', {
+        credentials: 'same-origin'
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -468,7 +503,9 @@ export function fetchModels() {
       dispatch,
       FETCH_MODELS,
 
-      fetch('/models')
+      fetch('/models', {
+        credentials: 'same-origin'
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -499,7 +536,10 @@ export function deleteModel(id) {
       dispatch,
       DELETE_MODEL,
 
-      fetch(`/models/${id}`, { method: 'DELETE' })
+      fetch(`/models/${id}`, {
+        credentials: 'same-origin',
+        method: 'DELETE'
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -521,12 +561,14 @@ export function doPrediction(form) {
       dispatch,
       DO_PREDICTION,
 
-      fetch('/predictions',
-            { method: 'POST',
-             body: JSON.stringify(form),
-             headers: new Headers({
-               'Content-Type': 'application/json'
-             }) }
+      fetch('/predictions', {
+        credentials: 'same-origin',
+        method: 'POST',
+        body: JSON.stringify(form),
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        })
+      }
       ).then(response => response.json()
       ).then((json) => {
         if (json.status == 'success') {
@@ -548,7 +590,10 @@ export function deletePrediction(id) {
       dispatch,
       DELETE_PREDICTION,
 
-      fetch(`/predictions/${id}`, { method: 'DELETE' })
+      fetch(`/predictions/${id}`, {
+        credentials: 'same-origin',
+        method: 'DELETE'
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -571,7 +616,9 @@ export function fetchPredictions() {
       dispatch,
       FETCH_PREDICTIONS,
 
-      fetch('/predictions')
+      fetch('/predictions', {
+        credentials: 'same-origin'
+      })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
@@ -616,11 +663,46 @@ export function clickFeatureTagCheckbox(tag) {
 }
 
 
+export function fetchUserProfile() {
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      FETCH_USER_PROFILE,
+
+      fetch('/profile', {
+        credentials: 'same-origin'
+      })
+        .then(response => response.json())
+        .then((json) => {
+          if (json.status == 'success') {
+            dispatch(receiveUserProfile(json.data));
+          } else {
+            dispatch(
+              showNotification(
+                'Error downloading user profile ({})'.format(json.message)
+              ));
+          }
+          return json;
+        }
+        ).catch(ex => console.log('fetchUserProfile exception:', ex))
+      );
+}
+
+function receiveUserProfile(userProfile) {
+  return {
+    type: RECEIVE_USER_PROFILE,
+    payload: userProfile
+  };
+}
+
+
+
 export function hydrate() {
   return (dispatch) => {
     dispatch(fetchProjects())
       .then((proj) => {
         Promise.all([
+          dispatch(fetchUserProfile()),
           dispatch(fetchDatasets()),
           dispatch(fetchFeaturesets()),
           dispatch(fetchFeatures()),

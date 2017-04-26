@@ -1,5 +1,8 @@
+/* TODO: looks like this is currently unused */
+
 function post(url, data) {
   return fetch(url, {
+    credentials: 'same-origin',
     method: 'POST',
     mode: 'cors',
     headers: {

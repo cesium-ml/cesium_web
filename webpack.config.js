@@ -2,9 +2,9 @@ const webpack = require('webpack');
 const path = require('path');
 
 const config = {
-  entry: path.resolve(__dirname, 'public/scripts/main.jsx'),
+  entry: path.resolve(__dirname, 'static/scripts/main.jsx'),
   output: {
-    path: path.resolve(__dirname, 'public/build'),
+    path: path.resolve(__dirname, 'static/build'),
     filename: 'bundle.js'
   },
   module: {

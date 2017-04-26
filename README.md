@@ -73,6 +73,12 @@ To execute the test suite:
 - Optional: install xfvb for headless tests (only available on Linux)
 - `make test_headless` or `make test`
 
+  To run a single test:
+
+  `./tools/test_frontend.py cesium_app/tests/frontend/test_build_model.py::test_build_model_rfc`
+
+  Prepend the above with `xvfb-run` to run in headless mode.
+
 Debugging:
 
 - Run `make log` to watch log output
@@ -84,7 +90,7 @@ Debugging:
 
 To ensure that JavaScript & JSX code conforms with industry style
 recommendations, after adding or modifying any .js or .jsx files, run ESLint with
-`node_modules/eslint/bin/eslint.js -c .eslintrc --ext .jsx,.js public/scripts/`.
+`node_modules/eslint/bin/eslint.js -c .eslintrc --ext .jsx,.js static/scripts/`.
 To automatically run ESLint when you make changes to your JavaScript code, add
 a pre-commit hook by adding the following to your .git/hooks/pre-commit:
 

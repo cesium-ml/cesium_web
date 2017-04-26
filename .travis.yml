@@ -58,11 +58,11 @@ addons:
     - unzip
     - libnss3
     - libgconf-2-4
-  postgresql: "9.4"
+  postgresql: "9.6"
 
 matrix:
   include:
-    - python: 3.5
+    - python: 3.6
       env:
         - TEST_TARGET=test
 

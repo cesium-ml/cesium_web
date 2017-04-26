@@ -20,3 +20,17 @@ body {
   margin: 0;
   font-family: 'Fira Sans', sans-serif !important;
 }
+
+.loginBox {
+    position: fixed;
+    left: 50%;
+    width: 30em;
+    margin-left: -16em; /*set to a negative number 1/2 of your width + 1*/
+    margin-top: 2em;
+    padding: 2em;
+}
+
+.loginBox .logo {
+    float: left;
+    padding: 1em;
+}

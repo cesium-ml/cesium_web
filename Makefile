@@ -1,9 +1,10 @@
 SHELL = /bin/bash
 SUPERVISORD=supervisord
+SUPERVISORCTL=supervisorctl -c conf/supervisord_common.conf
 
 .DEFAULT_GOAL := run
 
-bundle = ./public/build/bundle.js
+bundle = ./static/build/bundle.js
 webpack = ./node_modules/.bin/webpack
 
 
@@ -12,13 +13,10 @@ dependencies:
 	@./tools/silent_monitor.py ./tools/check_js_deps.sh
 
 db_init:
-	@./tools/silent_monitor.py ./tools/db_create.sh
+	@./tools/silent_monitor.py ./tools/db_init.sh
 
-db_drop:
-	@PYTHONPATH=. ./tools/silent_monitor.py ./tools/db_drop.py
-
-db_test_data:
-	@PYTHONPATH=. python ./cesium_app/models.py
+db_clear:
+	PYTHONPATH=. ./tools/db_clear.py
 
 $(bundle): webpack.config.js package.json
 	$(webpack)
@@ -37,23 +35,38 @@ log: paths
 	./tools/watch_logs.py
 
 run: paths dependencies
-	$(SUPERVISORD) -c conf/supervisord.conf
-
-debug:
-	$(SUPERVISORD) -c conf/supervisord_debug.conf
+	@echo "Supervisor will now fire up various micro-services."
+	@echo
+	@echo " - Please run \`make log\` in another terminal to view logs"
+	@echo " - Press Ctrl-D to abort the server"
+	@echo " - Type \`status\` too see microservice status"
+	@echo
+	@$(SUPERVISORD) -c conf/supervisord.conf &
+	
+	@echo "Entering supervisor control panel."
+	@sleep 1 && $(SUPERVISORCTL) -i status
+	
+	@echo -n "Shutting down supervisord..."
+	@$(SUPERVISORCTL) shutdown
 
 # Attach to terminal of running webserver; useful to, e.g., use pdb
 attach:
-	supervisorctl -c conf/supervisord_common.conf fg app
+	$(SUPERVISORCTL) fg app
+
+testrun:
+	$(SUPERVISORD) -c conf/supervisord_testing.conf
 
 clean:
 	rm $(bundle)
 
 test_headless: paths dependencies
-	PYTHONPATH='.' xvfb-run ./tools/frontend_tests.py
+	PYTHONPATH='.' xvfb-run ./tools/test_frontend.py
 
 test: paths dependencies
-	PYTHONPATH='.' ./tools/frontend_tests.py
+	PYTHONPATH='.' ./tools/test_frontend.py
+
+stop:
+	$(SUPERVISORCTL) stop all
 
 status:
 	PYTHONPATH='.' ./tools/supervisor_status.py

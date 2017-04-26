@@ -3,7 +3,7 @@
   "license": "BSD-3-Clause",
   "scripts": {
     "build": "make bundle",
-    "test": "eslint -c .eslintrc --ext .jsx,.js public/scripts/ && make test"
+    "test": "eslint -c .eslintrc --ext .jsx,.js static/scripts/ && make test"
   },
   "dependencies": {
     "bokehjs": "^0.12.5",

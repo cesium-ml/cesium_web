@@ -93,11 +93,10 @@ watched.extend(logs_from_config(pjoin(basedir, 'conf/supervisord.conf')))
 
 sys.path.insert(0, basedir)
 
-with nostdout():
-    from cesium_app.config import cfg
-
 watched.append('log/error.log')
+watched.append('log/nginx-bad-access.log')
 watched.append('log/nginx-error.log')
+watched.append('log/fake_oauth2.log')
 
 
 def tail_f(filename, interval=1.0):
@@ -135,8 +134,7 @@ def print_log(filename, color):
         print_col(line)
 
 
-colors = ['default', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'red',
-          'white']
+colors = ['default', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'red']
 threads = [threading.Thread(target=print_log, args=(logfile, colors[n % len(colors)])) for
            (n, logfile) in enumerate(watched)]
 

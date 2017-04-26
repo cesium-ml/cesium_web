@@ -70,7 +70,7 @@ let NewModelForm = (props) => {
       />
 
       <Expand label="Choose Model Parameters" id="modelParameterExpander">
-        <Model model={chosenModel} {...fields} />
+        {chosenModel && <Model model={chosenModel} {...fields} />}
       </Expand>
 
       <SubmitButton label="Create Model" />

@@ -1,11 +1,11 @@
 import tornado.ioloop
+import tornado.web
 
 from cesium import featurize, time_series
 from cesium.features import dask_feature_graph
 
 from .base import BaseHandler, AccessError
 from ..models import Dataset, Featureset, Project, File
-from ..config import cfg
 
 from os.path import join as pjoin
 import uuid
@@ -19,20 +19,22 @@ class FeatureHandler(BaseHandler):
         except Featureset.DoesNotExist:
             raise AccessError('No such feature set')
 
-        if not f.is_owned_by(self.get_username()):
+        if not f.is_owned_by(self.current_user):
             raise AccessError('No such feature set')
 
         return f
 
+    @tornado.web.authenticated
     def get(self, featureset_id=None):
         if featureset_id is not None:
             featureset_info = self._get_featureset(featureset_id)
         else:
-            featureset_info = [f for p in Project.all(self.get_username())
+            featureset_info = [f for p in Project.all(self.current_user)
                                for f in p.featuresets]
 
         self.success(featureset_info)
 
+    @tornado.web.authenticated
     @tornado.gen.coroutine
     def _await_featurization(self, future, fset):
         """Note: we cannot use self.error / self.success here.  There is
@@ -59,6 +61,7 @@ class FeatureHandler(BaseHandler):
 
         self.action('cesium/FETCH_FEATURESETS')
 
+    @tornado.web.authenticated
     @tornado.gen.coroutine
     def post(self):
         data = self.get_json()
@@ -73,10 +76,10 @@ class FeatureHandler(BaseHandler):
         custom_script_path = None
 
         dataset = Dataset.get(Dataset.id == dataset_id)
-        if not dataset.is_owned_by(self.get_username()):
-            return self.error('Cannot access dataset')
+        if not dataset.is_owned_by(self.current_user):
+            raise AccessError('No such data set')
 
-        fset_path = pjoin(cfg['paths']['features_folder'],
+        fset_path = pjoin(self.cfg['paths:features_folder'],
                           '{}_featureset.npz'.format(uuid.uuid4()))
 
         fset = Featureset.create(name=featureset_name,
@@ -107,12 +110,14 @@ class FeatureHandler(BaseHandler):
 
         self.success(fset, 'cesium/FETCH_FEATURESETS')
 
+    @tornado.web.authenticated
     def delete(self, featureset_id):
         f = self._get_featureset(featureset_id)
         f.delete_instance()
 
         self.success(action='cesium/FETCH_FEATURESETS')
 
+    @tornado.web.authenticated
     def put(self, featureset_id):
         f = self._get_featureset(featureset_id)
         self.error("Functionality for this endpoint is not yet implemented.")

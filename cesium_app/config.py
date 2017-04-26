@@ -1,125 +1,48 @@
-"""Config file for cesium app."""
-
-from __future__ import print_function
-import os, sys
-import multiprocessing
 import yaml
-import glob
+import os
 
 
-class warn_defaultdict(dict):
-    """
-    A recursive `collections.defaultdict`, but with printed warnings when
-    an item is not found.
+class Config(dict):
+    def __init__(self, config_files=None):
+        dict.__init__(self)
+        if config_files is not None:
+            for f in config_files:
+                self.update_from(f)
 
-    >>> d = warn_defaultdict({1: 2})
-    >>> d[2][3][4]
-    [config] WARNING: non-existent key "2" requested
-    [config] WARNING: non-existent key "3" requested
-    [config] WARNING: non-existent key "4" requested
-
-    >>> d = warn_defaultdict({'sub': {'a': 'b'}})
-    >>> print(d['sub']['foo'])
-    [config] WARNING: non-existent key "foo" requested
-    {}
-
-    """
-    def update(self, other):
-        for k, v in other.items():
-            self.__setitem__(k, v)
-
-    def __setitem__(self, key, value):
-        if isinstance(value, dict):
-            value = warn_defaultdict(value)
-
-        dict.__setitem__(self, key, value)
+    def update_from(self, filename):
+        """Update configuration from YAML file"""
+        if os.path.isfile(filename):
+            more_cfg = yaml.load(open(filename))
+            dict.update(self, more_cfg)
+            print('[cesium] Loaded {}'.format(os.path.relpath(filename)))
 
     def __getitem__(self, key):
-        if not key in self.keys():
-            print('[config] WARNING: non-existent '
-                  'key "{}" requested'.format(key))
+        keys = key.split(':')
 
-            self.__setitem__(key, warn_defaultdict())
+        val = self
+        for key in keys:
+            val = val.get(key)
+            if val is None:
+                return None
 
-        return dict.__getitem__(self, key)
+        return val
 
+    def show(self):
+        """Print configuration"""
+        print()
+        print("=" * 78)
+        print("Configuration")
 
-
-# Load configuration
-config_files = [
-    os.path.expanduser('~/.config/cesium/cesium.yaml'),
-    ]
-
-config_files.extend(glob.glob(
-    os.path.join(os.path.dirname(__file__), '../cesium*.yaml')))
-
-config_files = [os.path.abspath(cf) for cf in config_files]
-
-
-# Load example config file as default template
-cfg = warn_defaultdict()
-cfg.update(yaml.load(open(os.path.join(os.path.dirname(__file__),
-                                       "../cesium.yaml.example"))))
-
-for cf in config_files:
-    try:
-        more_cfg = yaml.load(open(cf))
-        print('[cesium] Loaded {}'.format(cf))
-        cfg.update(more_cfg)
-    except IOError:
-        pass
-
-# Expand home variable;
-cfg['paths'] = {key: os.path.expanduser(value)
-                   for (key, value) in cfg['paths'].items()}
-cfg['paths'] = {key: value.format(**cfg['paths'])
-                   for (key, value) in cfg['paths'].items()}
-
-
-# Specify default features to plot in browser:
-features_to_plot = [
-    "freq1_freq",
-    "freq1_amplitude1",
-    "median",
-    "fold2P_slope_90percentile",
-    "maximum",
-    "minimum",
-    "percent_difference_flux_percentile",
-    "freq1_rel_phase2"
-]
-
-
-# Specify number of time series to featurize as part of a "test run"
-TEST_N = 5
-
-for path_name, path in cfg['paths'].items():
-    if not os.path.exists(path):
-        print("Creating %s" % path)
-        try:
-            os.makedirs(path)
-        except Exception as e:
-            print(e)
-
-del yaml, os, sys, print_function, config_files, multiprocessing
-
-cfg['cesium'] = locals()
-
-
-def show_config():
-    """Print config settings to stdout (run on app start)."""
-    print()
-    print("=" * 78)
-    print("cesium configuration")
-
-    for key in ('paths', 'database', 'testing', 'docker'):
-        if key in cfg:
+        for key in self:
             print("-" * 78)
             print(key)
 
-            if isinstance(cfg[key], dict):
-                for key, val in cfg[key].items():
+            if isinstance(self[key], dict):
+                for key, val in self[key].items():
                     print('  ', key.ljust(30), val)
 
-    print("=" * 78)
+        print("=" * 78)
 
-show_config()
+
+if __name__ == "__main__":
+    show()

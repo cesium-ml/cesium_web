@@ -29,7 +29,9 @@ class Plot extends Component {
   }
 
   componentDidMount() {
-    fetch(this.props.url)
+    fetch(this.props.url, {
+      credentials: 'same-origin'
+    })
       .then(response => response.json())
       .then((json) => {
         if (json.status == 'success') {

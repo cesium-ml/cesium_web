@@ -36,5 +36,5 @@ EXPOSE 5000
 
 CMD bash -c "source /cesium_env/bin/activate && \
   (make log &) && \
-  PYTHONPATH=. python -c \"from cesium_app.models import create_tables as c; c()\" && \
+  PYTHONPATH=. python -c \"from cesium_app.model_util import create_tables as c; c()\" && \
   make run"

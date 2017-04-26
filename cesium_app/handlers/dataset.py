@@ -1,7 +1,6 @@
 from .base import BaseHandler, AccessError
 from ..models import Project, Dataset
 from .. import util
-from ..config import cfg
 
 from cesium import data_management, time_series
 from cesium.util import shorten_fname
@@ -9,6 +8,8 @@ from cesium.util import shorten_fname
 import os
 from os.path import join as pjoin
 import uuid
+
+import tornado.web
 
 
 class DatasetHandler(BaseHandler):
@@ -18,11 +19,12 @@ class DatasetHandler(BaseHandler):
         except Dataset.DoesNotExist:
             raise AccessError('No such dataset')
 
-        if not d.is_owned_by(self.get_username()):
+        if not d.is_owned_by(self.current_user):
             raise AccessError('No such dataset')
 
         return d
 
+    @tornado.web.authenticated
     def post(self):
         if not 'tarFile' in self.request.files:
             return self.error('No tar file uploaded')
@@ -37,7 +39,7 @@ class DatasetHandler(BaseHandler):
 
         zipfile_name = (str(uuid.uuid4()) + "_" +
                         util.secure_filename(zipfile.filename))
-        zipfile_path = pjoin(cfg['paths']['upload_folder'], zipfile_name)
+        zipfile_path = pjoin(self.cfg['paths:upload_folder'], zipfile_name)
 
         with open(zipfile_path, 'wb') as f:
             f.write(zipfile['body'])
@@ -47,7 +49,7 @@ class DatasetHandler(BaseHandler):
             headerfile = self.request.files['headerFile'][0]
             headerfile_name = (str(uuid.uuid4()) + "_" +
                                util.secure_filename(headerfile.filename))
-            headerfile_path = pjoin(cfg['paths']['upload_folder'], headerfile_name)
+            headerfile_path = pjoin(self.cfg['paths:upload_folder'], headerfile_name)
 
             with open(headerfile_path, 'wb') as f:
                 f.write(headerfile['body'])
@@ -59,7 +61,7 @@ class DatasetHandler(BaseHandler):
         # TODO this should give unique names to the time series files
         ts_paths = data_management.parse_and_store_ts_data(
             zipfile_path,
-            cfg['paths']['ts_data_folder'],
+            self.cfg['paths:ts_data_folder'],
             headerfile_path)
         meta_features = list(time_series.load(ts_paths[0]).meta_features.keys())
         unique_ts_paths = [os.path.join(os.path.dirname(ts_path),
@@ -74,17 +76,19 @@ class DatasetHandler(BaseHandler):
 
         return self.success(d, 'cesium/FETCH_DATASETS')
 
+    @tornado.web.authenticated
     def get(self, dataset_id=None):
         if dataset_id is not None:
             dataset = self._get_dataset(dataset_id)
             dataset_info = dataset.display_info()
         else:
-            datasets = [d for p in Project.all(self.get_username())
+            datasets = [d for p in Project.all(self.current_user)
                             for d in p.datasets]
             dataset_info = [d.display_info() for d in datasets]
 
         return self.success(dataset_info)
 
+    @tornado.web.authenticated
     def delete(self, dataset_id):
         d = self._get_dataset(dataset_id)
         d.delete_instance()

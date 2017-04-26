@@ -7,17 +7,18 @@ class Flow(object):
 
     """
     def __init__(self, socket_path='ipc:///tmp/message_flow_in'):
-        ctx = zmq.Context()
-        pub = ctx.socket(zmq.PUB)
-        pub.connect(socket_path)
+        self._socket_path = socket_path
+        self._ctx = zmq.Context.instance()
+        self._bus = self._ctx.socket(zmq.PUSH)
+        self._bus.connect(self._socket_path)
 
-        self._pub = pub
-
-    def push(self, user, action_type, payload={}):
+    def push(self, username, action_type, payload={}):
         """Push action to specified user over websocket.
 
         """
-        print('Pushing action {} to {}'.format(action_type, user))
-        self._pub.send(b"0 " + to_json({'user': user,
-                                        'action': action_type,
-                                        'payload': payload}).encode('utf-8'))
+        print('[Flow] Pushing action {} to {}'.format(action_type, username))
+        message = [username,
+                   to_json({'username': username,
+                            'action': action_type,
+                            'payload': payload})]
+        self._bus.send_multipart([m.encode('utf-8') for m in message])

@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
-import subprocess
-import os
 import sys
+import os
+import pathlib
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+import subprocess
 from os.path import join as pjoin
 import time
 import socket
@@ -12,29 +15,53 @@ try:
 except ImportError:
     import httplib as http
 
+from cesium_app.model_util import clear_tables
+
+TEST_CONFIG = '_cesium_test.yaml'
+
+
 base_dir = os.path.abspath(pjoin(os.path.dirname(__file__), '..'))
+if len(sys.argv) > 1:
+    test_spec = sys.argv[1]
+else:
+    test_spec = pjoin(base_dir, 'cesium_app', 'tests')
 
 
 def add_test_yaml():
-    print('Creating cesium-test.yaml')
-    with open('cesium-test.yaml', 'w') as f:
-        f.write('database:\n    database: cesium_test\n    user: cesium')
+    print('Creating {}'.format('_cesium_test.yaml'))
+
+    from textwrap import dedent
+    with open(TEST_CONFIG, 'w') as f:
+        f.write(dedent('''
+            database:
+                database: cesium_test
+                user: cesium
+
+            server:
+                url: http://localhost:5000
+                multi_user: True
+                auth:
+                  debug_login: True
+                  google_oauth2_key:
+                  google_oauth2_secret:
+
+        '''))
 
 
 def delete_test_yaml():
-    os.remove('cesium-test.yaml')
-
-
-def clear_db():
-    from cesium_app import models
-    models.drop_tables()
-    models.create_tables()
+    os.remove(TEST_CONFIG)
 
 
 if __name__ == '__main__':
     add_test_yaml()
-    clear_db()
-    web_client = subprocess.Popen(['make'], cwd=base_dir)
+
+    # Initialize the test database connection
+    from cesium_app.tests.conftest import init_db
+    init_db()
+
+    clear_tables()
+
+    web_client = subprocess.Popen(['make', 'testrun'], cwd=base_dir)
 
     print('[test_frontend] Waiting for supervisord to launch all server processes...')
 
@@ -69,9 +96,9 @@ if __name__ == '__main__':
         else:
             print('[test_frontend] Verified server availability')
 
-        print('[test_frontend] Launching pytest...')
-        test_dir = pjoin(base_dir, 'cesium_app', 'tests')
-        status = subprocess.call(['py.test', '--verbose', test_dir])
+        print('[test_frontend] Launching pytest on {}...'.format(test_spec))
+
+        status = subprocess.call(['python', '-m', 'pytest', '--verbose', test_spec])
     except:
         raise
     finally:

@@ -19,6 +19,7 @@ import { Notifications } from './Notifications';
 import colorScheme from './colorscheme';
 import Progress from './Progress';
 import CesiumTooltip from './Tooltip';
+import UserProfile from './UserProfile';
 
 const Tab = ReactTabs.Tab;
 const Tabs = ReactTabs.Tabs;
@@ -80,19 +81,23 @@ class MainContent extends React.Component {
         paddingRight: '1em',
         paddingTop: 0,
         header: {
-          float: 'right',
+          float: 'left',
           fontWeight: 'bold',
           fontSize: '200%',
           lineHeight: '50px',
-          verticalAlign: 'bottom'
+          verticalAlign: 'bottom',
         },
         subheader: {
           fontStyle: 'italic',
           fontSize: '100%',
           float: 'right'
         },
+        login: {
+          float: 'right',
+          fontSize: '150%'
+        },
         text: {
-          paddingTop: '0.5em'
+          paddingTop: '0.25em'
         }
       },
       logo: {
@@ -210,14 +215,14 @@ class MainContent extends React.Component {
             <div style={style.topbar.header}>
               Cesium &nbsp;
               <img
-                src="images/cesium-blue-dark.png"
+                src="static/images/cesium-blue-dark.png"
                 alt="Cesium Logo"
                 onClick={this.props.spinLogo}
                 style={{ ...(style.logo.img), ...rotateStyle }}
               />
             </div>
-
           </div>
+          <UserProfile style={style.topbar.login}/>
         </div>
 
         <div style={style.sidebar}>
@@ -298,6 +303,7 @@ class MainContent extends React.Component {
                   messageHandler={messageHandler}
                   dispatch={store.dispatch}
                 />
+                {this.props.username}
               </Tab>
             </TabList>
             <TabPanel style={style.tabPanel}>

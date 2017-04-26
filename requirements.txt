@@ -1,7 +1,6 @@
-cesium>=0.9.1
-peewee>=2.8.3
-psycopg2==2.6.2
-requests>=2.6.0
+cesium>=0.9.2
+peewee>=2.9.2
+psycopg2==2.7.1
 pyyaml
 tornado
 pyzmq
@@ -11,4 +10,8 @@ distributed>=1.14.3
 selenium
 pytest
 joblib>=0.11
+social-auth-core
+social-auth-app-tornado
+-e git://github.com/python-social-auth/social-storage-peewee.git#egg=social-auth-storage-peewee
 bokeh==0.12.5
+selenium-requests

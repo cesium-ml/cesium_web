@@ -1,6 +1,5 @@
 from .base import BaseHandler, AccessError
 from ..models import Prediction, File, Dataset, Model, Project
-from ..config import cfg
 from .. import util
 
 import tornado.gen
@@ -27,8 +26,8 @@ class PredictionHandler(BaseHandler):
         except Prediction.DoesNotExist:
             raise AccessError('No such prediction')
 
-        if not d.is_owned_by(self.get_username()):
-            raise AccessError('No such prediction')
+        if not d.is_owned_by(self.current_user):
+            raise AccessError('No such dataset')
 
         return d
 
@@ -61,6 +60,7 @@ class PredictionHandler(BaseHandler):
 
         self.action('cesium/FETCH_PREDICTIONS')
 
+    @tornado.web.authenticated
     @tornado.gen.coroutine
     def post(self):
         data = self.get_json()
@@ -74,16 +74,16 @@ class PredictionHandler(BaseHandler):
         dataset = Dataset.get(Dataset.id == data["datasetID"])
         model = Model.get(Model.id == data["modelID"])
 
-        username = self.get_username()
+        user = self.current_user
 
-        if not (dataset.is_owned_by(username) and model.is_owned_by(username)):
+        if not (dataset.is_owned_by(user) and model.is_owned_by(user)):
             return self.error('No access to dataset or model')
 
         fset = model.featureset
         if (model.finished is None) or (fset.finished is None):
             return self.error('Computation of model or feature set still in progress')
 
-        pred_path = pjoin(cfg['paths']['predictions_folder'],
+        pred_path = pjoin(self.cfg['paths:predictions_folder'],
                           '{}_prediction.npz'.format(uuid.uuid4()))
         prediction_file = File.create(uri=pred_path)
         prediction = Prediction.create(file=prediction_file, dataset=dataset,
@@ -133,6 +133,7 @@ class PredictionHandler(BaseHandler):
 
         return self.success(prediction.display_info(), 'cesium/FETCH_PREDICTIONS')
 
+    @tornado.web.authenticated
     def get(self, prediction_id=None, action=None):
         if action == 'download':
             pred_path = self._get_prediction(prediction_id).file.uri
@@ -151,7 +152,7 @@ class PredictionHandler(BaseHandler):
         else:
             if prediction_id is None:
                 predictions = [prediction
-                               for project in Project.all(self.get_username())
+                               for project in Project.all(self.current_user)
                                for prediction in project.predictions]
                 prediction_info = [p.display_info() for p in predictions]
             else:
@@ -160,6 +161,7 @@ class PredictionHandler(BaseHandler):
 
             return self.success(prediction_info)
 
+    @tornado.web.authenticated
     def delete(self, prediction_id):
         prediction = self._get_prediction(prediction_id)
         prediction.delete_instance()
@@ -167,6 +169,7 @@ class PredictionHandler(BaseHandler):
 
 
 class PredictRawDataHandler(BaseHandler):
+    @tornado.web.authenticated
     def post(self):
         ts_data = json_decode(self.get_argument('ts_data'))
         model_id = json_decode(self.get_argument('modelID'))

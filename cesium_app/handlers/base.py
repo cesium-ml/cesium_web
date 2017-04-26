@@ -2,6 +2,14 @@ import tornado.web
 import tornado.escape
 import tornado.ioloop
 
+# The Python Social Auth base handler gives us:
+#   user_id, get_current_user, login_user
+#
+# `get_current_user` is needed by tornado.authentication,
+# and provides a cached version, `current_user`, that should
+# be used to look up the logged in user.
+from social_tornado.handlers import BaseHandler as PSABaseHandler
+
 from .. import models
 from ..json_util import to_json
 from ..flow import Flow
@@ -9,21 +17,11 @@ from ..flow import Flow
 import time
 
 
-class BaseHandler(tornado.web.RequestHandler):
-    def __init__(self, application, request):
-        tornado.web.RequestHandler.__init__(self, application, request)
+class BaseHandler(PSABaseHandler):
+    def prepare(self):
+        self.cfg = self.application.cfg
         self.flow = Flow()
 
-    def get_username(self):
-        return "testuser@gmail.com"
-
-    def push(action, payload={}):
-        self.flow.push(self.get_username(), action, payload)
-
-    def get_json(self):
-        return tornado.escape.json_decode(self.request.body)
-
-    def prepare(self):
         # Remove slash prefixes from arguments
         if self.path_args and self.path_args[0] is not None:
             self.path_args = [arg.lstrip('/') for arg in self.path_args]
@@ -48,19 +46,49 @@ class BaseHandler(tornado.web.RequestHandler):
                     print('Error connecting to database -- sleeping for a while')
                     time.sleep(5)
 
+        return super(BaseHandler, self).prepare()
+
+    def get_current_user(self):
+        if not self.cfg['server:multi_user']:
+            username = 'testuser@gmail.com'
+            try:
+                models.User.get(username=username)
+            except models.User.DoesNotExist:
+                models.User.create(username=username, email=username)
+            return username
+
+        user_id = self.get_secure_cookie('user_id')
+        if user_id is None:
+            return None
+        else:
+            try:
+                return models.User.get(id=int(user_id)).username
+            except models.User.DoesNotExist:
+                return None
+
+    def push(self, action, payload={}):
+        self.flow.push(self.current_user, action, payload)
+
+    def get_json(self):
+        return tornado.escape.json_decode(self.request.body)
+
     def on_finish(self):
         if not models.db.is_closed():
             models.db.close()
 
+        return super(BaseHandler, self).on_finish()
+
     def error(self, message):
-        print('APP ERROR:', message)
+        print('! App Error:', message)
+
+        self.set_status(200)
         self.write({
             "status": "error",
             "message": message
             })
 
     def action(self, action, payload={}):
-        self.flow.push(self.get_username(), action, payload)
+        self.push(action, payload)
 
     def success(self, data={}, action=None, payload={}):
         if action is not None:
@@ -71,7 +99,6 @@ class BaseHandler(tornado.web.RequestHandler):
                 "status": "success",
                 "data": data
             }))
-
 
     def write_error(self, status_code, exc_info=None):
         if exc_info is not None:

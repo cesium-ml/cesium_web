@@ -6,6 +6,16 @@ import { reducer as notifications } from './Notifications';
 import { contains, joinObjectValues } from './utils';
 
 
+function profile(state={ username: '' }, action) {
+  switch (action.type) {
+    case Action.RECEIVE_USER_PROFILE:
+      return action.payload;
+    default:
+      return state;
+  }
+}
+
+
 function projects(state={ projectList: [] }, action) {
   switch (action.type) {
     case Action.RECEIVE_PROJECTS:
@@ -172,6 +182,7 @@ const rootReducer = combineReducers({
   notifications,
   expander,
   sklearnModels,
+  profile,
   form: myFormReducer(formReducer),
   misc
 });

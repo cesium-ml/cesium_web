@@ -36,7 +36,9 @@ function getAuthToken(auth_url) {
       if (cookie_token) {
         resolve(cookie_token);
       } else {
-        fetch(auth_url)
+        fetch(auth_url, {
+          credentials: 'same-origin'
+        })
           .then(checkStatus)
           .then(parseJSON)
           .then((json) => {
