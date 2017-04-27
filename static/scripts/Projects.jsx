@@ -73,7 +73,7 @@ let ProjectTab = (props) => {
     return (
       <div style={newCesiumStyle}>
         <p>Welcome to Cesium!</p>
-        <p>🡸 Please create a new project.</p>
+        <p>&larr; Please create a new project.</p>
       </div>
     );
   } else {
