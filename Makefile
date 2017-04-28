@@ -56,6 +56,14 @@ attach:
 testrun:
 	$(SUPERVISORD) -c conf/supervisord_testing.conf
 
+debug:
+	@echo "Starting web service in debug mode"
+	@echo "Press Ctrl-D to stop"
+	@echo
+	@$(SUPERVISORD) -c conf/supervisord_debug.conf &
+	@sleep 1 && $(SUPERVISORCTL) -i status
+	@$(SUPERVISORCTL) shutdown
+
 clean:
 	rm $(bundle)
 

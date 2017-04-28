@@ -38,7 +38,7 @@ def load_config(config_files=None):
     return cfg
 
 
-def make_app(config_files=None):
+def make_app(config_files=None, debug=False):
     """Create and return a `tornado.web.Application` object with specified
     handlers and settings.
 
@@ -48,6 +48,9 @@ def make_app(config_files=None):
         Filenames of configuration files, loaded in the order specified.
         By default, 'cesium.yaml.example' is used for defaults and 'cesium.yaml'
         for further customizations.
+    debug : bool
+        Whether or not to start the app in debug mode.  In debug mode,
+        changed source files are immediately reloaded.
 
     """
     # Cesium settings
@@ -70,7 +73,7 @@ def make_app(config_files=None):
     # Tornado settings
     settings = {
         'template_path': './static',
-        'autoreload': '--debug' in sys.argv,
+        'autoreload': debug,
         'cookie_secret': cfg['app:secret-key'],
         'login_url': '/',
 
