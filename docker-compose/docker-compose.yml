@@ -4,8 +4,6 @@ web:
     - "9000:5000"
   links:
     - db
-  volumes:
-    - .:/home/cesium_app
 
 db:
   image: postgres:9.5
