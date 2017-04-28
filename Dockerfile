@@ -6,7 +6,7 @@ RUN apt-get update && \
     apt-get update && \
     apt-get -y upgrade && \
     apt-get install -y python3-venv libpq-dev supervisor libpython3-dev \
-                       git nginx nodejs && \
+                       git nginx nodejs postgresql-client && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     useradd --create-home --shell /bin/bash cesium
