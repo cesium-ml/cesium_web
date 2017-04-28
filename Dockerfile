@@ -36,5 +36,4 @@ EXPOSE 5000
 
 CMD bash -c "source /cesium_env/bin/activate && \
   (make log &) && \
-  make db_init && \
   make run"
