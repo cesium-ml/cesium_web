@@ -26,7 +26,7 @@ ENV LANG=C.UTF-8
 RUN bash -c "source /cesium_env/bin/activate && \
     make paths && \
     make dependencies && \
-    cp docker/cesium-docker.yaml . && \
+    cp docker/cesium.yaml . && \
     chown -R cesium.cesium /cesium_env && \
     chown -R cesium.cesium /cesium"
 
