@@ -38,22 +38,21 @@ run: paths dependencies
 	@echo "Supervisor will now fire up various micro-services."
 	@echo
 	@echo " - Please run \`make log\` in another terminal to view logs"
-	@echo " - Press Ctrl-D to abort the server"
-	@echo " - Type \`status\` too see microservice status"
+	@echo " - Press Ctrl-C to abort the server"
+	@echo " - Run \`make monitor\` in another terminal to restart services"
 	@echo
-	@$(SUPERVISORD) -c conf/supervisord.conf &
-	
+	$(SUPERVISORD) -c conf/supervisord.conf
+
+monitor:
 	@echo "Entering supervisor control panel."
-	@sleep 1 && $(SUPERVISORCTL) -i status
-	
-	@echo -n "Shutting down supervisord..."
-	@$(SUPERVISORCTL) shutdown
+	@echo " - Type \`status\` too see microservice status"
+	$(SUPERVISORCTL) -i status
 
 # Attach to terminal of running webserver; useful to, e.g., use pdb
 attach:
 	$(SUPERVISORCTL) fg app
 
-testrun:
+testrun: paths dependencies
 	$(SUPERVISORD) -c conf/supervisord_testing.conf
 
 debug:

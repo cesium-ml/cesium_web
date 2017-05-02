@@ -43,10 +43,10 @@ def create_tables(retry=5):
     """
     for i in range(1, retry + 1):
         try:
-            print('Creating tables on db "{}"'.format(models.db.database))
+            print('Refreshing tables on db "{}"'.format(models.db.database))
             models.db.create_tables(all_models, safe=True)
 
-            print('Created tables:')
+            print('Refreshed tables:')
             for m in all_models:
                 print(' - {}'.format(m.__name__))
 

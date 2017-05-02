@@ -5,7 +5,7 @@ import sys
 import pathlib
 
 from .config import Config
-from . import models
+from . import models, model_util
 
 # This provides `login`, `complete`, and `disconnect` endpoints
 from social_tornado.routes import SOCIAL_AUTH_ROUTES
@@ -124,6 +124,7 @@ def make_app(config_files=None, debug=False):
 
     app = tornado.web.Application(handlers, **settings)
     models.db.init(**cfg['database'])
+    model_util.create_tables()
     app.cfg = cfg
 
     return app
