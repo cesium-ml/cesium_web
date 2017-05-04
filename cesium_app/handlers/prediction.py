@@ -83,8 +83,8 @@ class PredictionHandler(BaseHandler):
         if (model.finished is None) or (fset.finished is None):
             return self.error('Computation of model or feature set still in progress')
 
-        pred_path = pjoin(self.cfg['paths:predictions_folder'],
-                          '{}_prediction.npz'.format(uuid.uuid4()))
+        pred_path = os.path.abspath(pjoin(self.cfg['paths:predictions_folder'],
+                                          '{}_prediction.npz'.format(uuid.uuid4())))
         prediction_file = File.create(uri=pred_path)
         prediction = Prediction.create(file=prediction_file, dataset=dataset,
                                        project=dataset.project, model=model)
