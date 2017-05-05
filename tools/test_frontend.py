@@ -17,6 +17,12 @@ except ImportError:
 
 from cesium_app.model_util import clear_tables
 
+try:
+    import pytest_randomly
+    RAND_ARGS = '--randomly-seed=1 --randomly-dont-reorganize'
+except ImportError:
+    RAND_ARGS = ''
+
 TEST_CONFIG = '_cesium_test.yaml'
 
 
@@ -98,12 +104,11 @@ if __name__ == '__main__':
 
         print('[test_frontend] Launching pytest on {}...'.format(test_spec))
 
-        status = subprocess.call(['python', '-m', 'pytest', '--verbose', test_spec])
+        status = subprocess.run(f'python -m pytest -v {test_spec} {RAND_ARGS}',
+                                shell=True, check=True)
     except:
         raise
     finally:
         print('[test_frontend] Terminating supervisord...')
         web_client.terminate()
         delete_test_yaml()
-
-    sys.exit(status)
