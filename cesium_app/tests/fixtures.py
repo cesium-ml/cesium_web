@@ -149,19 +149,23 @@ def create_test_model(fset, model_type='RandomForestClassifier'):
 
 
 @contextmanager
-def create_test_prediction(dataset, featureset, model):
+def create_test_prediction(dataset, model, featureset=None):
     """Create and yield test prediction, then delete.
 
     Params
     ------
     dataset : `models.Dataset` instance
         Dummy dataset used to create prediction instance.
-    featureset : `models.Featureset` instance
-        The featureset on which prediction will be performed.
     model : `models.Model` instance
         The model to use to create prediction.
+    featureset : `models.Featureset` instance, optional
+        The featureset on which prediction will be performed. If None,
+        the featureset associated with `model` will be used. Defaults
+        to None.
 
     """
+    if featureset is None:
+        featureset = model.featureset
     fset, data = featurize.load_featureset(featureset.file.uri)
     model_data = joblib.load(model.file.uri)
     if hasattr(model_data, 'best_estimator_'):
