@@ -50,11 +50,10 @@ def create_test_dataset(project, label_type='class'):
         header = pjoin(os.path.dirname(__file__),
                        'data', 'asas_training_subset_targets.dat')
     else:
-        header = pjoin(os.path.dirname(__file__),
-                       'data', 'asas_training_subset_unlabeled.dat')
+        header = None
     tarball = pjoin(os.path.dirname(__file__),
                     'data', 'asas_training_subset.tar.gz')
-    header = shutil.copy2(header, cfg['paths:upload_folder'])
+    header = shutil.copy2(header, cfg['paths:upload_folder']) if header else None
     tarball = shutil.copy2(tarball, cfg['paths:upload_folder'])
     ts_paths = data_management.parse_and_store_ts_data(
         tarball, cfg['paths:ts_data_folder'], header)
@@ -84,7 +83,7 @@ def create_test_featureset(project, label_type='class'):
         labels = ['Mira', 'Classical_Cepheid']
     elif label_type == 'regr':
         labels = [2.2, 3.4, 4.4, 2.2, 3.1]
-    elif label_type == 'none':
+    else:
         labels = []
     features_to_use = (CADENCE_FEATS + GENERAL_FEATS + LOMB_SCARGLE_FEATS)
     fset_data, fset_labels = fixtures.sample_featureset(5, 1, features_to_use,
@@ -150,18 +149,24 @@ def create_test_model(fset, model_type='RandomForestClassifier'):
 
 
 @contextmanager
-def create_test_prediction(dataset, model):
+def create_test_prediction(dataset, model, featureset=None):
     """Create and yield test prediction, then delete.
 
     Params
     ------
     dataset : `models.Dataset` instance
-        The dataset on which prediction will be performed.
+        Dummy dataset used to create prediction instance.
     model : `models.Model` instance
         The model to use to create prediction.
+    featureset : `models.Featureset` instance, optional
+        The featureset on which prediction will be performed. If None,
+        the featureset associated with `model` will be used. Defaults
+        to None.
 
     """
-    fset, data = featurize.load_featureset(model.featureset.file.uri)
+    if featureset is None:
+        featureset = model.featureset
+    fset, data = featurize.load_featureset(featureset.file.uri)
     model_data = joblib.load(model.file.uri)
     if hasattr(model_data, 'best_estimator_'):
         model_data = model_data.best_estimator_

@@ -204,6 +204,24 @@ def test_download_prediction_csv_class(driver):
             os.remove('/tmp/cesium_prediction_results.csv')
 
 
+def test_download_prediction_csv_class_unlabeled(driver):
+    driver.get('/')
+    with create_test_project() as p, create_test_dataset(p, label_type=None) as ds,\
+         create_test_featureset(p) as fs,\
+         create_test_featureset(p, label_type=None) as unlabeled_fs,\
+         create_test_model(fs, model_type='LinearSGDClassifier') as m,\
+         create_test_prediction(ds, m, featureset=unlabeled_fs):
+        _click_download(p.id, driver)
+        assert os.path.exists('/tmp/cesium_prediction_results.csv')
+        try:
+            result = np.genfromtxt('/tmp/cesium_prediction_results.csv', dtype='str')
+            assert result[0] == 'ts_name,prediction'
+            assert all([el[0].isdigit() and el[1] == ',' and el[2:] in
+                        ['Mira', 'Classical_Cepheid'] for el in result[1:]])
+        finally:
+            os.remove('/tmp/cesium_prediction_results.csv')
+
+
 def test_download_prediction_csv_class_prob(driver):
     driver.get('/')
     with create_test_project() as p, create_test_dataset(p) as ds,\
@@ -264,7 +282,7 @@ def test_predict_specific_ts_name(driver):
         assert response['status'] == 'success'
 
         n_secs = 0
-        while n_secs < 5:
+        while n_secs < 10:
             pred_info = driver.request('GET', '{}/predictions/{}'.format(
                 cfg['server:url'], response['data']['id'])).json()
             if pred_info['status'] == 'success' and pred_info['data']['finished']:

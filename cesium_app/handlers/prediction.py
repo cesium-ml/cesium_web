@@ -138,7 +138,8 @@ class PredictionHandler(BaseHandler):
         if action == 'download':
             pred_path = self._get_prediction(prediction_id).file.uri
             fset, data = featurize.load_featureset(pred_path)
-            result = pd.DataFrame({'label': data['labels']},
+            result = pd.DataFrame(({'label': data['labels']}
+                                   if len(data['labels']) > 0 else None),
                                   index=fset.index)
             if len(data.get('pred_probs', [])) > 0:
                 result = pd.concat((result, data['pred_probs']), axis=1)
