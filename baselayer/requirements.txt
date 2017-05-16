@@ -6,7 +6,8 @@ pyjwt
 simplejson
 selenium
 pytest
+sqlalchemy
 social-auth-core
 social-auth-app-tornado
--e git://github.com/python-social-auth/social-storage-peewee.git#egg=social-auth-storage-peewee
+social-auth-storage-sqlalchemy
 selenium-requests

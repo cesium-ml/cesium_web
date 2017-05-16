@@ -3,188 +3,168 @@
 import uuid
 import os
 from os.path import join as pjoin
-from contextlib import contextmanager
-from cesium_app import models
-from cesium import data_management, featurize
+from cesium_app.models import (DBSession, User, Project, DatasetFile, Dataset,
+                               Featureset, Model, Prediction)
+from cesium import data_management, featurize, time_series
+from cesium.tests.fixtures import sample_featureset
 from cesium.features import CADENCE_FEATS, GENERAL_FEATS, LOMB_SCARGLE_FEATS
-from cesium.tests import fixtures
 from cesium_app.ext.sklearn_models import MODELS_TYPE_DICT
 import shutil
-import peewee
 import datetime
 import joblib
 import pandas as pd
+from tempfile import mkdtemp
 
-from .conftest import cfg
-
-
-@contextmanager
-def create_test_project():
-    """Create and yield test project, then delete."""
-    p = models.Project.add_by('test_proj', 'test_desc', 'testuser@gmail.com')
-    p.save()
-    try:
-        yield p
-    finally:
-        p.delete_instance()
+import factory
 
 
-@contextmanager
-def create_test_dataset(project, label_type='class'):
-    """Create and yield test labeled dataset, then delete.
-
-    Params
-    ------
-    project : `models.Project` instance
-        The project under which to create test dataset.
-    label_type : str, optional
-        String indicating whether data labels are class names for
-        classification ('class'), numerical values for regression ('regr'),
-        or no labels (anything else).
-        Defaults to 'class'.
-    """
-    if label_type == 'class':
-        header = pjoin(os.path.dirname(__file__),
-                       'data', 'asas_training_subset_classes.dat')
-    elif label_type == 'regr':
-        header = pjoin(os.path.dirname(__file__),
-                       'data', 'asas_training_subset_targets.dat')
-    else:
-        header = None
-    tarball = pjoin(os.path.dirname(__file__),
-                    'data', 'asas_training_subset.tar.gz')
-    header = shutil.copy2(header, cfg['paths:upload_folder']) if header else None
-    tarball = shutil.copy2(tarball, cfg['paths:upload_folder'])
-    ts_paths = data_management.parse_and_store_ts_data(
-        tarball, cfg['paths:ts_data_folder'], header)
-    d = models.Dataset.add(name='test_ds', project=project, file_uris=ts_paths)
-    d.save()
-    try:
-        yield d
-    finally:
-        d.delete_instance()
+TMP_DIR = mkdtemp()
 
 
-@contextmanager
-def create_test_featureset(project, label_type='class'):
-    """Create and yield test labeled featureset, then delete.
+class ProjectFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class Meta:
+        sqlalchemy_session = DBSession()
+        sqlalchemy_session_persistence = 'commit'
+        model = Project
+    name = 'test_proj'
+    description = 'test_desc'
+    users = []
 
-    Parameters
-    ----------
-    project : `models.Project` instance
-        The project under which to create test feature set.
-    label_type : {'class', 'regr', 'none'}, optional
-        String indicating whether data are labeled with class names ('class')
-        for classification, numerical values for regression ('regr'), or
-        unlabeled ('none'). Defaults to 'class'.
-
-    """
-    if label_type == 'class':
-        labels = ['Mira', 'Classical_Cepheid']
-    elif label_type == 'regr':
-        labels = [2.2, 3.4, 4.4, 2.2, 3.1]
-    else:
-        labels = []
-    features_to_use = (CADENCE_FEATS + GENERAL_FEATS + LOMB_SCARGLE_FEATS)
-    fset_data, fset_labels = fixtures.sample_featureset(5, 1, features_to_use,
-                                                        labels)
-    fset_path = pjoin(cfg['paths:features_folder'],
-                      '{}.npz'.format(str(uuid.uuid4())))
-    featurize.save_featureset(fset_data, fset_path, labels=fset_labels)
-    f, created = models.File.get_or_create(uri=fset_path)
-    fset = models.Featureset.create(name='test_featureset', file=f,
-                                    project=project,
-                                    features_list=features_to_use,
-                                    custom_features_script=None,
-                                    finished=datetime.datetime.now())
-    fset.save()
-    try:
-        yield fset
-    finally:
-        fset.delete_instance()
+    @factory.post_generation
+    def set_user(project, create, extracted, **kwargs):
+        if not create:
+            return
+        project.users = User.query.filter(User.username ==
+                                          'testuser@gmail.com').all()
+        DBSession().commit()
 
 
-@contextmanager
-def create_test_model(fset, model_type='RandomForestClassifier'):
-    """Create and yield test model, then delete.
+class DatasetFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class Meta:
+        sqlalchemy_session = DBSession()
+        sqlalchemy_session_persistence = 'commit'
+        model = Dataset
+    name = 'class'
+    project = factory.SubFactory(ProjectFactory)
 
-    Params
-    ------
-    fset : `models.Featureset` instance
-        The (labeled) feature set from which to build the model.
-    model_type : str, optional
-        String indicating type of model to build. Defaults to
-        'RandomForestClassifier'.
+    @factory.post_generation
+    def add_files(dataset, create, value, *args, **kwargs):
+        if not create:
+            return
 
-    """
-    model_params = {
-        "RandomForestClassifier": {
-            "bootstrap": True, "criterion": "gini",
-            "oob_score": False, "max_features": "auto",
-            "n_estimators": 10, "random_state": 0},
-        "RandomForestRegressor": {
-            "bootstrap": True, "criterion": "mse",
-            "oob_score": False, "max_features": "auto",
-            "n_estimators": 10},
-        "LinearSGDClassifier": {
-            "loss": "hinge"},
-        "LinearRegressor": {
-            "fit_intercept": True}}
-    fset_data, data = featurize.load_featureset(fset.file.uri)
-    model = MODELS_TYPE_DICT[model_type](**model_params[model_type])
-    model.fit(fset_data, data['labels'])
-    model_path = pjoin(cfg['paths:models_folder'],
-                       '{}.pkl'.format(str(uuid.uuid4())))
-    joblib.dump(model, model_path)
-    f, created = models.File.get_or_create(uri=model_path)
-    model = models.Model.create(name='test_model',
-                                file=f, featureset=fset, project=fset.project,
-                                params=model_params[model_type], type=model_type,
-                                finished=datetime.datetime.now())
-    model.save()
-    try:
-        yield model
-    finally:
-        model.delete_instance()
+        if 'class' in dataset.name:
+            header = pjoin(os.path.dirname(__file__),
+                           'data', 'asas_training_subset_classes.dat')
+        elif 'regr' in dataset.name:
+            header = pjoin(os.path.dirname(__file__),
+                           'data', 'asas_training_subset_targets.dat')
+        else:
+            header = None
+        tarball = pjoin(os.path.dirname(__file__),
+                        'data', 'asas_training_subset.tar.gz')
+        header = shutil.copy2(header, TMP_DIR) if header else None
+        tarball = shutil.copy2(tarball, TMP_DIR)
+        ts_paths = data_management.parse_and_store_ts_data(
+            tarball, TMP_DIR, header)
+
+        dataset.files = [DatasetFile(uri=uri) for uri in ts_paths]
+        DBSession().commit()
 
 
-@contextmanager
-def create_test_prediction(dataset, model, featureset=None):
-    """Create and yield test prediction, then delete.
+class FeaturesetFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class Meta:
+        sqlalchemy_session = DBSession()
+        sqlalchemy_session_persistence = 'commit'
+        model = Featureset
+    project = factory.SubFactory(ProjectFactory)
+    name = 'class',
+    features_list = (CADENCE_FEATS + GENERAL_FEATS + LOMB_SCARGLE_FEATS)
+    finished = datetime.datetime.now()
 
-    Params
-    ------
-    dataset : `models.Dataset` instance
-        Dummy dataset used to create prediction instance.
-    model : `models.Model` instance
-        The model to use to create prediction.
-    featureset : `models.Featureset` instance, optional
-        The featureset on which prediction will be performed. If None,
-        the featureset associated with `model` will be used. Defaults
-        to None.
+    @factory.post_generation
+    def add_file(featureset, create, value, *args, **kwargs):
+        if not create:
+            return
 
-    """
-    if featureset is None:
-        featureset = model.featureset
-    fset, data = featurize.load_featureset(featureset.file.uri)
-    model_data = joblib.load(model.file.uri)
-    if hasattr(model_data, 'best_estimator_'):
-        model_data = model_data.best_estimator_
-    preds = model_data.predict(fset)
-    pred_probs = (pd.DataFrame(model_data.predict_proba(fset),
-                               index=fset.index, columns=model_data.classes_)
-                  if hasattr(model_data, 'predict_proba') else [])
-    all_classes = model_data.classes_ if hasattr(model_data, 'classes_') else []
-    pred_path = pjoin(cfg['paths:predictions_folder'],
-                      '{}.npz'.format(str(uuid.uuid4())))
-    featurize.save_featureset(fset, pred_path, labels=data['labels'],
-                              preds=preds, pred_probs=pred_probs)
-    f, created = models.File.get_or_create(uri=pred_path)
-    pred = models.Prediction.create(file=f, dataset=dataset,
-                                    project=dataset.project,
-                                    model=model, finished=datetime.datetime.now())
-    pred.save()
-    try:
-        yield pred
-    finally:
-        pred.delete_instance()
+        if 'class' in featureset.name:
+            labels = ['Mira', 'Classical_Cepheid']
+        elif 'regr' in featureset.name:
+            labels = [2.2, 3.4, 4.4, 2.2, 3.1]
+        else:
+            labels = []
+        fset_data, fset_labels = sample_featureset(5, 1,
+                                                   featureset.features_list,
+                                                   labels)
+        fset_path = pjoin(TMP_DIR, '{}.npz'.format(str(uuid.uuid4())))
+        featurize.save_featureset(fset_data, fset_path, labels=fset_labels)
+        featureset.file_uri = fset_path
+        DBSession().commit()
+
+
+class ModelFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class Meta:
+        sqlalchemy_session = DBSession()
+        sqlalchemy_session_persistence = 'commit'
+        model = Model
+    project = factory.SubFactory(ProjectFactory)
+    name = 'test_model'
+    featureset = factory.SubFactory(FeaturesetFactory)
+    type = 'RandomForestClassifier'
+    params = {}
+    finished = datetime.datetime.now()
+
+    @factory.post_generation
+    def add_file(model, create, value, *args, **kwargs):
+        model_params = {
+            "RandomForestClassifier": {
+                "bootstrap": True, "criterion": "gini",
+                "oob_score": False, "max_features": "auto",
+                "n_estimators": 10, "random_state": 0},
+            "RandomForestRegressor": {
+                "bootstrap": True, "criterion": "mse",
+                "oob_score": False, "max_features": "auto",
+                "n_estimators": 10},
+            "LinearSGDClassifier": {
+                "loss": "hinge"},
+            "LinearRegressor": {
+                "fit_intercept": True}}
+        fset_data, data = featurize.load_featureset(model.featureset.file_uri)
+        model_data = MODELS_TYPE_DICT[model.type](**model_params[model.type])
+        model_data.fit(fset_data, data['labels'])
+        model.file_uri = pjoin('/tmp/', '{}.pkl'.format(str(uuid.uuid4())))
+        joblib.dump(model_data, model.file_uri)
+        DBSession().commit()
+
+
+class PredictionFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class Meta:
+        sqlalchemy_session = DBSession()
+        sqlalchemy_session_persistence = 'commit'
+        model = Prediction
+    project = factory.SubFactory(ProjectFactory)
+    dataset = factory.SubFactory(DatasetFactory)
+    model = factory.SubFactory(ModelFactory)
+    finished = datetime.datetime.now()
+
+    @factory.post_generation
+    def add_file(prediction, create, value, *args, **kwargs):
+        train_featureset = prediction.model.featureset
+        fset_data, data = featurize.load_featureset(train_featureset.file_uri)
+        if 'class' in prediction.dataset.name or 'regr' in prediction.dataset.name:
+            labels = data['labels']
+        else:
+            labels = []
+        model_data = joblib.load(prediction.model.file_uri)
+        if hasattr(model_data, 'best_estimator_'):
+            model_data = model_data.best_estimator_
+        preds = model_data.predict(fset_data)
+        pred_probs = (pd.DataFrame(model_data.predict_proba(fset_data),
+                                   index=fset_data.index.astype(str),
+                                   columns=model_data.classes_)
+                      if hasattr(model_data, 'predict_proba') else [])
+        all_classes = model_data.classes_ if hasattr(model_data, 'classes_') else []
+        pred_path = pjoin(TMP_DIR, '{}.npz'.format(str(uuid.uuid4())))
+        featurize.save_featureset(fset_data, pred_path, labels=labels,
+                                  preds=preds, pred_probs=pred_probs)
+        prediction.file_uri = pred_path
+        DBSession().commit()

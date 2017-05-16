@@ -5,16 +5,22 @@ import os
 import pathlib
 import distutils.spawn
 import types
-from baselayer.app.config import Config
-from cesium_app import models
+import shutil
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from seleniumrequests.request import RequestMixin
+from pytest_factoryboy import register
+from baselayer.app.config import Config
+from cesium_app import models
+from cesium_app.tests.fixtures import (TMP_DIR, ProjectFactory, DatasetFactory,
+                                       FeaturesetFactory, ModelFactory,
+                                       PredictionFactory)
 
 print('Loading test configuration from _test_config.yaml')
 basedir = pathlib.Path(os.path.dirname(__file__))
 cfg = Config([(basedir/'../../config.yaml.example').absolute(),
               (basedir/'../../_test_config.yaml').absolute()])
+
 
 def init_db():
     print('Setting test database to:', cfg['database'])
@@ -23,7 +29,9 @@ def init_db():
     return cfg
 
 
-init_db()
+cfg = Config([(basedir/'../../config.yaml.example').absolute(),
+              (basedir/'../../_test_config.yaml').absolute()])
+models.init_db(**cfg['database'])
 
 
 class MyCustomWebDriver(RequestMixin, webdriver.Chrome):
@@ -44,7 +52,7 @@ def driver(request):
     chrome_options.add_argument('--browser.download.folderList=2')
     chrome_options.add_argument(
         '--browser.helperApps.neverAsk.saveToDisk=application/octet-stream')
-    prefs = {'download.default_directory' : '/tmp'}
+    prefs = {'download.default_directory': '/tmp'}
     chrome_options.add_experimental_option('prefs', prefs)
 
     driver = MyCustomWebDriver(chrome_options=chrome_options)
@@ -57,6 +65,7 @@ def driver(request):
     request.addfinalizer(close)
 
     driver._get = driver.get
+
     def get(self, uri):
         d = self._get(cfg['server']['url'] + uri)
         return d
@@ -78,16 +87,36 @@ def driver(request):
     return driver
 
 
-@pytest.fixture(scope='session', autouse=True)
-def remove_test_files(request):
+@pytest.fixture(scope='function', autouse=True)
+def reset_state(request):
     def teardown():
-        for f in models.File.select():
-            try:
-                os.remove(f.file.uri)
-            except:
-                pass
-    try:
-        models.db.connect()
-        request.addfinalizer(teardown)
-    except:  # skip teardown if DB not available
-        pass
+        models.DBSession().rollback()
+    request.addfinalizer(teardown)
+
+
+@pytest.fixture(scope='session', autouse=True)
+def delete_temporary_files(request):
+    def teardown():
+        shutil.rmtree(TMP_DIR, ignore_errors=True)
+    request.addfinalizer(teardown)
+
+
+register(ProjectFactory)
+register(DatasetFactory)
+register(DatasetFactory, "unlabeled_dataset")
+register(FeaturesetFactory)
+register(ModelFactory)
+register(PredictionFactory)
+register(PredictionFactory, "unlabeled_prediction")
+
+
+@pytest.fixture
+def unlabeled_dataset__name():
+    """Set `.name` property of fixture `unlabeled_dataset`."""
+    return "unlabeled"
+
+
+@pytest.fixture
+def unlabeled_prediction__dataset(unlabeled_dataset):
+    """Set `.dataset` property of fixture `unlabeled_prediction`."""
+    return unlabeled_dataset

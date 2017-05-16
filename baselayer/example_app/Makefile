@@ -58,7 +58,7 @@ debug:
 	@echo "Starting web service in debug mode"
 	@echo "Press Ctrl-D to stop"
 	@echo
-	@$(SUPERVISORD) -c conf/supervisord_debug.conf &
+	@$(SUPERVISORD) -c conf/supervisor/debug.conf &
 	@sleep 1 && $(SUPERVISORCTL) -i status
 	@$(SUPERVISORCTL) shutdown
 

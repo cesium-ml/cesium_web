@@ -2,23 +2,21 @@ import os
 import tempfile
 
 from cesium_app import models as m
-from cesium_app.tests.fixtures import create_test_project, create_test_dataset
 
 
-def test_file_delete():
-    """Test that deleting a `File` also removes the associated file."""
-    fd, path = tempfile.mkstemp()
-    f = m.File.create(uri=path)
-    assert os.path.exists(f.uri)
-    f.delete_instance()
-    assert not os.path.exists(f.uri)
-
-
-def test_dataset_delete():
+def test_dataset_delete(project, dataset):
     """Test that deleting a `Dataset` also removes any associated files."""
-    with create_test_project() as p:
-        ds = create_test_dataset(p).__enter__()  # skip cleanup step
-        uris = ds.uris
-        assert all(os.path.exists(f) for f in uris)
-        ds.delete_instance()
-        assert not any(os.path.exists(f) for f in uris)
+    uris = [f.uri for f in dataset.files]
+    assert all(os.path.exists(f) for f in uris)
+    m.DBSession().delete(dataset)
+    m.DBSession().commit()
+    assert not any(os.path.exists(f) for f in uris)
+
+
+def test_file_delete(featureset, model):
+    """Test that deleting an object also removes any associated files."""
+    for obj in [model, featureset]:
+        assert os.path.exists(obj.file_uri)
+        m.DBSession().delete(obj)
+        m.DBSession().commit()
+        assert not os.path.exists(obj.file_uri)

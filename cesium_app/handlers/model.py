@@ -1,7 +1,6 @@
-'''Handlers for '/models' route.'''
-
-from baselayer.app.handlers.base import BaseHandler, AccessError
-from ..models import Project, Model, Featureset, File
+from baselayer.app.handlers.base import BaseHandler
+from baselayer.app.custom_exceptions import AccessError
+from ..models import DBSession, Project, Model, Featureset
 from ..ext.sklearn_models import (
     model_descriptions as sklearn_model_descriptions,
     check_model_param_types, MODELS_TYPE_DICT
@@ -72,23 +71,12 @@ def _build_model_compute_statistics(fset_path, model_type, model_params,
 
 
 class ModelHandler(BaseHandler):
-    def _get_model(self, model_id):
-        try:
-            m = Model.get(Model.id == model_id)
-        except Model.DoesNotExist:
-            raise AccessError('No such model')
-
-        if not m.is_owned_by(self.current_user):
-            raise AccessError('No such project')
-
-        return m
-
     @tornado.web.authenticated
     def get(self, model_id=None):
         if model_id is not None:
-            model_info = self._get_model(model_id)
+            model_info = Model.get_if_owned_by(model_id, self.current_user)
         else:
-            model_info = [model for p in Project.all(self.current_user)
+            model_info = [model for p in self.current_user.projects
                           for model in p.models]
 
         return self.success(model_info)
@@ -98,17 +86,19 @@ class ModelHandler(BaseHandler):
         try:
             score, best_params = await model_stats_future
 
+            model = DBSession().merge(model)
             model.task_id = None
             model.finished = datetime.datetime.now()
             model.train_score = score
             model.params.update(best_params)
-            model.save()
+            DBSession().commit()
 
             self.action('baselayer/SHOW_NOTIFICATION',
                         payload={"note": "Model '{}' computed.".format(model.name)})
 
         except Exception as e:
-            model.delete_instance()
+            DBSession().delete(model)
+            DBSession().commit()
             self.action('baselayer/SHOW_NOTIFICATION',
                         payload={"note": "Cannot create model '{}': {}".format(model.name, e),
                                  "type": 'error'})
@@ -122,11 +112,11 @@ class ModelHandler(BaseHandler):
 
         model_name = data.pop('modelName')
         featureset_id = data.pop('featureset')
-        # TODO remove cast once this is passed properly from the front end
+
         model_type = sklearn_model_descriptions[int(data.pop('modelType'))]['name']
         project_id = data.pop('project')
 
-        fset = Featureset.get(Featureset.id == featureset_id)
+        fset = Featureset.query.filter(Featureset.id == featureset_id).one()
         if not fset.is_owned_by(self.current_user):
             return self.error('No access to featureset')
 
@@ -143,19 +133,19 @@ class ModelHandler(BaseHandler):
         model_path = pjoin(self.cfg['paths:models_folder'],
                            '{}_model.pkl'.format(uuid.uuid4()))
 
-        model_file = File.create(uri=model_path)
-        model = Model.create(name=model_name, file=model_file,
-                             featureset=fset, project=fset.project,
-                             params=model_params, type=model_type)
+        model = Model(name=model_name, file_uri=model_path,
+                      featureset=fset, project=fset.project,
+                      params=model_params, type=model_type)
+        DBSession().add(model)
 
         client = await self._get_client()
 
         model_stats_future = client.submit(
-            _build_model_compute_statistics, fset.file.uri, model_type,
+            _build_model_compute_statistics, fset.file_uri, model_type,
             model_params, params_to_optimize, model_path)
 
         model.task_id = model_stats_future.key
-        model.save()
+        DBSession().commit()
 
         loop = tornado.ioloop.IOLoop.current()
         loop.spawn_callback(self._await_model_statistics, model_stats_future, model)
@@ -165,7 +155,8 @@ class ModelHandler(BaseHandler):
 
     @tornado.web.authenticated
     def delete(self, model_id):
-        m = self._get_model(model_id)
-        m.delete_instance()
+        m = Model.get_if_owned_by(model_id, self.current_user)
+        DBSession().delete(m)
+        DBSession().commit()
 
         return self.success(action='cesium/FETCH_MODELS')

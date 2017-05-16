@@ -24,7 +24,7 @@ paths:
 
 database:
     database: cesium
-    host:
+    host: localhost
     port: 5432
     user: cesium
     password:

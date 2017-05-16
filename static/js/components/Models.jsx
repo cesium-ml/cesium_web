@@ -102,7 +102,7 @@ const mapStateToProps = function (state, ownProps) {
   });
 
   const filteredFeaturesets = state.featuresets.filter(featureset =>
-    (featureset.project === ownProps.selectedProject.id));
+    (featureset.project_id === ownProps.selectedProject.id));
   const firstFeatureset = filteredFeaturesets[0];
   const firstFeaturesetID = firstFeatureset ? firstFeatureset.id : "";
 
@@ -246,7 +246,7 @@ ModelTable.propTypes = {
 const mtMapStateToProps = (state, ownProps) => (
   {
     models: state.models.filter(
-      model => (model.project === ownProps.selectedProject.id))
+      model => (model.project_id === ownProps.selectedProject.id))
   }
 );
 

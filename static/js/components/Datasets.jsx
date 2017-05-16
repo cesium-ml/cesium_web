@@ -182,7 +182,7 @@ DatasetTable.propTypes = {
 const mapStateToProps = (state, ownProps) => (
   {
     datasets: state.datasets.filter(dataset => (
-      dataset.project === ownProps.selectedProject.id
+      dataset.project_id === ownProps.selectedProject.id
     ))
   }
 );

@@ -9,6 +9,7 @@ webpack = ./node_modules/.bin/webpack
 
 
 dependencies:
+	@./baselayer/tools/silent_monitor.py pip install -r baselayer/requirements.txt
 	@./baselayer/tools/silent_monitor.py pip install -r requirements.txt
 	@./baselayer/tools/silent_monitor.py ./baselayer/tools/check_js_deps.sh
 
@@ -59,7 +60,7 @@ debug:
 	@echo "Starting web service in debug mode"
 	@echo "Press Ctrl-D to stop"
 	@echo
-	@$(SUPERVISORD) -c baselayer/conf/supervisord_debug.conf &
+	@$(SUPERVISORD) -c baselayer/conf/supervisor/debug.conf &
 	@sleep 1 && $(SUPERVISORCTL) -i status
 	@$(SUPERVISORCTL) shutdown
 

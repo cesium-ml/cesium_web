@@ -20,6 +20,6 @@ class SocketAuthTokenHandler(BaseHandler):
         secret = self.cfg['app:secret-key']
         token = jwt.encode({
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=15),
-            'username': self.current_user
+            'username': self.current_user.username
             }, secret)
         self.success({'token': token})

@@ -137,7 +137,7 @@ const mapStateToProps = (state, ownProps) => {
   featuresList.map((f, idx) => { initialValues[f] = true; return null; });
 
   const filteredDatasets = state.datasets.filter(dataset =>
-    (dataset.project === ownProps.selectedProject.id));
+    (dataset.project_id === ownProps.selectedProject.id));
   const zerothDataset = filteredDatasets[0];
 
   return {
@@ -251,7 +251,7 @@ FeatureTable.propTypes = {
 const ftMapStateToProps = (state, ownProps) => (
   {
     featuresets: state.featuresets.filter(
-      fs => (fs.project === ownProps.selectedProject.id)
+      fs => (fs.project_id === ownProps.selectedProject.id)
     )
   }
 );

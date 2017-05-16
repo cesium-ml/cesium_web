@@ -9,8 +9,4 @@ simplejson
 distributed>=1.17.1
 selenium
 joblib>=0.11
-social-auth-core
-social-auth-app-tornado
--e git://github.com/python-social-auth/social-storage-peewee.git#egg=social-auth-storage-peewee
 bokeh==0.12.5
-selenium-requests

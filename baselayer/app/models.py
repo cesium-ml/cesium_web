@@ -1,43 +1,77 @@
-import peewee as pw
-from playhouse.shortcuts import model_to_dict
-from playhouse import signals
+from datetime import datetime
+
+import sqlalchemy as sa
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import sessionmaker, scoped_session, relationship
+from sqlalchemy.orm.exc import NoResultFound
+
 from .json_util import to_json
+from .custom_exceptions import AccessError
 
 
 # The db has to be initialized later; this is done by the app itself
 # See `app_server.py`
-db = pw.PostgresqlDatabase(None, autocommit=True, autorollback=True)
+def init_db(user, database, password='', host='localhost', port=5432):
+    url = 'postgresql://{}:{}@{}:{}/{}'
+    url = url.format(user, password, host, port, database)
+
+    conn = sa.create_engine(url, client_encoding='utf8')
+
+    DBSession.configure(bind=conn)
+    Base.metadata.bind = conn
+
+    return conn
 
 
-class BaseModel(signals.Model):
-    """All other models are derived from this one.
+DBSession = scoped_session(sessionmaker())
 
-    It adds the following:
 
-    - __dict__ method to convert the model to a dict
-    - __str__ method to convert the model to a JSON string: `str(my_model)`
-    - Specify the database in use
+class BaseMixin(object):
+    query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
+    created = sa.Column(sa.DateTime, nullable=False, default=datetime.now)
 
-    """
+    @declared_attr
+    def __tablename__(cls):
+        return cls.__name__.lower() + 's'
+
+    __mapper_args__ = {'confirm_deleted_rows': False}
+
     def __str__(self):
-        return to_json(self.__dict__())
+        return to_json(self)
 
-    def __dict__(self):
-        return model_to_dict(self, recurse=False, backrefs=False)
+    def is_owned_by(self, user):
+        if hasattr(self, 'users'):
+            return (user in self.users)
+        elif hasattr(self, 'project'):
+            return (user in self.project.users)
+        else:
+            raise NotImplementedError(f"{type(self)} object has no owner")
 
-    class Meta:
-        database = db
+    def to_dict(self):
+        return {c.name: getattr(self, c.name)
+                for c in type(self).__table__.columns}
+
+    @classmethod
+    def get_if_owned_by(cls, ident, user):
+        try:
+            obj = cls.query.get(ident)
+        except NoResultFound:
+            raise AccessError('No such feature set')
+
+        if not obj.is_owned_by(user):
+            raise AccessError('No such feature set')
+
+        return obj
 
 
-class User(BaseModel):
-    """This model defines any user attributes needed by the web app.
+Base = declarative_base(cls=BaseMixin)
 
-    Other user information needed by the login system is stored in
-    UserSocialAuth.
 
-    """
-    username = pw.CharField(unique=True)
-    email = pw.CharField(unique=True)
+class User(Base):
+    username = sa.Column(sa.String(), nullable=False, unique=True)
+    email = sa.Column(sa.String(), nullable=False, unique=True)
 
     @classmethod
     def user_model(cls):

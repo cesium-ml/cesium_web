@@ -6,4 +6,3 @@ from baselayer.app import model_util
 
 app = app_server.make_app()
 model_util.clear_tables()
-model_util.clear_tables(models.app_models)

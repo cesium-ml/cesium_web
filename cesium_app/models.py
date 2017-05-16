@@ -1,203 +1,121 @@
-import datetime
 import os
-import sys
-import inspect
-import time
 import pandas as pd
 
-import peewee as pw
-from playhouse.postgres_ext import ArrayField, BinaryJSONField
-from playhouse.shortcuts import model_to_dict
-from playhouse import signals
+import sqlalchemy as sa
+from sqlalchemy.orm import relationship
 
-from baselayer.app.json_util import to_json
-from baselayer.app.models import BaseModel, User, db
-from baselayer.app.model_util import filter_pw_models
-
+from baselayer.app.models import init_db, Base, DBSession, User
 from cesium import featurize
 
 
-class Project(BaseModel):
-    """ORM model of the Project table"""
-    name = pw.CharField()
-    description = pw.CharField(null=True)
-    created = pw.DateTimeField(default=datetime.datetime.now)
-
-    @staticmethod
-    def all(username):
-        user = User.get(username=username)
-        return (Project
-                .select()
-                .join(UserProject)
-                .where(UserProject.user == user)
-                .order_by(Project.created))
-
-    @staticmethod
-    def add_by(name, description, username):
-        user = User.get(username=username)
-        with db.atomic():
-            p = Project.create(name=name, description=description)
-            UserProject.create(user=user, project=p)
-        return p
-
-    def is_owned_by(self, username):
-        user = User.get(username=username)
-        users = [owner.user for owner in self.owners]
-        return user in users
+user_projects = sa.Table('user_projects', Base.metadata,
+                         sa.Column('user_id', sa.ForeignKey('users.id',
+                                                            ondelete='CASCADE'),
+                                   primary_key=True),
+                         sa.Column('project_id', sa.ForeignKey('projects.id',
+                                                               ondelete='CASCADE'),
+                                   primary_key=True))
+User.projects = relationship('Project', secondary=user_projects,
+                             back_populates='users', cascade='all')
 
 
-class UserProject(BaseModel):
-    user = pw.ForeignKeyField(User, related_name='projects')
-    project = pw.ForeignKeyField(Project, related_name='owners',
-                                 on_delete='CASCADE')
-
-    class Meta:
-        indexes = (
-            (('user', 'project'), True),
-        )
-
-
-class File(BaseModel):
-    """ORM model of the TimeSeries table"""
-    uri = pw.CharField(primary_key=True)  # s3://cesium_bin/3eef6601a
-    name = pw.CharField(null=True)
-    created = pw.DateTimeField(default=datetime.datetime.now)
-
-
-@signals.post_delete(sender=File)
-def remove_file_after_delete(sender, instance):
-    try:
-        os.remove(instance.uri)
-    except FileNotFoundError:
-        pass
-
-
-class Dataset(BaseModel):
-    """ORM model of the Dataset table"""
-    project = pw.ForeignKeyField(Project, on_delete='CASCADE',
-                                 related_name='datasets')
-    name = pw.CharField()
-    created = pw.DateTimeField(default=datetime.datetime.now)
-    meta_features = ArrayField(pw.CharField)
-
-    @staticmethod
-    def add(name, project, file_uris=[], file_names=[], meta_features=[]):
-        if not file_names:
-            file_names = file_uris
-        with db.atomic():
-            d = Dataset.create(name=name, project=project,
-                               meta_features=meta_features)
-            for fname, uri in zip(file_names, file_uris):
-                f, created = File.get_or_create(name=fname, uri=uri)
-                DatasetFile.create(dataset=d, file=f)
-        return d
-
-    @property
-    def uris(self):
-        return [f.uri for f in self.files]
-
-    @property
-    def file_names(self):
-        return [f.name for f in self.files]
-
-    @property
-    def files(self):
-        query = File.select().join(DatasetFile).join(Dataset).where(Dataset.id
-                                                                    == self.id)
-        return list(query.execute())
-
-    def is_owned_by(self, username):
-        return self.project.is_owned_by(username)
+class Dataset(Base):
+    name = sa.Column(sa.String(), nullable=False)
+    meta_features = sa.Column(sa.ARRAY(sa.VARCHAR()), nullable=False,
+                              default=[], index=True)
+    project_id = sa.Column(sa.ForeignKey('projects.id', ondelete='CASCADE'),
+                           nullable=False, index=True)
+    project = relationship('Project', back_populates='datasets')
+    files = relationship('DatasetFile', backref='dataset', cascade='all')
 
     def display_info(self):
-        info = self.__dict__()
-        info['files'] = [os.path.basename(fname)
-                         for fname in self.file_names]
+        info = self.to_dict()
+        info['files'] = [os.path.basename(f.name) for f in self.files]
 
         return info
 
 
-class DatasetFile(BaseModel):
-    dataset = pw.ForeignKeyField(Dataset, on_delete='CASCADE')
-    file = pw.ForeignKeyField(File, on_delete='CASCADE')
-
-    class Meta:
-        indexes = (
-            (('dataset', 'file'), True),
-        )
+class DatasetFile(Base):
+    dataset_id = sa.Column(sa.ForeignKey('datasets.id', ondelete='CASCADE'),
+                           nullable=False, index=True)
+    uri = sa.Column(sa.String(), nullable=False)
+    name = sa.Column(sa.String(), nullable=False, default=lambda context:
+                     context.current_parameters.get('uri'))
 
 
-@signals.pre_delete(sender=Dataset)
-def remove_related_files(sender, instance):
-    for f in instance.files:
-        f.delete_instance()
+class Project(Base):
+    name = sa.Column(sa.String(), nullable=False)
+    description = sa.Column(sa.String())
+    users = relationship('User', secondary=user_projects,
+                         back_populates='projects')
+    datasets = relationship('Dataset', back_populates='project',
+                            cascade='all')
+    featuresets = relationship('Featureset', back_populates='project',
+                               cascade='all')
+    models = relationship('Model', back_populates='project', cascade='all')
+    predictions = relationship('Prediction', back_populates='project',
+                               cascade='all')
 
 
-class Featureset(BaseModel):
-    """ORM model of the Featureset table"""
-    project = pw.ForeignKeyField(Project, on_delete='CASCADE',
-                                 related_name='featuresets')
-    name = pw.CharField()
-    created = pw.DateTimeField(default=datetime.datetime.now)
-    features_list = ArrayField(pw.CharField)
-    custom_features_script = pw.CharField(null=True)  # move to fset file?
-    file = pw.ForeignKeyField(File, on_delete='CASCADE')
-    task_id = pw.CharField(null=True)
-    finished = pw.DateTimeField(null=True)
+class Featureset(Base):
+    project_id = sa.Column(sa.ForeignKey('projects.id', ondelete='CASCADE'),
+                           nullable=False, index=True)
+    project = relationship('Project', back_populates='featuresets')
+    name = sa.Column(sa.String(), nullable=False)
+    features_list = sa.Column(sa.ARRAY(sa.VARCHAR()), nullable=False, index=True)
+    custom_features_script = sa.Column(sa.String())
+    file_uri = sa.Column(sa.String(), nullable=True, index=True)
+    task_id = sa.Column(sa.String())
+    finished = sa.Column(sa.DateTime)
 
-    def is_owned_by(self, username):
-        return self.project.is_owned_by(username)
-
-    @staticmethod
-    def get_if_owned(fset_id, username):
-        try:
-            f = Featureset.get(Featureset.id == fset_id)
-        except Featureset.DoesNotExist:
-            raise AccessError('No such feature set')
-
-        if not f.is_owned_by(username):
-            raise AccessError('No such feature set')
-
-        return f
+    project = relationship('Project')
 
 
-class Model(BaseModel):
-    """ORM model of the Model table"""
-    project = pw.ForeignKeyField(Project, on_delete='CASCADE',
-                                 related_name='models')
-    featureset = pw.ForeignKeyField(Featureset, on_delete='CASCADE',
-                                    related_name='models')
-    name = pw.CharField()
-    created = pw.DateTimeField(default=datetime.datetime.now)
-    params = BinaryJSONField(default={})
-    type = pw.CharField()
-    file = pw.ForeignKeyField(File, on_delete='CASCADE')
-    task_id = pw.CharField(null=True)
-    finished = pw.DateTimeField(null=True)
-    train_score = pw.FloatField(null=True)
+class Model(Base):
+    project_id = sa.Column(sa.ForeignKey('projects.id', ondelete='CASCADE'),
+                           nullable=False, index=True)
+    project = relationship('Project', back_populates='models')
+    featureset_id = sa.Column(sa.ForeignKey('featuresets.id',
+                                            ondelete='CASCADE'),
+                              nullable=False, index=True)
+    name = sa.Column(sa.String(), nullable=False)
+    params = sa.Column(sa.JSON, nullable=False, index=False)
+    type = sa.Column(sa.String(), nullable=False)
+    file_uri = sa.Column(sa.String(), nullable=True, index=True)
+    task_id = sa.Column(sa.String())
+    finished = sa.Column(sa.DateTime)
+    train_score = sa.Column(sa.Float)
 
-    def is_owned_by(self, username):
-        return self.project.is_owned_by(username)
+    featureset = relationship('Featureset')
+    project = relationship('Project')
 
 
-class Prediction(BaseModel):
-    """ORM model of the Prediction table"""
-    project = pw.ForeignKeyField(Project, on_delete='CASCADE',
-                                 related_name='predictions')
-    dataset = pw.ForeignKeyField(Dataset, on_delete='CASCADE')
-    model = pw.ForeignKeyField(Model, on_delete='CASCADE',
-                               related_name='predictions')
-    created = pw.DateTimeField(default=datetime.datetime.now)
-    file = pw.ForeignKeyField(File, on_delete='CASCADE')
-    task_id = pw.CharField(null=True)
-    finished = pw.DateTimeField(null=True)
+@sa.event.listens_for(Featureset, 'after_delete')
+def remove_featureset_file(mapper, connection, target):
+    try:
+        os.remove(target.file_uri)
+    except FileNotFoundError:
+        pass
 
-    def is_owned_by(self, username):
-        return self.project.is_owned_by(username)
+
+class Prediction(Base):
+    project_id = sa.Column(sa.ForeignKey('projects.id', ondelete='CASCADE'),
+                           nullable=False, index=True)
+    project = relationship('Project', back_populates='predictions')
+    dataset_id = sa.Column(sa.ForeignKey('datasets.id', ondelete='CASCADE'),
+                           nullable=False, index=True)
+    model_id = sa.Column(sa.ForeignKey('models.id', ondelete='CASCADE'),
+                         nullable=False, index=True)
+    file_uri = sa.Column(sa.String(), nullable=True, index=True)
+    task_id = sa.Column(sa.String())
+    finished = sa.Column(sa.DateTime)
+
+    dataset = relationship('Dataset')
+    model = relationship('Model')
+    project = relationship('Project')
 
     def format_pred_data(fset, data):
         fset.columns = fset.columns.droplevel('channel')
-        fset.index = fset.index.astype(str)  # can't use ints as JSON keys
 
         labels = pd.Series(data['labels'] if len(data.get('labels', [])) > 0
                            else None, index=fset.index)
@@ -213,16 +131,33 @@ class Prediction(BaseModel):
         return result
 
     def display_info(self):
-        info = self.__dict__()
+        info = self.to_dict()
         info['model_type'] = self.model.type
         info['dataset_name'] = self.dataset.name
         info['model_name'] = self.model.name
         info['featureset_name'] = self.model.featureset.name
         if self.task_id is None:
-            fset, data = featurize.load_featureset(self.file.uri)
+            fset, data = featurize.load_featureset(self.file_uri)
             info['isProbabilistic'] = (len(data['pred_probs']) > 0)
             info['results'] = Prediction.format_pred_data(fset, data)
         return info
 
 
-app_models = filter_pw_models(inspect.getmembers(sys.modules[__name__]))
+@sa.event.listens_for(DatasetFile, 'after_delete')
+def remove_dataset_file(mapper, connection, target):
+    try:
+        os.remove(target.uri)
+    except FileNotFoundError:
+        pass
+
+
+def remove_file(mapper, connection, target):
+    try:
+        os.remove(target.file_uri)
+    except FileNotFoundError:
+        pass
+
+
+sa.event.listens_for(Featureset, 'after_delete')(remove_file)
+sa.event.listens_for(Model, 'after_delete')(remove_file)
+sa.event.listens_for(Prediction, 'after_delete')(remove_file)

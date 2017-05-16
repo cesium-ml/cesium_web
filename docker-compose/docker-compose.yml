@@ -1,7 +1,7 @@
 web:
   image: cesium/web
   ports:
-    - "5000:5000"
+    - "9000:5000"
   links:
     - db
 

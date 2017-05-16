@@ -1,5 +1,6 @@
-from baselayer.app.handlers.base import BaseHandler, AccessError
-from ..models import Prediction, File, Dataset, Model, Project
+from baselayer.app.handlers.base import BaseHandler
+from baselayer.app.custom_exceptions import AccessError
+from ..models import DBSession, Prediction, Dataset, Model, Project
 from .. import util
 
 import tornado.gen
@@ -20,24 +21,14 @@ import pandas as pd
 
 
 class PredictionHandler(BaseHandler):
-    def _get_prediction(self, prediction_id):
-        try:
-            d = Prediction.get(Prediction.id == prediction_id)
-        except Prediction.DoesNotExist:
-            raise AccessError('No such prediction')
-
-        if not d.is_owned_by(self.current_user):
-            raise AccessError('No such dataset')
-
-        return d
-
     async def _await_prediction(self, future, prediction):
         try:
             result = await future
 
+            prediction = DBSession().merge(prediction)
             prediction.task_id = None
             prediction.finished = datetime.datetime.now()
-            prediction.save()
+            DBSession().commit()
 
             self.action('baselayer/SHOW_NOTIFICATION',
                         payload={
@@ -47,7 +38,8 @@ class PredictionHandler(BaseHandler):
                             })
 
         except Exception as e:
-            prediction.delete_instance()
+            DBSession().delete(prediction)
+            DBSession().commit()
             self.action('baselayer/SHOW_NOTIFICATION',
                         payload={
                             "note": "Prediction '{}/{}'" " failed "
@@ -69,33 +61,26 @@ class PredictionHandler(BaseHandler):
         # corresponding time series file names can be provided
         ts_names = data.get('ts_names')
 
-        dataset = Dataset.get(Dataset.id == data["datasetID"])
-        model = Model.get(Model.id == data["modelID"])
-
-        user = self.current_user
-
-        if not (dataset.is_owned_by(user) and model.is_owned_by(user)):
-            return self.error('No access to dataset or model')
-
+        dataset = Dataset.get_if_owned_by(data["datasetID"], self.current_user)
+        model = Model.get_if_owned_by(data["modelID"], self.current_user)
         fset = model.featureset
+
         if (model.finished is None) or (fset.finished is None):
             return self.error('Computation of model or feature set still in progress')
 
         pred_path = os.path.abspath(pjoin(self.cfg['paths:predictions_folder'],
                                           '{}_prediction.npz'.format(uuid.uuid4())))
-        prediction_file = File.create(uri=pred_path)
-        prediction = Prediction.create(file=prediction_file, dataset=dataset,
-                                       project=dataset.project, model=model)
+        prediction = Prediction(file_uri=pred_path, dataset=dataset,
+                                project=dataset.project, model=model)
+        DBSession().add(prediction)
+        DBSession().commit()
 
         client = await self._get_client()
 
         # If only a subset of the dataset is to be used, get specified files
-        if ts_names:
-            ts_uris = [f.uri for f in dataset.files if os.path.basename(f.name)
-                       in ts_names or os.path.basename(f.name).split('.npz')[0]
-                       in ts_names]
-        else:
-            ts_uris = dataset.uris
+        ts_uris = [f.uri for f in dataset.files if not ts_names or
+                   os.path.basename(f.name) in ts_names or
+                   os.path.basename(f.name).split('.npz')[0] in ts_names]
 
         all_time_series = client.map(time_series.load, ts_uris)
         all_labels = client.map(lambda ts: ts.label, all_time_series)
@@ -107,7 +92,7 @@ class PredictionHandler(BaseHandler):
                                   all_features, all_time_series)
         imputed_fset = client.submit(featurize.impute_featureset,
                                      fset_data, inplace=False)
-        model_or_gridcv = client.submit(joblib.load, model.file.uri)
+        model_or_gridcv = client.submit(joblib.load, model.file_uri)
         model_data = client.submit(lambda model: model.best_estimator_
                                    if hasattr(model, 'best_estimator_') else model,
                                    model_or_gridcv)
@@ -124,7 +109,7 @@ class PredictionHandler(BaseHandler):
                                  pred_probs=pred_probs)
 
         prediction.task_id = future.key
-        prediction.save()
+        DBSession().commit()
 
         loop = tornado.ioloop.IOLoop.current()
         loop.spawn_callback(self._await_prediction, future, prediction)
@@ -134,7 +119,8 @@ class PredictionHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, prediction_id=None, action=None):
         if action == 'download':
-            pred_path = self._get_prediction(prediction_id).file.uri
+            pred_path = Prediction.get_if_owned_by(prediction_id,
+                                                   self.current_user).file_uri
             fset, data = featurize.load_featureset(pred_path)
             result = pd.DataFrame(({'label': data['labels']}
                                    if len(data['labels']) > 0 else None),
@@ -151,19 +137,22 @@ class PredictionHandler(BaseHandler):
         else:
             if prediction_id is None:
                 predictions = [prediction
-                               for project in Project.all(self.current_user)
+                               for project in self.current_user.projects
                                for prediction in project.predictions]
                 prediction_info = [p.display_info() for p in predictions]
             else:
-                prediction = self._get_prediction(prediction_id)
+                prediction = Prediction.get_if_owned_by(prediction_id,
+                                                        self.current_user)
                 prediction_info = prediction.display_info()
 
             return self.success(prediction_info)
 
     @tornado.web.authenticated
     def delete(self, prediction_id):
-        prediction = self._get_prediction(prediction_id)
-        prediction.delete_instance()
+        prediction = Prediction.get_if_owned_by(prediction_id,
+                                                self.current_user)
+        DBSession().delete(prediction)
+        DBSession().commit()
         return self.success(action='cesium/FETCH_PREDICTIONS')
 
 
@@ -175,8 +164,8 @@ class PredictRawDataHandler(BaseHandler):
         meta_feats = json_decode(self.get_argument('meta_features', 'null'))
         impute_kwargs = json_decode(self.get_argument('impute_kwargs', '{}'))
 
-        model = Model.get(Model.id == model_id)
-        model_data = joblib.load(model.file.uri)
+        model = Model.query.get(model_id)
+        model_data = joblib.load(model.file_uri)
         if hasattr(model_data, 'best_estimator_'):
             model_data = model_data.best_estimator_
         features_to_use = model.featureset.features_list
@@ -185,6 +174,7 @@ class PredictRawDataHandler(BaseHandler):
                                                features_to_use=features_to_use,
                                                meta_features=meta_feats)
         fset = featurize.impute_featureset(fset, **impute_kwargs)
+        fset.index = fset.index.astype(str)  # ensure JSON-encodable
         data = {'preds': model_data.predict(fset)}
         if hasattr(model_data, 'predict_proba'):
             data['pred_probs'] = pd.DataFrame(model_data.predict_proba(fset),

@@ -2,9 +2,6 @@ from cesium_app import util
 from cesium_app.ext import sklearn_models
 import numpy.testing as npt
 import pytest
-from cesium_app.tests.fixtures import (create_test_project, create_test_dataset,
-                                       create_test_featureset, create_test_model,
-                                       create_test_prediction)
 
 
 def test_robust_literal_eval():
