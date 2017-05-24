@@ -113,6 +113,7 @@ class ModelHandler(BaseHandler):
             self.action('cesium/SHOW_NOTIFICATION',
                         payload={"note": "Cannot create model '{}': {}".format(model.name, e),
                                  "type": 'error'})
+            print('Error creating model:', type(e), e)
 
         self.action('cesium/FETCH_MODELS')
 
