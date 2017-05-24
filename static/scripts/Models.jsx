@@ -23,12 +23,12 @@ const ModelsTab = props => (
   </div>
 );
 ModelsTab.propTypes = {
-  selectedProject: PropTypes.object
+  selectedProject: React.PropTypes.object
 };
 
 let NewModelForm = (props) => {
   const { fields,
-          fields: { modelName, featureSet, modelType },
+          fields: { modelName, featureset, modelType },
           error, handleSubmit } = props;
 
   const skModels = props.models;
@@ -44,7 +44,7 @@ let NewModelForm = (props) => {
     }
   }
 
-  const featureSets = props.featureSets
+  const featuresets = props.featuresets
                         .filter(fs => !Validate.isEmpty(fs.finished))
                         .map(fs => (
                           {
@@ -61,7 +61,8 @@ let NewModelForm = (props) => {
 
       <SelectInput
         label="Feature Set"
-        options={featureSets} {...featureSet}
+        key={props.selectedProject.id}
+        options={featuresets} {...featureset}
       />
 
       <SelectInput
@@ -81,7 +82,7 @@ NewModelForm.propTypes = {
   fields: React.PropTypes.object.isRequired,
   error: React.PropTypes.string,
   handleSubmit: React.PropTypes.func.isRequired,
-  featureSets: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+  featuresets: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
   models: React.PropTypes.object.isRequired
 };
 
@@ -92,7 +93,7 @@ const mapStateToProps = function (state, ownProps) {
   const currentModel = state.sklearnModels[currentModelId];
   const modelFields = currentModel.params.map(param => param.name);
 
-  let fields = ['modelName', 'project', 'featureSet', 'modelType'];
+  let fields = ['modelName', 'project', 'featureset', 'modelType'];
   fields = fields.concat(modelFields);
 
   const paramDefaults = {};
@@ -100,18 +101,20 @@ const mapStateToProps = function (state, ownProps) {
     paramDefaults[param.name] = (param.default === null) ? "None" : param.default;
   });
 
-  const firstFeatureSet = state.featuresets[0];
-  const firstFeatureSetID = firstFeatureSet ? firstFeatureSet.id : "";
+  const filteredFeaturesets = state.featuresets.filter(featureset =>
+    (featureset.project === ownProps.selectedProject.id));
+  const firstFeatureset = filteredFeaturesets[0];
+  const firstFeaturesetID = firstFeatureset ? firstFeatureset.id : "";
 
   return {
     models: state.sklearnModels,
     projects: state.projects,
-    featureSets: state.featuresets,
+    featuresets: filteredFeaturesets,
     fields,
     initialValues: {
       modelType: currentModelId,
       project: ownProps.selectedProject.id,
-      featureSet: firstFeatureSetID,
+      featureset: firstFeaturesetID,
       ...paramDefaults
     }
   };
@@ -125,7 +128,7 @@ const mapDispatchToProps = dispatch => (
 
 const validate = Validate.createValidator({
   modelName: [Validate.required],
-  featureSet: [Validate.required]
+  featureset: [Validate.required]
 });
 
 NewModelForm = reduxForm({
