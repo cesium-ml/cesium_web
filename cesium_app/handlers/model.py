@@ -123,7 +123,7 @@ class ModelHandler(BaseHandler):
         data = self.get_json()
 
         model_name = data.pop('modelName')
-        featureset_id = data.pop('featureSet')
+        featureset_id = data.pop('featureset')
         # TODO remove cast once this is passed properly from the front end
         model_type = sklearn_model_descriptions[int(data.pop('modelType'))]['name']
         project_id = data.pop('project')

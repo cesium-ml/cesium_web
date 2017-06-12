@@ -96,7 +96,7 @@ def test_pipeline_sequentially(driver):
     model_name.send_keys(test_model_name)
 
     # Ensure featureset from previous step is selected
-    fset_select = Select(driver.find_element_by_css_selector('[name=featureSet]'))
+    fset_select = Select(driver.find_element_by_css_selector('[name=featureset]'))
     fset_select.select_by_visible_text(test_featureset_name)
 
     driver.find_element_by_class_name('btn-primary').click()
