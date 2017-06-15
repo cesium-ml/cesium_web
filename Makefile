@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 SUPERVISORD=supervisord
-SUPERVISORCTL=supervisorctl -c conf/supervisord_common.conf
+SUPERVISORCTL=supervisorctl -c baselayer/conf/supervisor/common.conf
 
 .DEFAULT_GOAL := run
 
@@ -9,14 +9,14 @@ webpack = ./node_modules/.bin/webpack
 
 
 dependencies:
-	@./tools/silent_monitor.py pip install -r requirements.txt
-	@./tools/silent_monitor.py ./tools/check_js_deps.sh
+	@./baselayer/tools/silent_monitor.py pip install -r requirements.txt
+	@./baselayer/tools/silent_monitor.py ./baselayer/tools/check_js_deps.sh
 
 db_init:
-	@./tools/silent_monitor.py ./tools/db_init.sh
+	@PYTHONPATH=. ./baselayer/tools/silent_monitor.py ./baselayer/tools/db_init.py
 
 db_clear:
-	PYTHONPATH=. ./tools/db_clear.py
+	PYTHONPATH=. ./baselayer/tools/db_clear.py
 
 $(bundle): webpack.config.js package.json
 	$(webpack)
@@ -32,7 +32,7 @@ paths:
 	@mkdir -p ~/.local/cesium/logs
 
 log: paths
-	./tools/watch_logs.py
+	./baselayer/tools/watch_logs.py
 
 run: paths dependencies
 	@echo "Supervisor will now fire up various micro-services."
@@ -41,7 +41,7 @@ run: paths dependencies
 	@echo " - Press Ctrl-C to abort the server"
 	@echo " - Run \`make monitor\` in another terminal to restart services"
 	@echo
-	$(SUPERVISORD) -c conf/supervisord.conf
+	$(SUPERVISORD) -c baselayer/conf/supervisor/app.conf
 
 monitor:
 	@echo "Entering supervisor control panel."
@@ -53,13 +53,13 @@ attach:
 	$(SUPERVISORCTL) fg app
 
 testrun: paths dependencies
-	$(SUPERVISORD) -c conf/supervisord_testing.conf
+	$(SUPERVISORD) -c baselayer/conf/supervisor/testing.conf
 
 debug:
 	@echo "Starting web service in debug mode"
 	@echo "Press Ctrl-D to stop"
 	@echo
-	@$(SUPERVISORD) -c conf/supervisord_debug.conf &
+	@$(SUPERVISORD) -c baselayer/conf/supervisord_debug.conf &
 	@sleep 1 && $(SUPERVISORCTL) -i status
 	@$(SUPERVISORCTL) shutdown
 
@@ -76,7 +76,7 @@ stop:
 	$(SUPERVISORCTL) stop all
 
 status:
-	PYTHONPATH='.' ./tools/supervisor_status.py
+	PYTHONPATH='.' ./baselayer/tools/supervisor_status.py
 
 docker-images:
 	# Add --no-cache flag to rebuild from scratch
@@ -84,4 +84,4 @@ docker-images:
 
 # Call this target to see which Javascript dependencies are not up to date
 check-js-updates:
-	./tools/check_js_updates.sh
+	./baselayer/tools/check_js_updates.sh

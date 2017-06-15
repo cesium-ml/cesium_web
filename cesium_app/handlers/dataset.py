@@ -1,4 +1,4 @@
-from .base import BaseHandler, AccessError
+from baselayer.app.handlers.base import BaseHandler, AccessError
 from ..models import Project, Dataset
 from .. import util
 

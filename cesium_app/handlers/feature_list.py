@@ -1,4 +1,4 @@
-from .base import BaseHandler
+from baselayer.app.handlers.base import BaseHandler
 from cesium.features.graphs import (feature_categories, feature_tags,
                                     dask_feature_graph, extra_feature_docs)
 

@@ -1,5 +1,6 @@
-from .base import BaseHandler, AccessError
-from .mainpage import MainPageHandler
+from baselayer.app.handlers import (BaseHandler, AccessError, MainPageHandler,
+                                    SocketAuthTokenHandler, ProfileHandler,
+                                    LogoutHandler)
 from .project import ProjectHandler
 from .dataset import DatasetHandler
 from .feature import FeatureHandler
@@ -8,5 +9,3 @@ from .model import ModelHandler
 from .plot_features import PlotFeaturesHandler
 from .prediction import PredictionHandler, PredictRawDataHandler
 from .sklearn_models import SklearnModelsHandler
-from .socket_auth import SocketAuthTokenHandler
-from .profile import ProfileHandler, LogoutHandler

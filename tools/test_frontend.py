@@ -9,13 +9,14 @@ import subprocess
 from os.path import join as pjoin
 import time
 import socket
-from tools.supervisor_status import supervisor_status
+from baselayer.tools.supervisor_status import supervisor_status
 try:
     import http.client as http
 except ImportError:
     import httplib as http
 
-from cesium_app.model_util import clear_tables
+from baselayer.app.model_util import clear_tables
+from cesium_app import models
 
 try:
     import pytest_randomly
@@ -23,7 +24,7 @@ try:
 except ImportError:
     RAND_ARGS = ''
 
-TEST_CONFIG = '_cesium_test.yaml'
+TEST_CONFIG = '_test_config.yaml'
 
 
 base_dir = os.path.abspath(pjoin(os.path.dirname(__file__), '..'))
@@ -34,7 +35,7 @@ else:
 
 
 def add_test_yaml():
-    print('Creating {}'.format('_cesium_test.yaml'))
+    print('Creating {}'.format('_test_config.yaml'))
 
     from textwrap import dedent
     with open(TEST_CONFIG, 'w') as f:
@@ -66,6 +67,7 @@ if __name__ == '__main__':
     init_db()
 
     clear_tables()
+    clear_tables(models.app_models)
 
     web_client = subprocess.Popen(['make', 'testrun'], cwd=base_dir)
 

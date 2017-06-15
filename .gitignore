@@ -9,9 +9,10 @@ ghostdriver.log
 *~
 *.swp
 *.swo
+.DS_Store
 __pycache__/
 node_modules/
 *.pyc
-_cesium_test.yaml
-cesium.yaml
+_test_config.yaml
+config.yaml
 data

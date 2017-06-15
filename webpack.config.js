@@ -2,7 +2,7 @@ const webpack = require('webpack');
 const path = require('path');
 
 const config = {
-  entry: path.resolve(__dirname, 'static/scripts/main.jsx'),
+  entry: path.resolve(__dirname, 'static/js/components/Main.jsx'),
   output: {
     path: path.resolve(__dirname, 'static/build'),
     filename: 'bundle.js'
@@ -48,6 +48,9 @@ const config = {
     })
   ],
   resolve: {
+    alias: {
+      baselayer: path.resolve(__dirname, 'baselayer/static/js')
+    },
     extensions: ['.js', '.jsx']
   }
 };

@@ -64,7 +64,7 @@ database already existing.  Ignore those.
 
 ## Configuration
 
-Copy `cesium.yaml.example` to `cesium.yaml` and customize.
+Copy `config.yaml.example` to `config.yaml` and customize.
 
 - Under `server`, set 'multi_user' to True to enable logins.  Also provide the
   Google credentials, obtained as described in the config file.
@@ -98,7 +98,7 @@ Debugging:
 
 To ensure that JavaScript & JSX code conforms with industry style
 recommendations, after adding or modifying any .js or .jsx files, run ESLint with
-`node_modules/eslint/bin/eslint.js -c .eslintrc --ext .jsx,.js static/scripts/`.
+`node_modules/eslint/bin/eslint.js -c .eslintrc --ext .jsx,.js static/js/`.
 To automatically run ESLint when you make changes to your JavaScript code, add
 a pre-commit hook by adding the following to your .git/hooks/pre-commit:
 

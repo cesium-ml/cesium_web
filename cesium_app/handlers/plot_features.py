@@ -1,4 +1,4 @@
-from .base import BaseHandler
+from baselayer.app.handlers.base import BaseHandler
 from .. import plot
 from ..models import Featureset
 
