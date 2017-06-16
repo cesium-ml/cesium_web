@@ -96,20 +96,16 @@ class BaseHandler(PSABaseHandler):
 
         self.error(str(err))
 
-    @tornado.gen.coroutine
-    def _get_executor(self):
-        loop = tornado.ioloop.IOLoop.current()
-
+    async def _get_client(self):
         IP = '127.0.0.1'
         PORT = 63000
         PORT_SCHEDULER = 63500
 
-        from distributed import Executor
-        executor = Executor('{}:{}'.format(IP, PORT_SCHEDULER), loop=loop,
-                            start=False)
-        yield executor._start()
+        from distributed import Client
+        client = await Client('{}:{}'.format(IP, PORT_SCHEDULER),
+                              asynchronous=True)
 
-        return executor
+        return client
 
 
 class AccessError(tornado.web.HTTPError):

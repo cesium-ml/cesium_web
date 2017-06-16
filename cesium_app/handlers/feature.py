@@ -35,15 +35,14 @@ class FeatureHandler(BaseHandler):
         self.success(featureset_info)
 
     @tornado.web.authenticated
-    @tornado.gen.coroutine
-    def _await_featurization(self, future, fset):
+    async def _await_featurization(self, future, fset):
         """Note: we cannot use self.error / self.success here.  There is
         no longer an active, open request by the time this happens!
         That said, we can push notifications through to the frontend
         using flow.
         """
         try:
-            result = yield future._result()
+            result = await future
 
             fset.task_id = None
             fset.finished = datetime.datetime.now()
@@ -62,8 +61,7 @@ class FeatureHandler(BaseHandler):
         self.action('cesium/FETCH_FEATURESETS')
 
     @tornado.web.authenticated
-    @tornado.gen.coroutine
-    def post(self):
+    async def post(self):
         data = self.get_json()
         featureset_name = data.get('featuresetName', '')
         dataset_id = int(data['datasetID'])
@@ -88,20 +86,20 @@ class FeatureHandler(BaseHandler):
                                  features_list=features_to_use,
                                  custom_features_script=None)
 
-        executor = yield self._get_executor()
+        client = await self._get_client()
 
-        all_time_series = executor.map(time_series.load, dataset.uris)
-        all_labels = executor.map(lambda ts: ts.label, all_time_series)
-        all_features = executor.map(featurize.featurize_single_ts,
-                                    all_time_series,
-                                    features_to_use=features_to_use,
-                                    custom_script_path=custom_script_path)
-        computed_fset = executor.submit(featurize.assemble_featureset,
-                                        all_features, all_time_series)
-        imputed_fset = executor.submit(featurize.impute_featureset,
-                                       computed_fset, inplace=False)
-        future = executor.submit(featurize.save_featureset, imputed_fset,
-                                 fset_path, labels=all_labels)
+        all_time_series = client.map(time_series.load, dataset.uris)
+        all_labels = client.map(lambda ts: ts.label, all_time_series)
+        all_features = client.map(featurize.featurize_single_ts,
+                                  all_time_series,
+                                  features_to_use=features_to_use,
+                                  custom_script_path=custom_script_path)
+        computed_fset = client.submit(featurize.assemble_featureset,
+                                      all_features, all_time_series)
+        imputed_fset = client.submit(featurize.impute_featureset,
+                                     computed_fset, inplace=False)
+        future = client.submit(featurize.save_featureset, imputed_fset,
+                               fset_path, labels=all_labels)
         fset.task_id = future.key
         fset.save()
 

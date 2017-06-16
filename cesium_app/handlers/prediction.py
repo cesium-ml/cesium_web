@@ -31,10 +31,9 @@ class PredictionHandler(BaseHandler):
 
         return d
 
-    @tornado.gen.coroutine
-    def _await_prediction(self, future, prediction):
+    async def _await_prediction(self, future, prediction):
         try:
-            result = yield future._result()
+            result = await future
 
             prediction.task_id = None
             prediction.finished = datetime.datetime.now()
@@ -61,8 +60,7 @@ class PredictionHandler(BaseHandler):
         self.action('cesium/FETCH_PREDICTIONS')
 
     @tornado.web.authenticated
-    @tornado.gen.coroutine
-    def post(self):
+    async def post(self):
         data = self.get_json()
 
         dataset_id = data['datasetID']
@@ -89,7 +87,7 @@ class PredictionHandler(BaseHandler):
         prediction = Prediction.create(file=prediction_file, dataset=dataset,
                                        project=dataset.project, model=model)
 
-        executor = yield self._get_executor()
+        client = await self._get_client()
 
         # If only a subset of the dataset is to be used, get specified files
         if ts_names:
@@ -99,29 +97,29 @@ class PredictionHandler(BaseHandler):
         else:
             ts_uris = dataset.uris
 
-        all_time_series = executor.map(time_series.load, ts_uris)
-        all_labels = executor.map(lambda ts: ts.label, all_time_series)
-        all_features = executor.map(featurize.featurize_single_ts,
-                                    all_time_series,
-                                    features_to_use=fset.features_list,
-                                    custom_script_path=fset.custom_features_script)
-        fset_data = executor.submit(featurize.assemble_featureset,
-                                    all_features, all_time_series)
-        imputed_fset = executor.submit(featurize.impute_featureset,
-                                       fset_data, inplace=False)
-        model_or_gridcv = executor.submit(joblib.load, model.file.uri)
-        model_data = executor.submit(lambda model: model.best_estimator_
-                                     if hasattr(model, 'best_estimator_') else model,
-                                     model_or_gridcv)
-        preds = executor.submit(lambda fset, model: model.predict(fset),
-                                imputed_fset, model_data)
-        pred_probs = executor.submit(lambda fset, model:
-                                     pd.DataFrame(model.predict_proba(fset),
-                                                  index=fset.index,
-                                                  columns=model.classes_)
-                                     if hasattr(model, 'predict_proba') else [],
-                                     imputed_fset, model_data)
-        future = executor.submit(featurize.save_featureset, imputed_fset,
+        all_time_series = client.map(time_series.load, ts_uris)
+        all_labels = client.map(lambda ts: ts.label, all_time_series)
+        all_features = client.map(featurize.featurize_single_ts,
+                                  all_time_series,
+                                  features_to_use=fset.features_list,
+                                  custom_script_path=fset.custom_features_script)
+        fset_data = client.submit(featurize.assemble_featureset,
+                                  all_features, all_time_series)
+        imputed_fset = client.submit(featurize.impute_featureset,
+                                     fset_data, inplace=False)
+        model_or_gridcv = client.submit(joblib.load, model.file.uri)
+        model_data = client.submit(lambda model: model.best_estimator_
+                                   if hasattr(model, 'best_estimator_') else model,
+                                   model_or_gridcv)
+        preds = client.submit(lambda fset, model: model.predict(fset),
+                              imputed_fset, model_data)
+        pred_probs = client.submit(lambda fset, model:
+                                   pd.DataFrame(model.predict_proba(fset),
+                                                index=fset.index,
+                                                columns=model.classes_)
+                                   if hasattr(model, 'predict_proba') else [],
+                                   imputed_fset, model_data)
+        future = client.submit(featurize.save_featureset, imputed_fset,
                                  pred_path, labels=all_labels, preds=preds,
                                  pred_probs=pred_probs)
 

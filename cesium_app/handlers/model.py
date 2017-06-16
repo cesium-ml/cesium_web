@@ -94,10 +94,9 @@ class ModelHandler(BaseHandler):
         return self.success(model_info)
 
     @tornado.web.authenticated
-    @tornado.gen.coroutine
-    def _await_model_statistics(self, model_stats_future, model):
+    async def _await_model_statistics(self, model_stats_future, model):
         try:
-            score, best_params = yield model_stats_future._result()
+            score, best_params = await model_stats_future
 
             model.task_id = None
             model.finished = datetime.datetime.now()
@@ -118,8 +117,7 @@ class ModelHandler(BaseHandler):
         self.action('cesium/FETCH_MODELS')
 
     @tornado.web.authenticated
-    @tornado.gen.coroutine
-    def post(self):
+    async def post(self):
         data = self.get_json()
 
         model_name = data.pop('modelName')
@@ -150,9 +148,9 @@ class ModelHandler(BaseHandler):
                              featureset=fset, project=fset.project,
                              params=model_params, type=model_type)
 
-        executor = yield self._get_executor()
+        client = await self._get_client()
 
-        model_stats_future = executor.submit(
+        model_stats_future = client.submit(
             _build_model_compute_statistics, fset.file.uri, model_type,
             model_params, params_to_optimize, model_path)
 
