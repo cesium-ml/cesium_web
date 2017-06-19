@@ -25,7 +25,7 @@ def test_add_new_featureset(driver, project, dataset):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(1)
+    driver.implicitly_wait(2)
     status_td = driver.find_element_by_xpath(
         "//div[contains(text(),'Feature computation begun')]")
     status_td = driver.find_element_by_xpath("//td[contains(text(),'In progress')]")
@@ -48,7 +48,7 @@ def test_featurize_unlabeled(driver, project, dataset):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(1)
+    driver.implicitly_wait(2)
     status_td = driver.find_element_by_xpath(
         "//div[contains(text(),'Feature computation begun')]")
     status_td = driver.find_element_by_xpath("//td[contains(text(),'In progress')]")
@@ -109,7 +109,7 @@ def test_check_uncheck_tags(driver, project, dataset):
         driver.find_element_by_css_selector('[name=amplitude]').click()
 
     driver.find_element_by_css_selector('[label=General]').click()
-    driver.implicitly_wait(1)
+    driver.implicitly_wait(2)
     driver.find_element_by_css_selector('[name=amplitude]')
 
 
@@ -162,7 +162,7 @@ def test_cannot_compute_zero_features(driver, project, dataset):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(1)
+    driver.implicitly_wait(2)
     driver.find_element_by_xpath(
         "//div[contains(.,'At least one feature must be selected')]")
 
@@ -175,9 +175,9 @@ def test_plot_features(driver, project, dataset, featureset):
 
     driver.find_element_by_id('react-tabs-4').click()
 
-    driver.implicitly_wait(1)
+    driver.implicitly_wait(2)
     driver.find_element_by_xpath("//td[contains(text(),'{}')]".format(featureset.name)).click()
-    driver.implicitly_wait(1)
+    driver.implicitly_wait(2)
     driver.find_element_by_xpath("//b[contains(text(),'Please wait while we load your plotting data...')]")
 
     driver.implicitly_wait(3)
@@ -192,7 +192,7 @@ def test_delete_featureset(driver, project, dataset, featureset):
 
     driver.find_element_by_id('react-tabs-4').click()
     driver.find_element_by_partial_link_text('Delete').click()
-    driver.implicitly_wait(1)
+    driver.implicitly_wait(2)
     status_td = driver.find_element_by_xpath(
         "//div[contains(text(),'Feature set deleted')]")
     try:
