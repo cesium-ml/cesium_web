@@ -10,3 +10,5 @@ distributed>=1.17.1
 selenium
 joblib>=0.11
 bokeh==0.12.5
+pytest-randomly
+pytest-factoryboy

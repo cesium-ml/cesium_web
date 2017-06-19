@@ -11,7 +11,6 @@ sudo apt install -y nginx
 
 pip install --upgrade pip
 hash -d pip  # find upgraded pip
-pip install pytest pytest-randomly pytest-factoryboy
 section_end "install.base.requirements"
 
 section "install.cesium_web.requirements"
