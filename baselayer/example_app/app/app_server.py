@@ -45,7 +45,6 @@ def make_app(handlers, settings):
     app = tornado.web.Application(handlers, **settings)
 #    models.db.init(**cfg['database'])
 #    model_util.create_tables()
-#    model_util.create_tables(models.app_models)
 #    app.cfg = cfg
 
     return app

@@ -1,6 +1,6 @@
-import tornado.web
 import tornado.escape
 import tornado.ioloop
+from sqlalchemy.orm.exc import NoResultFound
 
 # The Python Social Auth base handler gives us:
 #   user_id, get_current_user, login_user
@@ -10,7 +10,7 @@ import tornado.ioloop
 # be used to look up the logged in user.
 from social_tornado.handlers import BaseHandler as PSABaseHandler
 
-from .. import models
+from ..models import DBSession, User
 from ..json_util import to_json
 from ..flow import Flow
 
@@ -34,36 +34,45 @@ class BaseHandler(PSABaseHandler):
         if len(self.path_args) == 1 and self.path_args[0] is None:
             self.path_args = []
 
+        # TODO Refactor to be a context manager or utility function
+        N = 5
+        for i in range(1, N + 1):
+            try:
+                assert DBSession.session_factory.kw['bind'] is not None
+            except Exception as e:
+                if (i == N):
+                    raise e
+                else:
+                    print('Error connecting to database, sleeping for a while')
+                    time.sleep(5)
+
         return super(BaseHandler, self).prepare()
 
     def get_current_user(self):
         if not self._baselayer_cfg['server:multi_user']:
             username = 'testuser@gmail.com'
             try:
-                models.User.get(username=username)
-            except models.User.DoesNotExist:
-                models.User.create(username=username, email=username)
-            return username
-
-        user_id = self.get_secure_cookie('user_id')
-        if user_id is None:
-            return None
+                return User.query.filter(User.username == username).one()
+            except NoResultFound:
+                u = User(username=username, email=username)
+                DBSession.add(u)
+                DBSession().commit()
+                return u
         else:
-            try:
-                return models.User.get(id=int(user_id)).username
-            except models.User.DoesNotExist:
+            user_id = self.get_secure_cookie('user_id')
+            if user_id is None:
                 return None
+            else:
+                return User.query.get(int(user_id))
 
     def push(self, action, payload={}):
-        self.flow.push(self.current_user, action, payload)
+        self.flow.push(self.current_user.username, action, payload)
 
     def get_json(self):
         return tornado.escape.json_decode(self.request.body)
 
     def on_finish(self):
-        if not models.db.is_closed():
-            models.db.close()
-
+        DBSession.remove()
         return super(BaseHandler, self).on_finish()
 
     def error(self, message):
@@ -106,12 +115,3 @@ class BaseHandler(PSABaseHandler):
                               asynchronous=True)
 
         return client
-
-
-class AccessError(tornado.web.HTTPError):
-    def __init__(self, reason, status_code=400):
-        tornado.web.HTTPError.__init__(self, reason=reason,
-                                       status_code=400)
-
-    def __str__(self):
-        return self.reason

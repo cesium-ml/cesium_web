@@ -4,8 +4,9 @@ import tornado.web
 from cesium import featurize, time_series
 from cesium.features import dask_feature_graph
 
-from baselayer.app.handlers.base import BaseHandler, AccessError
-from ..models import Dataset, Featureset, Project, File
+from baselayer.app.handlers.base import BaseHandler
+from baselayer.app.custom_exceptions import AccessError
+from ..models import DBSession, Dataset, Featureset, Project
 
 from os.path import join as pjoin
 import uuid
@@ -13,23 +14,13 @@ import datetime
 
 
 class FeatureHandler(BaseHandler):
-    def _get_featureset(self, featureset_id):
-        try:
-            f = Featureset.get(Featureset.id == featureset_id)
-        except Featureset.DoesNotExist:
-            raise AccessError('No such feature set')
-
-        if not f.is_owned_by(self.current_user):
-            raise AccessError('No such feature set')
-
-        return f
-
     @tornado.web.authenticated
     def get(self, featureset_id=None):
         if featureset_id is not None:
-            featureset_info = self._get_featureset(featureset_id)
+            featureset_info = Featureset.get_if_owned_by(featureset_id,
+                                                         self.current_user)
         else:
-            featureset_info = [f for p in Project.all(self.current_user)
+            featureset_info = [f for p in self.current_user.projects
                                for f in p.featuresets]
 
         self.success(featureset_info)
@@ -44,15 +35,17 @@ class FeatureHandler(BaseHandler):
         try:
             result = await future
 
+            fset = DBSession().merge(fset)
             fset.task_id = None
             fset.finished = datetime.datetime.now()
-            fset.save()
+            DBSession().commit()
 
             self.action('baselayer/SHOW_NOTIFICATION',
                         payload={"note": "Calculation of featureset '{}' completed.".format(fset.name)})
 
         except Exception as e:
-            fset.delete_instance()
+            DBSession().delete(fset)
+            DBSession().commit()
             self.action('baselayer/SHOW_NOTIFICATION',
                         payload={"note": 'Cannot featurize {}: {}'.format(fset.name, e),
                                  "type": 'error'})
@@ -73,22 +66,24 @@ class FeatureHandler(BaseHandler):
         custom_feats_code = data['customFeatsCode'].strip()
         custom_script_path = None
 
-        dataset = Dataset.get(Dataset.id == dataset_id)
+        dataset = Dataset.query.filter(Dataset.id == dataset_id).one()
         if not dataset.is_owned_by(self.current_user):
             raise AccessError('No such data set')
 
         fset_path = pjoin(self.cfg['paths:features_folder'],
                           '{}_featureset.npz'.format(uuid.uuid4()))
 
-        fset = Featureset.create(name=featureset_name,
-                                 file=File.create(uri=fset_path),
-                                 project=dataset.project,
-                                 features_list=features_to_use,
-                                 custom_features_script=None)
+        fset = Featureset(name=featureset_name,
+                          file_uri=fset_path,
+                          project=dataset.project,
+                          features_list=features_to_use,
+                          custom_features_script=None)
+        DBSession().add(fset)
 
         client = await self._get_client()
 
-        all_time_series = client.map(time_series.load, dataset.uris)
+        all_time_series = client.map(time_series.load,
+                                     [f.uri for f in dataset.files])
         all_labels = client.map(lambda ts: ts.label, all_time_series)
         all_features = client.map(featurize.featurize_single_ts,
                                   all_time_series,
@@ -101,7 +96,7 @@ class FeatureHandler(BaseHandler):
         future = client.submit(featurize.save_featureset, imputed_fset,
                                fset_path, labels=all_labels)
         fset.task_id = future.key
-        fset.save()
+        DBSession().commit()
 
         loop = tornado.ioloop.IOLoop.current()
         loop.spawn_callback(self._await_featurization, future, fset)
@@ -110,12 +105,12 @@ class FeatureHandler(BaseHandler):
 
     @tornado.web.authenticated
     def delete(self, featureset_id):
-        f = self._get_featureset(featureset_id)
-        f.delete_instance()
-
+        f = Featureset.get_if_owned_by(featureset_id, self.current_user)
+        DBSession().delete(f)
+        DBSession().commit()
         self.success(action='cesium/FETCH_FEATURESETS')
 
     @tornado.web.authenticated
     def put(self, featureset_id):
-        f = self._get_featureset(featureset_id)
+        f = Featureset.get_if_owned_by(featureset_id, self.current_user)
         self.error("Functionality for this endpoint is not yet implemented.")
