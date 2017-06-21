@@ -11,8 +11,7 @@ def test_pipeline_sequentially(driver):
     driver.get("/")
 
     # Add new project
-    driver.implicitly_wait(1)
-    driver.find_element_by_partial_link_text('Or click here to add a new one').click()
+    driver.wait_for_xpath('//*[contains(text(), "Or click here to add a new one")]').click()
 
     project_name = driver.find_element_by_css_selector('[name=projectName]')
     test_proj_name = str(uuid.uuid4())
@@ -22,8 +21,7 @@ def test_pipeline_sequentially(driver):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
+    status_td = driver.wait_for_xpath(
         "//div[contains(text(),'Added new project')]")
     driver.refresh()
 
@@ -50,8 +48,7 @@ def test_pipeline_sequentially(driver):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
+    status_td = driver.wait_for_xpath(
         "//div[contains(text(),'Successfully uploaded new dataset')]")
     driver.refresh()
 
@@ -75,14 +72,8 @@ def test_pipeline_sequentially(driver):
     dataset_select.select_by_visible_text(test_dataset_name)
 
     driver.find_element_by_class_name('btn-primary').click()
-
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
-        "//div[contains(text(),'Feature computation begun')]")
-    status_td = driver.find_element_by_xpath("//td[contains(text(),'In progress')]")
-
-    driver.implicitly_wait(30)
-    status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
+    status_td = driver.wait_for_xpath("//div[contains(text(),'Feature computation begun')]")
+    status_td = driver.wait_for_xpath("//td[contains(text(),'Completed')]", 30)
 
     # Build new model
     driver.find_element_by_id('react-tabs-6').click()
@@ -101,11 +92,9 @@ def test_pipeline_sequentially(driver):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(0.5)
-    driver.find_element_by_xpath("//div[contains(text(),'Model training begun')]")
+    driver.wait_for_xpath("//div[contains(text(),'Model training begun')]")
 
-    driver.implicitly_wait(15)
-    driver.find_element_by_xpath("//td[contains(.,'Completed')]")
+    driver.wait_for_xpath("//td[contains(.,'Completed')]", 30)
 
     # Predict using dataset and model from this test
     driver.find_element_by_id('react-tabs-8').click()
@@ -121,9 +110,6 @@ def test_pipeline_sequentially(driver):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(1)
-    driver.find_element_by_xpath(
-        "//div[contains(text(),'Model predictions begun')]")
+    driver.wait_for_xpath("//div[contains(text(),'Model predictions begun')]")
 
-    driver.implicitly_wait(10)
-    driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
+    driver.wait_for_xpath("//td[contains(text(),'Completed')]", 10)

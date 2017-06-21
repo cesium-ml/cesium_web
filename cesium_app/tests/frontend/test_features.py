@@ -1,6 +1,6 @@
 import pytest
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.support.ui import Select
 import uuid
 import os
@@ -25,13 +25,8 @@ def test_add_new_featureset(driver, project, dataset):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(2)
-    status_td = driver.find_element_by_xpath(
-        "//div[contains(text(),'Feature computation begun')]")
-    status_td = driver.find_element_by_xpath("//td[contains(text(),'In progress')]")
-
-    driver.implicitly_wait(30)
-    status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
+    driver.wait_for_xpath("//div[contains(text(),'Feature computation begun')]")
+    driver.wait_for_xpath("//td[contains(text(),'Completed')]", 30)
 
 
 def test_featurize_unlabeled(driver, project, dataset):
@@ -47,14 +42,8 @@ def test_featurize_unlabeled(driver, project, dataset):
     featureset_name.send_keys(test_featureset_name)
 
     driver.find_element_by_class_name('btn-primary').click()
-
-    driver.implicitly_wait(2)
-    status_td = driver.find_element_by_xpath(
-        "//div[contains(text(),'Feature computation begun')]")
-    status_td = driver.find_element_by_xpath("//td[contains(text(),'In progress')]")
-
-    driver.implicitly_wait(30)
-    status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
+    driver.wait_for_xpath("//div[contains(text(),'Feature computation begun')]")
+    driver.wait_for_xpath("//td[contains(text(),'Completed')]", 30)
 
 
 def test_check_uncheck_features(driver, project, dataset):
@@ -109,8 +98,7 @@ def test_check_uncheck_tags(driver, project, dataset):
         driver.find_element_by_css_selector('[name=amplitude]').click()
 
     driver.find_element_by_css_selector('[label=General]').click()
-    driver.implicitly_wait(2)
-    driver.find_element_by_css_selector('[name=amplitude]')
+    driver.wait_for_xpath('//*[@name="amplitude"]', 2)
 
 
 def test_feature_descriptions_displayed(driver, project, dataset):
@@ -123,8 +111,7 @@ def test_feature_descriptions_displayed(driver, project, dataset):
     driver.find_element_by_partial_link_text('Compute New Features').click()
     driver.find_element_by_xpath("//li[contains(text(),'General')]").click()
 
-    driver.implicitly_wait(0.5)
-    driver.find_element_by_xpath(
+    driver.wait_for_xpath(
         "//div[contains(.,'Half the difference between the maximum and "
         "minimum magnitude.')]")
 
@@ -162,8 +149,7 @@ def test_cannot_compute_zero_features(driver, project, dataset):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(2)
-    driver.find_element_by_xpath(
+    driver.wait_for_xpath(
         "//div[contains(.,'At least one feature must be selected')]")
 
 
@@ -175,13 +161,10 @@ def test_plot_features(driver, project, dataset, featureset):
 
     driver.find_element_by_id('react-tabs-4').click()
 
-    driver.implicitly_wait(2)
-    driver.find_element_by_xpath("//td[contains(text(),'{}')]".format(featureset.name)).click()
-    driver.implicitly_wait(2)
-    driver.find_element_by_xpath("//b[contains(text(),'Please wait while we load your plotting data...')]")
+    driver.wait_for_xpath("//td[contains(text(),'{}')]".format(featureset.name)).click()
+    driver.wait_for_xpath("//b[contains(text(),'Please wait while we load your plotting data...')]")
 
-    driver.implicitly_wait(3)
-    driver.find_element_by_css_selector("[class=bk-plotdiv]")
+    driver.wait_for_xpath("//*[@class='bk-plotdiv']", 3)
 
 
 def test_delete_featureset(driver, project, dataset, featureset):
@@ -192,13 +175,10 @@ def test_delete_featureset(driver, project, dataset, featureset):
 
     driver.find_element_by_id('react-tabs-4').click()
     driver.find_element_by_partial_link_text('Delete').click()
-    driver.implicitly_wait(2)
-    status_td = driver.find_element_by_xpath(
-        "//div[contains(text(),'Feature set deleted')]")
+    driver.wait_for_xpath("//div[contains(text(),'Feature set deleted')]")
     try:
-        el = driver.find_element_by_xpath(
-            "//td[contains(text(),'{}')]".format(test_featureset_name))
-    except NoSuchElementException:
+        el = driver.wait_for_xpath("//td[contains(text(),'{test_featureset_name}')]")
+    except TimeoutException:
         pass
     else:
         raise Exception("Featureset still present in table after delete.")

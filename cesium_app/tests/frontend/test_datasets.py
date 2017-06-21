@@ -30,8 +30,7 @@ def test_add_new_dataset(driver, project):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
+    status_td = driver.wait_for_xpath(
         "//div[contains(text(),'Successfully uploaded new dataset')]")
 
 
@@ -54,6 +53,5 @@ def test_delete_dataset(driver, project, dataset):
     proj_select.select_by_value(str(project.id))
     driver.find_element_by_id('react-tabs-2').click()
     driver.find_element_by_partial_link_text('Delete').click()
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
+    status_td = driver.wait_for_xpath(
         "//div[contains(text(),'Dataset deleted')]")

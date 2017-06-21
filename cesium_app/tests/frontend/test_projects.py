@@ -12,8 +12,8 @@ def test_create_project(driver):
     driver.get("/")
 
     # Add new project
-    driver.implicitly_wait(1)
-    driver.find_element_by_partial_link_text('Or click here to add a new one').click()
+    driver.wait_for_xpath('//*[contains(text(), '
+                          '"Or click here to add a new one")]').click()
 
     project_name = driver.find_element_by_css_selector('[name=projectName]')
     test_proj_name = str(uuid.uuid4())
@@ -23,8 +23,7 @@ def test_create_project(driver):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
+    status_td = driver.wait_for_xpath(
         "//div[contains(text(),'Added new project')]")
     driver.refresh()
 
@@ -53,8 +52,7 @@ def test_edit_project(driver, project):
     project_desc.send_keys("New Test Description")
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
+    status_td = driver.wait_for_xpath(
         "//div[contains(text(),'Successfully updated project')]")
     assert driver.find_element_by_css_selector('[name=projectName]').\
         get_attribute("value") == test_proj_name
@@ -67,8 +65,7 @@ def test_delete_project(driver, project):
     proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
     proj_select.select_by_value(str(project.id))
     driver.find_element_by_partial_link_text('Delete Project').click()
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
+    status_td = driver.wait_for_xpath(
         "//div[contains(text(),'Project deleted')]")
 
 

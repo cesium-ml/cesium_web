@@ -22,13 +22,10 @@ def _add_prediction(proj_id, driver):
 
     driver.find_element_by_class_name('btn-primary').click()
 
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
-        "//div[contains(text(),'Model predictions begun')]")
+    driver.wait_for_xpath("//div[contains(text(),'Model predictions begun')]")
 
     try:
-        driver.implicitly_wait(30)
-        status_td = driver.find_element_by_xpath("//td[contains(text(),'Completed')]")
+        driver.wait_for_xpath("//td[contains(text(),'Completed')]", 30)
     except:
         driver.save_screenshot("/tmp/pred_fail.png")
         raise
@@ -39,12 +36,11 @@ def _click_prediction_row(proj_id, driver):
     proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
     proj_select.select_by_value(str(proj_id))
     driver.find_element_by_id('react-tabs-8').click()
-    driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
+    driver.wait_for_xpath("//td[contains(text(), 'Completed')]").click()
 
 
 def _grab_pred_results_table_rows(driver, text_to_look_for):
-    driver.implicitly_wait(1)
-    td = driver.find_element_by_xpath("//td[contains(text(),'{}')]".format(
+    td = driver.wait_for_xpath("//td[contains(text(),'{}')]".format(
         text_to_look_for))
     tr = td.find_element_by_xpath('..')
     table = tr.find_element_by_xpath('..')
@@ -137,12 +133,9 @@ def test_delete_prediction(driver, project, dataset, featureset, model,
     proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
     proj_select.select_by_value(str(project.id))
     driver.find_element_by_id('react-tabs-8').click()
-    driver.implicitly_wait(1)
-    driver.find_element_by_xpath("//td[contains(text(),'Completed')]").click()
-    time.sleep(0.2)
-    driver.find_element_by_partial_link_text('Delete').click()
-    driver.implicitly_wait(1)
-    status_td = driver.find_element_by_xpath(
+    driver.wait_for_xpath("//td[contains(text(),'Completed')]").click()
+    driver.wait_for_xpath('//*[contains(text(), "Delete")]').click()
+    status_td = driver.wait_for_xpath(
         "//div[contains(text(),'Prediction deleted')]")
 
 
@@ -151,8 +144,7 @@ def _click_download(proj_id, driver):
     proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
     proj_select.select_by_value(str(proj_id))
     driver.find_element_by_id('react-tabs-8').click()
-    driver.implicitly_wait(1)
-    driver.find_element_by_partial_link_text('Download').click()
+    driver.wait_for_xpath("//a[text()='Download']").click()
     time.sleep(0.5)
 
 
