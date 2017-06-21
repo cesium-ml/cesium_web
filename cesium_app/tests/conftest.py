@@ -7,7 +7,10 @@ import distutils.spawn
 import types
 import shutil
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
+from selenium.common.exceptions import TimeoutException
 from seleniumrequests.request import RequestMixin
 from pytest_factoryboy import register
 from baselayer.app.config import Config
@@ -35,7 +38,12 @@ models.init_db(**cfg['database'])
 
 
 class MyCustomWebDriver(RequestMixin, webdriver.Chrome):
-    pass
+    def get(self, uri):
+        return webdriver.Chrome.get(self, cfg['server:url'] + uri)
+
+    def wait_for_xpath(self, xpath, timeout=1):
+        return WebDriverWait(self, timeout).until(
+            expected_conditions.presence_of_element_located((By.XPATH, xpath)))
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -56,7 +64,6 @@ def driver(request):
     chrome_options.add_experimental_option('prefs', prefs)
 
     driver = MyCustomWebDriver(chrome_options=chrome_options)
-
     driver.set_window_size(1920, 1080)
 
     def close():
@@ -64,25 +71,16 @@ def driver(request):
 
     request.addfinalizer(close)
 
-    driver._get = driver.get
-
-    def get(self, uri):
-        d = self._get(cfg['server']['url'] + uri)
-        return d
-
-    driver.set_window_size(1920, 1080)
-    driver.get = types.MethodType(get, driver)
-
     # Authenticate by clicking login button
     driver.get('/')
     try:
-        driver.implicitly_wait(1)
-        driver.find_element_by_xpath('//a[@href="login/google-oauth2"]').click()
-    except NoSuchElementException:
+        driver.wait_for_xpath('//div[contains(text(), "testuser@gmail.com")]')
+    except TimeoutException:
         # Already logged in
-        pass
-    driver.implicitly_wait(1)
-    assert driver.find_element_by_xpath('//div[contains(text(), "testuser@gmail.com")]')
+        element = WebDriverWait(driver, 1).until(
+            expected_conditions.element_to_be_clickable(
+                (By.XPATH, '//a[@href="login/google-oauth2"]')))
+        element.click()
 
     return driver
 

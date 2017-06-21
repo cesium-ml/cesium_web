@@ -18,8 +18,7 @@ def status(message):
 
 def drop_tables():
     conn = models.DBSession.session_factory.kw['bind']
-    print(f'Dropping tables on database '
-          f'"{str(conn.url).split(":")[1].strip("/")}"')
+    print(f'Dropping tables on database {str(conn.url).split("/")[-1]}')
     models.Base.metadata.drop_all()
 
 
@@ -31,8 +30,7 @@ def create_tables(retry=5):
     for i in range(1, retry + 1):
         try:
             conn = models.DBSession.session_factory.kw['bind']
-            print(f'Creating tables on database '
-                  f'"{str(conn.url).split(":")[1].strip("/")}"')
+            print(f'Creating tables on database {str(conn.url).split("/")[-1]}')
             models.Base.metadata.create_all()
 
             print('Refreshed tables:')
