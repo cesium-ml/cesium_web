@@ -90,14 +90,6 @@ class Model(Base):
     project = relationship('Project')
 
 
-@sa.event.listens_for(Featureset, 'after_delete')
-def remove_featureset_file(mapper, connection, target):
-    try:
-        os.remove(target.file_uri)
-    except FileNotFoundError:
-        pass
-
-
 class Prediction(Base):
     project_id = sa.Column(sa.ForeignKey('projects.id', ondelete='CASCADE'),
                            nullable=False, index=True)
