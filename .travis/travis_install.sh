@@ -20,7 +20,7 @@ node --version
 make dependencies
 make check-js-updates
 
-if [[ -n ${TRIGGERED_FROM_REPO} ]]; then
+if [[ ${TRIGGERED_FROM_REPO} == "cesium-ml/cesium" ]]; then
     mkdir cesium-clone
     cd cesium-clone
     git init
