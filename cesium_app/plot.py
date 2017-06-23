@@ -7,6 +7,9 @@ from bokeh.palettes import Viridis as palette
 from bokeh.core.json_encoder import serialize_json
 from bokeh.document import Document
 from bokeh.util.serialization import make_id
+from bokeh.models import Legend, Div
+from bokeh.models.widgets import MultiSelect, Button
+from bokeh.layouts import widgetbox, column
 
 
 def feature_scatterplot(fset_path, features_to_plot):
@@ -27,14 +30,42 @@ def feature_scatterplot(fset_path, features_to_plot):
     fset, data = featurize.load_featureset(fset_path)
     fset = fset[features_to_plot]
     colors = cycle(palette[5])
-    plots = np.array([[figure(width=300, height=200)
+    plots = np.array([[figure(width=300, height=300)
                        for j in range(len(features_to_plot))]
                       for i in range(len(features_to_plot))])
 
+    unique_labels = np.unique(data['labels'])
+    fset_label = {}
+    color = {}
+    if unique_labels.size <= 0:
+        fset_label[''] = fset
+        color[''] = next(colors)
+    else:
+        for label in unique_labels:
+            fset_label[label] = fset[data['labels'] == label]
+            color[label] = next(colors)  # TODO make sure there are enough colors
+
+    circles = []
     for (j, i), p in np.ndenumerate(plots):
-        if (j == i == 0):
-            p.title.text = "Scatterplot matrix"
-        p.circle(fset.values[:,i], fset.values[:,j], color=next(colors))
+        # Plot by label
+        for label in unique_labels:
+            if i == j == 0:
+                c = p.circle(fset_label[label].values[:,i], fset_label[label].values[:,j], color=color[label])
+                circles.append([c])
+            else:
+                p.circle(fset_label[label].values[:,i], fset_label[label].values[:,j], color=color[label])
+
+        # Add legend
+        if i == j == 0:
+            items = list(zip(unique_labels, circles))
+            vertical_offset = len(unique_labels) * 10
+            legend = Legend(items=items, location=(vertical_offset, 0))
+            p.add_layout(legend, 'above')
+        if j == 0:
+            # Compensate for legend height
+            p.height = 300 + vertical_offset + 100
+
+        # Graph styling
         p.xaxis.minor_tick_line_color = None
         p.yaxis.minor_tick_line_color = None
         p.ygrid[0].ticker.desired_num_ticks = 2
@@ -42,7 +73,15 @@ def feature_scatterplot(fset_path, features_to_plot):
         p.outline_line_color = None
         p.axis.visible = None
 
-    plot = gridplot(plots.tolist(), ncol=len(features_to_plot), mergetools=True, responsive=True, title="Test")
+        # Axis labels
+        p.xaxis.axis_label = fset.columns[i][0]
+        if i == 0:
+            p.yaxis.axis_label = fset.columns[j][0]
+        else:
+            p.yaxis.axis_label = ' ' # Fixes a spacing issue
+
+    plot = gridplot(plots.tolist(), ncol=len(features_to_plot), mergetools=True, responsive=True, toolbar_location='below')
+
 
     # Convert plot to json objects necessary for rendering with bokeh on the
     # frontend

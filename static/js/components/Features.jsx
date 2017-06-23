@@ -8,7 +8,7 @@ import { FormComponent, Form, TextInput, TextareaInput, SubmitButton,
 import * as Validate from '../validate';
 import Expand from './Expand';
 import * as Action from '../actions';
-import Plot from './Plot';
+import {Plot, PlotForm} from './Plot';
 import FoldableRow from './FoldableRow';
 import { reformatDatetime, contains } from '../utils';
 import Delete from './Delete';
@@ -167,7 +167,7 @@ FeaturizeForm = reduxForm({
 
 
 let FeaturesTab = (props) => {
-  const { featurePlotURL } = props;
+  const { featurePlotURL, featuresURL } = props;
   return (
     <div>
       <div>
@@ -182,6 +182,7 @@ let FeaturesTab = (props) => {
       <FeatureTable
         selectedProject={props.selectedProject}
         featurePlotURL={featurePlotURL}
+        featuresURL={featuresURL}
       />
 
     </div>
@@ -189,6 +190,7 @@ let FeaturesTab = (props) => {
 };
 FeaturesTab.propTypes = {
   featurePlotURL: React.PropTypes.string.isRequired,
+  featuresURL: React.PropTypes.string.isRequired,
   computeFeatures: React.PropTypes.func.isRequired,
   selectedProject: React.PropTypes.object
 };
@@ -220,7 +222,9 @@ export let FeatureTable = props => (
           const foldedContent = done && (
             <tr key={`plot${featureset.id}`}>
               <td colSpan={4}>
-                <Plot url={`${props.featurePlotURL}/${featureset.id}`} />
+                {/* TODO Change featuresetID to it's own parameter? */}
+                <PlotForm formKey={featureset.id.toString()} initialValues={{ tags: [], featuresetId: featureset.id}} />
+                <Plot featuresetId={featureset.id} />
               </td>
             </tr>);
 
@@ -244,6 +248,7 @@ export let FeatureTable = props => (
 );
 FeatureTable.propTypes = {
   featuresets: React.PropTypes.arrayOf(React.PropTypes.object),
+  featuresURL: React.PropTypes.string,
   featurePlotURL: React.PropTypes.string
 };
 

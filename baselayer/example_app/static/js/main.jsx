@@ -316,6 +316,7 @@ class MainContent extends React.Component {
               <FeaturesTab
                 selectedProject={this.props.selectedProject}
                 featurePlotURL={`${location.protocol}//${this.props.root}plot_features`}
+                featuresURL={`${location.protocol}//${this.props.root}features`}
               />
             </TabPanel>
             <TabPanel style={style.tabPanel}>

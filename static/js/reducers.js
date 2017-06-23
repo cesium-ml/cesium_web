@@ -171,11 +171,33 @@ function misc(state={ logoSpinAngle: 0 }, action) {
   }
 }
 
+function plots(state=[], action) {
+  console.log("In plots reducer");
+  console.log(state);
+  console.log(action);
+
+  switch (action.type) {
+    case Action.RECEIVE_PLOT: {
+      var plot = state.filter(plot => (plot.featuresetId === action.payload.featuresetId))[0];
+      var plotIdx = state.indexOf(plot);
+      if (plotIdx == -1) {
+        return state.concat(action.payload);
+      } else {
+        state[plotIdx] = action.payload;
+        return state;
+      };
+    }
+    default:
+      return state;
+  }
+}
+
 
 const rootReducer = combineReducers({
   projects,
   datasets,
   featuresets,
+  plots,
   features,
   models,
   predictions,
@@ -183,6 +205,7 @@ const rootReducer = combineReducers({
   expander,
   sklearnModels,
   profile,
+  plots,
   form: myFormReducer(formReducer),
   misc
 });

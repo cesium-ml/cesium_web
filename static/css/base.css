@@ -34,3 +34,7 @@ body {
     float: left;
     padding: 1em;
 }
+
+.Select--multi.is-open {
+    z-index: 20;
+}

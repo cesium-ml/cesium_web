@@ -69,7 +69,7 @@ def make_app(config_files=None, debug=False):
         (r'/predict_raw_data', PredictRawDataHandler),
         (r'/features_list', FeatureListHandler),
         (r'/sklearn_models', SklearnModelsHandler),
-        (r'/plot_features/(.*)', PlotFeaturesHandler)
+        (r'/plot_features(/.*)?', PlotFeaturesHandler),
     ]
 
     settings = baselayer_settings

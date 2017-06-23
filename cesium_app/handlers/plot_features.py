@@ -6,9 +6,18 @@ import tornado.web
 
 
 class PlotFeaturesHandler(BaseHandler):
-    def get(self, featureset_id):
-        fset = Featureset.get_if_owned_by(featureset_id, self.current_user)
-        features_to_plot = sorted(fset.features_list)[0:4]  # TODO from form
-        docs_json, render_items = plot.feature_scatterplot(fset.file_uri,
-                                                           features_to_plot)
-        self.success({'docs_json': docs_json, 'render_items': render_items})
+    def post(self):
+        print("Got a post request for plotting ")
+        data = self.get_json()
+        print(data)
+
+        featureset_id = data['featuresetId']
+        fset = Featureset.get_if_owned(featureset_id, self.current_user)
+
+        if data['tags']:
+            features_to_plot = data['tags'].split(',')
+            docs_json, render_items = plot.feature_scatterplot(fset.file_uri, features_to_plot)
+        else:
+            docs_json, render_items = None, None
+
+        return self.success({'featuresetId': featureset_id, 'docs_json': docs_json, 'render_items': render_items})
