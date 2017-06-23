@@ -1,0 +1,4 @@
+[submodule "baselayer"]
+	path = baselayer
+	url = git://github.com/cesium-ml/baselayer.git
+	branch = master

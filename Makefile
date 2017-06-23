@@ -7,8 +7,16 @@ SUPERVISORCTL=supervisorctl -c baselayer/conf/supervisor/common.conf
 bundle = ./static/build/bundle.js
 webpack = ./node_modules/.bin/webpack
 
+baselayer/README.md:
+	git submodule update --init --remote
+	$(MAKE) baselayer-update
 
-dependencies:
+.PHONY: baselayer-update
+baselayer-update:
+	./baselayer/tools/submodule_update.sh
+
+dependencies: baselayer/README.md
+	git submodule update --init --recursive
 	@./baselayer/tools/silent_monitor.py pip install -r baselayer/requirements.txt
 	@./baselayer/tools/silent_monitor.py pip install -r requirements.txt
 	@./baselayer/tools/silent_monitor.py ./baselayer/tools/check_js_deps.sh
