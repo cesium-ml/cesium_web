@@ -77,7 +77,7 @@ def driver(request):
         driver.wait_for_xpath('//div[contains(text(), "testuser@gmail.com")]')
     except TimeoutException:
         # Already logged in
-        element = WebDriverWait(driver, 1).until(
+        element = WebDriverWait(driver, 5).until(
             expected_conditions.element_to_be_clickable(
                 (By.XPATH, '//a[@href="login/google-oauth2"]')))
         element.click()
