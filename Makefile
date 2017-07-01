@@ -16,7 +16,6 @@ baselayer-update:
 	./baselayer/tools/submodule_update.sh
 
 dependencies: baselayer/README.md
-	git submodule update --init --recursive
 	@./baselayer/tools/silent_monitor.py pip install -r baselayer/requirements.txt
 	@./baselayer/tools/silent_monitor.py pip install -r requirements.txt
 	@./baselayer/tools/silent_monitor.py ./baselayer/tools/check_js_deps.sh
