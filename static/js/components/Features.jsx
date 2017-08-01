@@ -230,7 +230,7 @@ export let FeatureTable = props => (
             <FoldableRow key={idx}>
               <tr key={featureset.id}>
                 <td>{featureset.name}</td>
-                <td>{reformatDatetime(featureset.created)}</td>
+                <td>{reformatDatetime(featureset.created_at)}</td>
                 {status}
                 <td><DeleteFeatureset ID={featureset.id} /></td>
               </tr>

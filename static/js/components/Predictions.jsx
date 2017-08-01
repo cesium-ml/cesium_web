@@ -128,7 +128,7 @@ let PredictionsTable = props => (
             <tr key={`row${idx}`}>
               <td>{prediction.dataset_name}</td>
               <td style={{ textDecoration: 'underline' }}>{prediction.model_name}</td>
-              <td>{reformatDatetime(prediction.created)}</td>
+              <td>{reformatDatetime(prediction.created_at)}</td>
               {status}
               <td>
                 <DownloadPredCSV ID={prediction.id} />

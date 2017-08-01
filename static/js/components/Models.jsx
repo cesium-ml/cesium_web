@@ -227,7 +227,7 @@ export let ModelTable = props => (
           <FoldableRow key={`model_${idx}`}>
             <tr key={model.id}>
               <td>{model.name}</td>
-              <td>{reformatDatetime(model.created)}</td>
+              <td>{reformatDatetime(model.created_at)}</td>
               {status}
               <td><DeleteModel ID={model.id} /></td>
             </tr>

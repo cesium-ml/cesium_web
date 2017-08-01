@@ -163,7 +163,7 @@ export let DatasetTable = props => (
           <FoldableRow key={`ds_${idx}`}>
             <tr key={dataset.id}>
               <td>{dataset.name}</td>
-              <td>{reformatDatetime(dataset.created)}</td>
+              <td>{reformatDatetime(dataset.created_at)}</td>
               <td><DeleteDataset ID={dataset.id} /></td>
             </tr>
             {foldedContent}
