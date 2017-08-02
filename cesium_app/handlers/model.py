@@ -14,7 +14,6 @@ import datetime
 
 from sklearn.model_selection import GridSearchCV
 import joblib
-from distributed.client import _wait
 
 import tornado.ioloop
 import tornado.web
