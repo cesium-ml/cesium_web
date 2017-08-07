@@ -298,7 +298,7 @@ class MainContent extends React.Component {
                 data-for="statusTabTooltip"
               >
                 <WebSocket
-                  url={`ws://${this.props.root}websocket`}
+                  url={`${location.protocol == 'https:' ? 'wss' : 'ws'}://${this.props.root}websocket`}
                   auth_url={`${location.protocol}//${this.props.root}socket_auth_token`}
                   messageHandler={messageHandler}
                   dispatch={store.dispatch}
