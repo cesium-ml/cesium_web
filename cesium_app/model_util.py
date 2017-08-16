@@ -1,5 +1,6 @@
 import textwrap
 
+from baselayer.app.config import load_config
 from baselayer.app.model_util import status, create_tables, drop_tables
 from cesium_app import models
 
@@ -14,9 +15,9 @@ def insert_test_data():
     for model in models.Base.metadata.tables:
         print('    -', model)
 
-    USERNAME = 'testuser@gmail.com'
+    USERNAME = 'testuser@cesium-ml.org'
     with status(f"Creating dummy user: {USERNAME}... "):
-        u = models.User(username=USERNAME, email=USERNAME)
+        u = models.User(username=USERNAME)
         models.DBSession().add(u)
         models.DBSession().commit()
 
@@ -47,15 +48,20 @@ def insert_test_data():
     with status("Inserting dummy model... "):
         m = models.Model(project=p, featureset=f, name='test model',
                          params={'n_estimators': 10}, type='RFC',
-                         file=test_file)
+                         file_uri='/tmp/blah.pkl')
         models.DBSession().add(m)
         models.DBSession().commit()
 
     with status("Inserting dummy prediction... "):
-        pr = models.Prediction(project=p, model=m, file=test_file, dataset=d)
+        pr = models.Prediction(project=p, model=m, file_uri='/tmp/blergh.pkl', dataset=d)
         models.DBSession().add(pr)
         models.DBSession().commit()
 
 
 if __name__ == "__main__":
+    cfg = load_config()
+
+    with status(f"Connecting to database {cfg['database']['database']}"):
+        models.init_db(**cfg['database'])
+
     insert_test_data()

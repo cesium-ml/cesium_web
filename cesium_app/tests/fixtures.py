@@ -35,7 +35,7 @@ class ProjectFactory(factory.alchemy.SQLAlchemyModelFactory):
         if not create:
             return
         project.users = User.query.filter(User.username ==
-                                          'testuser@gmail.com').all()
+                                          'testuser@cesium-ml.org').all()
         DBSession().commit()
 
 

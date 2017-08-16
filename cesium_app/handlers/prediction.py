@@ -109,6 +109,7 @@ class PredictionHandler(BaseHandler):
                                  pred_probs=pred_probs)
 
         prediction.task_id = future.key
+        DBSession().add(prediction)
         DBSession().commit()
 
         loop = tornado.ioloop.IOLoop.current()

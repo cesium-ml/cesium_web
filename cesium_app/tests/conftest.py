@@ -74,7 +74,7 @@ def driver(request):
     # Authenticate by clicking login button
     driver.get('/')
     try:
-        driver.wait_for_xpath('//div[contains(text(), "testuser@gmail.com")]')
+        driver.wait_for_xpath('//div[contains(text(), "testuser@cesium-ml.org")]')
     except TimeoutException:
         # Already logged in
         element = WebDriverWait(driver, 5).until(

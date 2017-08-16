@@ -4,19 +4,18 @@ import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 
-from baselayer.app.models import init_db, Base, DBSession, User
+from baselayer.app.models import (init_db, join_table, Base, DBSession, User)
 from cesium import featurize
 
 
-user_projects = sa.Table('user_projects', Base.metadata,
-                         sa.Column('user_id', sa.ForeignKey('users.id',
-                                                            ondelete='CASCADE'),
-                                   primary_key=True),
-                         sa.Column('project_id', sa.ForeignKey('projects.id',
-                                                               ondelete='CASCADE'),
-                                   primary_key=True))
-User.projects = relationship('Project', secondary=user_projects,
-                             back_populates='users', cascade='all')
+def is_owned_by(self, user):
+    if hasattr(self, 'users'):
+        return (user in self.users)
+    elif hasattr(self, 'project'):
+        return (user in self.project.users)
+    else:
+        raise NotImplementedError(f"{type(self).__name__} object has no owner")
+Base.is_owned_by = is_owned_by
 
 
 class Dataset(Base):
@@ -46,7 +45,7 @@ class DatasetFile(Base):
 class Project(Base):
     name = sa.Column(sa.String(), nullable=False)
     description = sa.Column(sa.String())
-    users = relationship('User', secondary=user_projects,
+    users = relationship('User', secondary='user_projects',
                          back_populates='projects')
     datasets = relationship('Dataset', back_populates='project',
                             cascade='all')
@@ -55,6 +54,11 @@ class Project(Base):
     models = relationship('Model', back_populates='project', cascade='all')
     predictions = relationship('Prediction', back_populates='project',
                                cascade='all')
+
+
+User.projects = relationship('Project', secondary='user_projects',
+                             back_populates='users', cascade='all')
+user_projects = join_table('user_projects', User, Project)
 
 
 class Featureset(Base):
