@@ -1,9 +1,14 @@
 import { createStore, applyMiddleware, compose } from 'redux';
 import thunk from 'redux-thunk';
 import createLogger from 'redux-logger';
+
 import rootReducer from './reducers';
 
-const logger = createLogger();
+
+const logger = createLogger({
+  collapsed: (getState, action, logEntry) => !logEntry.error
+});
+
 
 export default function configureStore(preloadedState) {
   return createStore(

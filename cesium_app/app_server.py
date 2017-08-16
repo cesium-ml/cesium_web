@@ -25,7 +25,7 @@ from .handlers import (
 )
 
 
-def make_app(cfg, baselayer_handlers, baselayer_settings, debug=False):
+def make_app(cfg, baselayer_handlers, baselayer_settings):
     """Create and return a `tornado.web.Application` object with specified
     handlers and settings.
 
@@ -38,9 +38,6 @@ def make_app(cfg, baselayer_handlers, baselayer_settings, debug=False):
         Tornado handlers needed for baselayer to function.
     baselayer_settings : cfg
         Settings needed for baselayer to function.
-    debug : bool
-        Whether or not to start the app in debug mode.  In debug mode,
-        changed source files are immediately reloaded.
 
     """
     if baselayer_settings['cookie_secret'] == 'abc01234':
