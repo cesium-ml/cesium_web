@@ -87,7 +87,8 @@ class PredictionHandler(BaseHandler):
         all_features = client.map(featurize.featurize_single_ts,
                                   all_time_series,
                                   features_to_use=fset.features_list,
-                                  custom_script_path=fset.custom_features_script)
+                                  custom_script_path=fset.custom_features_script,
+                                  raise_exceptions=False)
         fset_data = client.submit(featurize.assemble_featureset,
                                   all_features, all_time_series)
         imputed_fset = client.submit(featurize.impute_featureset,
@@ -173,7 +174,8 @@ class PredictRawDataHandler(BaseHandler):
 
         fset = featurize.featurize_time_series(*ts_data,
                                                features_to_use=features_to_use,
-                                               meta_features=meta_feats)
+                                               meta_features=meta_feats,
+                                               raise_exceptions=False)
         fset = featurize.impute_featureset(fset, **impute_kwargs)
         fset.index = fset.index.astype(str)  # ensure JSON-encodable
         data = {'preds': model_data.predict(fset)}

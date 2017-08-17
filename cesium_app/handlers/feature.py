@@ -88,7 +88,8 @@ class FeatureHandler(BaseHandler):
         all_features = client.map(featurize.featurize_single_ts,
                                   all_time_series,
                                   features_to_use=features_to_use,
-                                  custom_script_path=custom_script_path)
+                                  custom_script_path=custom_script_path,
+                                  raise_exceptions=False)
         computed_fset = client.submit(featurize.assemble_featureset,
                                       all_features, all_time_series)
         imputed_fset = client.submit(featurize.impute_featureset,
