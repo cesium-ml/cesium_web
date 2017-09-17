@@ -4,7 +4,7 @@ import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 
-from baselayer.app.models import (init_db, join_table, Base, DBSession, User)
+from baselayer.app.models import (init_db, join_model, Base, DBSession, User)
 from cesium import featurize
 
 
@@ -58,7 +58,7 @@ class Project(Base):
 
 User.projects = relationship('Project', secondary='user_projects',
                              back_populates='users', cascade='all')
-user_projects = join_table('user_projects', User, Project)
+UserProjects = join_model('user_projects', User, Project)
 
 
 class Featureset(Base):

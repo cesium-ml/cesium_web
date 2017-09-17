@@ -43,6 +43,8 @@ def add_test_yaml():
             database:
                 database: cesium_test
                 user: cesium
+                host: localhost
+                port: 5432
 
             server:
                 url: http://localhost:5000
