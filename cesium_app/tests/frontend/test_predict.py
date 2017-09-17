@@ -8,7 +8,6 @@ from os.path import join as pjoin
 import numpy as np
 import numpy.testing as npt
 import pandas as pd
-from ..conftest import cfg
 import json
 
 
@@ -228,13 +227,13 @@ def test_predict_specific_ts_name(driver, project, dataset, featureset, model):
             'ts_names': ['217801'],
             'modelID': model.id}
     response = driver.request(
-        'POST', '{}/predictions'.format(cfg['server:url']),
+        'POST', '{}/predictions'.format(driver.server_url),
         data=json.dumps(data)).json()
     assert response['status'] == 'success'
 
     for i in range(10):
         pred_info = driver.request('GET', '{}/predictions/{}'.format(
-            cfg['server:url'], response['data']['id'])).json()
+            driver.server_url, response['data']['id'])).json()
         if pred_info['status'] == 'success' and pred_info['data']['finished']:
             assert isinstance(pred_info['data']['results']['217801']
                               ['features']['total_time'],

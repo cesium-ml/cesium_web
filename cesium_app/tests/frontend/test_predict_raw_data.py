@@ -1,4 +1,3 @@
-from ..conftest import cfg
 import json
 
 
@@ -7,7 +6,7 @@ def test_predict_raw_data(driver, project, dataset, featureset, model):
     impute_kwargs = {'strategy': 'constant', 'value': None}
     query_string = ('{}/predict_raw_data?ts_data={}'
                     '&modelID={}&impute_kwargs={}').format(
-                        cfg['server:url'], json.dumps(ts_data),
+                        driver.server_url, json.dumps(ts_data),
                         json.dumps(model.id), json.dumps(impute_kwargs))
     response = driver.request('POST', query_string).json()
     assert response['status'] == 'success'
