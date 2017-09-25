@@ -23,8 +23,8 @@ from cesium_app.tests.fixtures import (TMP_DIR, ProjectFactory, DatasetFactory,
 
 
 print('Loading test configuration from _test_config.yaml')
-basedir = pathlib.Path(os.path.dirname(__file__))
-cfg = Config([(basedir/'../../_test_config.yaml').absolute()])
+basedir = pathlib.Path(os.path.dirname(__file__))/'../..'
+cfg = Config([basedir/'config.yaml.example', basedir/'_test_config.yaml'])
 set_server_url(cfg['server:url'])
 print('Setting test database to:', cfg['database'])
 models.init_db(**cfg['database'])
