@@ -49,7 +49,7 @@ run: paths dependencies
 	@echo " - Press Ctrl-C to abort the server"
 	@echo " - Run \`make monitor\` in another terminal to restart services"
 	@echo
-	$(SUPERVISORD) -c baselayer/conf/supervisor/app.conf
+	$(SUPERVISORD)
 
 monitor:
 	@echo "Entering supervisor control panel."
