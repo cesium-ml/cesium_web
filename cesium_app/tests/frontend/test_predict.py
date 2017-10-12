@@ -231,6 +231,8 @@ def test_predict_specific_ts_name(driver, project, dataset, featureset, model):
         data=json.dumps(data)).json()
     assert response['status'] == 'success'
 
+    driver.request('GET', f'{driver.server_url}')  # ensure login
+
     for i in range(10):
         pred_info = driver.request('GET', '{}/predictions/{}'.format(
             driver.server_url, response['data']['id'])).json()
