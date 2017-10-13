@@ -2,8 +2,6 @@ from baselayer.app.handlers.base import BaseHandler
 from .. import plot
 from ..models import Featureset
 
-import tornado.web
-
 
 class PlotFeaturesHandler(BaseHandler):
     def get(self, featureset_id):

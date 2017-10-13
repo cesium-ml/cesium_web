@@ -1,10 +1,10 @@
 from baselayer.app.handlers.base import BaseHandler
 from baselayer.app.custom_exceptions import AccessError
+from baselayer.app.access import auth_or_token
 from ..models import DBSession, Prediction, Dataset, Model, Project
 from .. import util
 
 import tornado.gen
-from tornado.web import RequestHandler
 from tornado.escape import json_decode
 
 from cesium import featurize, time_series
@@ -51,7 +51,7 @@ class PredictionHandler(BaseHandler):
 
         self.action('cesium/FETCH_PREDICTIONS')
 
-    @tornado.web.authenticated
+    @auth_or_token
     async def post(self):
         data = self.get_json()
 
@@ -118,7 +118,7 @@ class PredictionHandler(BaseHandler):
 
         return self.success(prediction.display_info(), 'cesium/FETCH_PREDICTIONS')
 
-    @tornado.web.authenticated
+    @auth_or_token
     def get(self, prediction_id=None, action=None):
         if action == 'download':
             pred_path = Prediction.get_if_owned_by(prediction_id,
@@ -149,7 +149,7 @@ class PredictionHandler(BaseHandler):
 
             return self.success(prediction_info)
 
-    @tornado.web.authenticated
+    @auth_or_token
     def delete(self, prediction_id):
         prediction = Prediction.get_if_owned_by(prediction_id,
                                                 self.current_user)
@@ -159,7 +159,7 @@ class PredictionHandler(BaseHandler):
 
 
 class PredictRawDataHandler(BaseHandler):
-    @tornado.web.authenticated
+    @auth_or_token
     def post(self):
         ts_data = json_decode(self.get_argument('ts_data'))
         model_id = json_decode(self.get_argument('modelID'))

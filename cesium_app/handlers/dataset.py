@@ -1,5 +1,6 @@
 from baselayer.app.handlers.base import BaseHandler
 from baselayer.app.custom_exceptions import AccessError
+from baselayer.app.access import auth_or_token
 from ..models import DBSession, Project, Dataset, DatasetFile
 from .. import util
 
@@ -10,11 +11,9 @@ import os
 from os.path import join as pjoin
 import uuid
 
-import tornado.web
-
 
 class DatasetHandler(BaseHandler):
-    @tornado.web.authenticated
+    @auth_or_token
     def post(self):
         if not 'tarFile' in self.request.files:
             return self.error('No tar file uploaded')
@@ -67,7 +66,7 @@ class DatasetHandler(BaseHandler):
 
         return self.success(d, 'cesium/FETCH_DATASETS')
 
-    @tornado.web.authenticated
+    @auth_or_token
     def get(self, dataset_id=None):
         if dataset_id is not None:
             dataset = Dataset.get_if_owned_by(dataset_id, self.current_user)
@@ -79,7 +78,7 @@ class DatasetHandler(BaseHandler):
 
         return self.success(dataset_info)
 
-    @tornado.web.authenticated
+    @auth_or_token
     def delete(self, dataset_id):
         d = Dataset.get_if_owned_by(dataset_id, self.current_user)
         DBSession().delete(d)
