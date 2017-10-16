@@ -13,7 +13,7 @@ import json
 
 def _add_prediction(proj_id, driver):
     driver.refresh()
-    proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+    proj_select = Select(driver.wait_for_xpath('//select[@name="project"]'))
     proj_select.select_by_value(str(proj_id))
 
     driver.find_element_by_id('react-tabs-8').click()
@@ -32,7 +32,7 @@ def _add_prediction(proj_id, driver):
 
 def _click_prediction_row(proj_id, driver):
     driver.refresh()
-    proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+    proj_select = Select(driver.wait_for_xpath('//select[@name="project"]'))
     proj_select.select_by_value(str(proj_id))
     driver.find_element_by_id('react-tabs-8').click()
     driver.wait_for_xpath("//td[contains(text(), 'Completed')]").click()
