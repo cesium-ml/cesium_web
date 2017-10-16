@@ -63,6 +63,9 @@ attach:
 testrun: paths dependencies
 	export FLAGS="--config _test_config.yaml" && $(SUPERVISORD)
 
+dockerrun: paths dependencies
+	export FLAGS="--config docker.yaml" && $(SUPERVISORD)
+
 debug:
 	@echo "Starting web service in debug mode"
 	@echo "Press Ctrl-D to stop"
