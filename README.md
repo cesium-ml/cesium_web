@@ -14,7 +14,7 @@ fit a model, and generate predictions for new data.
 The easiest way to try the web app is to run it through Docker:
 
 1. Download the docker-compose file for Cesium:
-   `curl -Lo docker-compose.yml https://raw.githubusercontent.com/cesium-ml/cesium_web/master/docker-compose/docker-compose.yml`
+   `curl -Lo docker-compose.yaml https://raw.githubusercontent.com/cesium-ml/cesium_web/master/docker-compose.yaml`
 
 2. Ensure you have Docker Compose up and running, then:
    `docker-compose up`
@@ -45,7 +45,7 @@ The easiest way to try the web app is to run it through Docker:
   - On Linux:
 
     1. Using `apt-get`: `sudo apt-get install nginx supervisor postgresql libpq-dev npm nodejs-legacy`
-    2. It may be necessary to configure your database permissions: at the end of your `pg_hba.conf` (typically in `/etc/postgresql/9.5/main`), add the following lines:
+    2. It may be necessary to configure your database permissions: at the end of your `pg_hba.conf` (typically in `/etc/postgresql/9.6/main`), add the following lines:
 
     ```
     local   all             postgres                                peer

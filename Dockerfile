@@ -28,7 +28,6 @@ WORKDIR /cesium
 RUN bash -c "source /cesium_env/bin/activate && \
     make paths && \
     make dependencies && \
-    cp docker/cesium.yaml ./docker.yaml && \
     chown -R cesium.cesium /cesium_env && \
     chown -R cesium.cesium /cesium"
 

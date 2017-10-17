@@ -11,4 +11,3 @@ db:
     - POSTGRES_USER=cesium
     - POSTGRES_PASSWORD=
     - POSTGRES_DB=cesium
-
