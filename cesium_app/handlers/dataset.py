@@ -10,37 +10,40 @@ from cesium.util import shorten_fname
 import os
 from os.path import join as pjoin
 import uuid
+import base64
 
 
 class DatasetHandler(BaseHandler):
     @auth_or_token
     def post(self):
-        if not 'tarFile' in self.request.files:
+        data = self.get_json()
+        if not 'tarFile' in data:
             return self.error('No tar file uploaded')
 
-        zipfile = self.request.files['tarFile'][0]
+        zipfile = data['tarFile']
 
-        if zipfile.filename == '':
+        if zipfile['name'] == '':
             return self.error('Empty tar file uploaded')
 
-        dataset_name = self.get_argument('datasetName')
-        project_id = self.get_argument('projectID')
+        dataset_name = data['datasetName']
+        project_id = data['projectID']
 
         zipfile_name = (str(uuid.uuid4()) + "_" +
-                        util.secure_filename(zipfile.filename))
+                        util.secure_filename(zipfile['name']))
         zipfile_path = pjoin(self.cfg['paths:upload_folder'], zipfile_name)
 
         with open(zipfile_path, 'wb') as f:
-            f.write(zipfile['body'])
+            f.write(base64.b64decode(
+                zipfile['body'].replace('data:application/gzip;base64,', '')))
 
         # Header file is optional for unlabled data w/o metafeatures
-        if 'headerFile' in self.request.files:
-            headerfile = self.request.files['headerFile'][0]
+        if 'headerFile' in data:
+            headerfile = data['headerFile']
             headerfile_name = (str(uuid.uuid4()) + "_" +
-                               util.secure_filename(headerfile.filename))
+                               util.secure_filename(headerfile['name']))
             headerfile_path = pjoin(self.cfg['paths:upload_folder'], headerfile_name)
 
-            with open(headerfile_path, 'wb') as f:
+            with open(headerfile_path, 'w') as f:
                 f.write(headerfile['body'])
 
         else:

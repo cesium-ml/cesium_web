@@ -186,14 +186,18 @@ export function deleteProject(id) {
 
 
 export function uploadDataset(form) {
-  const formData = new FormData();
 
-  for (const key in form) {
-    if (form[key] && objectType(form[key][0]) === 'File') {
-      formData.append(key, form[key][0]);
-    } else {
-      formData.append(key, form[key]);
-    }
+  function fileReaderPromise(form, fileName, binary = false){
+    return new Promise(resolve => {
+      var filereader = new FileReader();
+      if (binary) {
+        filereader.readAsDataURL(form[fileName][0]);
+      } else {
+        filereader.readAsText(form[fileName][0]);
+      }
+      filereader.onloadend = () => resolve({ body: filereader.result,
+                                             name: form[fileName][0].name });
+    });
   }
 
   return dispatch =>
@@ -201,11 +205,21 @@ export function uploadDataset(form) {
       dispatch,
       UPLOAD_DATASET,
 
-      fetch('/dataset', {
-        credentials: 'same-origin',
-        method: 'POST',
-        body: formData
-      })
+      Promise.all([fileReaderPromise(form, 'headerFile'),
+                   fileReaderPromise(form, 'tarFile', true)])
+        .then(([headerData, tarData]) => {
+          form['headerFile'] = headerData;
+          form['tarFile'] = tarData;
+
+          return fetch('/dataset', {
+            credentials: 'same-origin',
+            method: 'POST',
+            body: JSON.stringify(form),
+            headers: new Headers({
+              'Content-Type': 'application/json'
+            })
+          })
+        })
         .then(response => response.json())
         .then((json) => {
           if (json.status == 'success') {
