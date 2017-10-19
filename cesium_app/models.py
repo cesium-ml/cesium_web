@@ -4,7 +4,8 @@ import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 
-from baselayer.app.models import (init_db, join_model, Base, DBSession, User)
+from baselayer.app.models import (init_db, join_model, Base, DBSession, User,
+                                  Token)
 from cesium import featurize
 
 

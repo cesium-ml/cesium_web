@@ -1,11 +1,11 @@
 import tornado.ioloop
-import tornado.web
 
 from cesium import featurize, time_series
 from cesium.features import dask_feature_graph
 
 from baselayer.app.handlers.base import BaseHandler
 from baselayer.app.custom_exceptions import AccessError
+from baselayer.app.access import auth_or_token
 from ..models import DBSession, Dataset, Featureset, Project
 
 from os.path import join as pjoin
@@ -14,7 +14,7 @@ import datetime
 
 
 class FeatureHandler(BaseHandler):
-    @tornado.web.authenticated
+    @auth_or_token
     def get(self, featureset_id=None):
         if featureset_id is not None:
             featureset_info = Featureset.get_if_owned_by(featureset_id,
@@ -25,7 +25,7 @@ class FeatureHandler(BaseHandler):
 
         self.success(featureset_info)
 
-    @tornado.web.authenticated
+    @auth_or_token
     async def _await_featurization(self, future, fset):
         """Note: we cannot use self.error / self.success here.  There is
         no longer an active, open request by the time this happens!
@@ -53,7 +53,7 @@ class FeatureHandler(BaseHandler):
 
         self.action('cesium/FETCH_FEATURESETS')
 
-    @tornado.web.authenticated
+    @auth_or_token
     async def post(self):
         data = self.get_json()
         featureset_name = data.get('featuresetName', '')
@@ -104,14 +104,14 @@ class FeatureHandler(BaseHandler):
 
         self.success(fset, 'cesium/FETCH_FEATURESETS')
 
-    @tornado.web.authenticated
+    @auth_or_token
     def delete(self, featureset_id):
         f = Featureset.get_if_owned_by(featureset_id, self.current_user)
         DBSession().delete(f)
         DBSession().commit()
         self.success(action='cesium/FETCH_FEATURESETS')
 
-    @tornado.web.authenticated
+    @auth_or_token
     def put(self, featureset_id):
         f = Featureset.get_if_owned_by(featureset_id, self.current_user)
         self.error("Functionality for this endpoint is not yet implemented.")

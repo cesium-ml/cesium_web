@@ -1,5 +1,6 @@
 from baselayer.app.handlers.base import BaseHandler
 from baselayer.app.custom_exceptions import AccessError
+from baselayer.app.access import auth_or_token
 from ..models import DBSession, Project, Model, Featureset
 from ..ext.sklearn_models import (
     model_descriptions as sklearn_model_descriptions,
@@ -16,7 +17,7 @@ from sklearn.model_selection import GridSearchCV
 import joblib
 
 import tornado.ioloop
-import tornado.web
+
 
 def _build_model_compute_statistics(fset_path, model_type, model_params,
                                     params_to_optimize, model_path):
@@ -70,7 +71,7 @@ def _build_model_compute_statistics(fset_path, model_type, model_params,
 
 
 class ModelHandler(BaseHandler):
-    @tornado.web.authenticated
+    @auth_or_token
     def get(self, model_id=None):
         if model_id is not None:
             model_info = Model.get_if_owned_by(model_id, self.current_user)
@@ -80,7 +81,7 @@ class ModelHandler(BaseHandler):
 
         return self.success(model_info)
 
-    @tornado.web.authenticated
+    @auth_or_token
     async def _await_model_statistics(self, model_stats_future, model):
         try:
             score, best_params = await model_stats_future
@@ -105,7 +106,7 @@ class ModelHandler(BaseHandler):
 
         self.action('cesium/FETCH_MODELS')
 
-    @tornado.web.authenticated
+    @auth_or_token
     async def post(self):
         data = self.get_json()
 
@@ -152,7 +153,7 @@ class ModelHandler(BaseHandler):
         return self.success(data={'message': "Model training begun."},
                             action='cesium/FETCH_MODELS')
 
-    @tornado.web.authenticated
+    @auth_or_token
     def delete(self, model_id):
         m = Model.get_if_owned_by(model_id, self.current_user)
         DBSession().delete(m)
