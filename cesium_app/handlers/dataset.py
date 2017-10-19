@@ -11,6 +11,7 @@ import os
 from os.path import join as pjoin
 import uuid
 import base64
+import tarfile
 
 
 class DatasetHandler(BaseHandler):
@@ -21,6 +22,11 @@ class DatasetHandler(BaseHandler):
             return self.error('No tar file uploaded')
 
         zipfile = data['tarFile']
+        tarball_content_type_str = 'data:application/gzip;base64,'
+
+        if not zipfile['body'].startswith(tarball_content_type_str):
+            return self.error('Invalid tar file - please ensure file is gzip '
+                              'format.')
 
         if zipfile['name'] == '':
             return self.error('Empty tar file uploaded')
@@ -34,7 +40,13 @@ class DatasetHandler(BaseHandler):
 
         with open(zipfile_path, 'wb') as f:
             f.write(base64.b64decode(
-                zipfile['body'].replace('data:application/gzip;base64,', '')))
+                zipfile['body'].replace(tarball_content_type_str, '')))
+        try:
+            tarfile.open(zipfile_path)
+        except tarfile.ReadError:
+            os.remove(zipfile_path)
+            return self.error('Invalid tar file - please ensure file is gzip '
+                              'format.')
 
         # Header file is optional for unlabled data w/o metafeatures
         if 'headerFile' in data:
