@@ -1,6 +1,6 @@
 import textwrap
 
-from baselayer.app.config import load_env
+from baselayer.app.env import load_env
 from baselayer.app.model_util import status, create_tables, drop_tables
 from cesium_app import models
 
@@ -56,6 +56,16 @@ def insert_test_data():
         pr = models.Prediction(project=p, model=m, file_uri='/tmp/blergh.pkl', dataset=d)
         models.DBSession().add(pr)
         models.DBSession().commit()
+
+
+def create_token_user(bot_name, project_ids):
+    u = models.User(username=bot_name)
+    p = models.Project.query.filter(models.Project.id.in_(project_ids)).all()
+    u.projects.extend(p)
+    t = models.Token(user=u)
+    models.DBSession().add_all([u, t])
+    models.DBSession().commit()
+    return t.id
 
 
 if __name__ == "__main__":
