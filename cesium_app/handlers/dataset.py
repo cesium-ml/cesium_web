@@ -79,7 +79,7 @@ class DatasetHandler(BaseHandler):
         DBSession().add(d)
         DBSession().commit()
 
-        return self.success(d, 'cesium/FETCH_DATASETS')
+        return self.success(d.display_info(), 'cesium/FETCH_DATASETS')
 
     @auth_or_token
     def get(self, dataset_id=None):
