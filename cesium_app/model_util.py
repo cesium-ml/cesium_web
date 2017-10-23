@@ -1,6 +1,6 @@
 import textwrap
 
-from baselayer.app.config import load_config
+from baselayer.app.config import load_env
 from baselayer.app.model_util import status, create_tables, drop_tables
 from cesium_app import models
 
@@ -59,7 +59,7 @@ def insert_test_data():
 
 
 if __name__ == "__main__":
-    cfg = load_config()
+    env, cfg = load_env()
 
     with status(f"Connecting to database {cfg['database']['database']}"):
         models.init_db(**cfg['database'])

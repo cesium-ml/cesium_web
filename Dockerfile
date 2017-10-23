@@ -25,11 +25,15 @@ ENV LANG=C.UTF-8
 ADD . /cesium
 WORKDIR /cesium
 
-RUN bash -c "source /cesium_env/bin/activate && \
+RUN bash -c "\
+    source /cesium_env/bin/activate && \
     make paths && \
-    make dependencies && \
+    (make dependencies || make dependencies) && \
+    make bundle && \
+    rm -rf node_modules && \
     chown -R cesium.cesium /cesium_env && \
-    chown -R cesium.cesium /cesium"
+    chown -R cesium.cesium /cesium && \
+    cp docker.yaml config.yaml"
 
 USER cesium
 
@@ -37,5 +41,5 @@ EXPOSE 5000
 
 CMD bash -c "source /cesium_env/bin/activate && \
              (make log &) && \
-             make dockerrun"
+             make run_production"
 

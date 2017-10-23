@@ -67,14 +67,14 @@ if __name__ == '__main__':
 
     # Initialize the test database connection
     from cesium_app.models import init_db
-    from cesium_app.app_server import load_config
+    from baselayer.app.config import load_config
     basedir = pathlib.Path(os.path.dirname(__file__))/'..'
     cfg = load_config([basedir/'config.yaml.example', basedir/TEST_CONFIG])
     init_db(**cfg['database'])
 
     clear_tables()
 
-    web_client = subprocess.Popen(['make', 'testrun'], cwd=base_dir,
+    web_client = subprocess.Popen(['make', 'run_testing'], cwd=base_dir,
                                   preexec_fn=os.setsid)
 
     print('[test_frontend] Waiting for supervisord to launch all server processes...')

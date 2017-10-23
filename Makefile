@@ -1,11 +1,14 @@
 SHELL = /bin/bash
 SUPERVISORD=FLAGS=$$FLAGS supervisord -c baselayer/conf/supervisor/supervisor.conf
 SUPERVISORCTL=FLAGS=$$FLAGS supervisorctl -c baselayer/conf/supervisor/supervisor.conf
+ENV_SUMMARY=PYTHONPATH=. ./baselayer/tools/env_summary.py $$FLAGS
+ESLINT=./node_modules/.bin/eslint
 
 .DEFAULT_GOAL := run
 
 bundle = ./static/build/bundle.js
 webpack = ./node_modules/.bin/webpack
+baselayer_branch = $(shell git config -f .gitmodules submodule.baselayer.branch)
 
 baselayer/README.md:
 	git submodule update --init --remote
@@ -43,13 +46,31 @@ log: paths
 	./baselayer/tools/watch_logs.py
 
 run: paths dependencies
-	@echo "Supervisor will now fire up various micro-services."
+	@echo "Supervisor will now fire up various services."
 	@echo
-	@echo " - Please run \`make log\` in another terminal to view logs"
-	@echo " - Press Ctrl-C to abort the server"
+	@echo " - Run \`make log\` in another terminal to view logs"
 	@echo " - Run \`make monitor\` in another terminal to restart services"
 	@echo
+	@echo "The server is in debug mode:"
+	@echo "  JavaScript and Python files will be reloaded upon change."
+	@echo
+
+	@FLAGS="--debug" && \
+	$(ENV_SUMMARY) && echo && \
+	echo "Press Ctrl-C to abort the server" && \
+	echo && \
 	$(SUPERVISORD)
+
+run_production:
+	export FLAGS="--config config.yaml" && \
+	$(ENV_SUMMARY) && \
+	$(SUPERVISORD)
+
+run_testing: paths dependencies
+	export FLAGS="--config _test_config.yaml" && \
+	$(ENV_SUMMARY) && \
+	$(SUPERVISORD)
+
 
 monitor:
 	@echo "Entering supervisor control panel."
@@ -60,11 +81,15 @@ monitor:
 attach:
 	$(SUPERVISORCTL) fg app
 
-testrun: paths dependencies
-	export FLAGS="--config _test_config.yaml" && $(SUPERVISORD)
+run_production:
+	export FLAGS="--config config.yaml" && \
+	$(ENV_SUMMARY) && \
+	$(SUPERVISORD)
 
-dockerrun: paths dependencies
-	export FLAGS="--config docker.yaml" && $(SUPERVISORD)
+run_testing: paths dependencies
+	export FLAGS="--config _test_config.yaml" && \
+	$(ENV_SUMMARY) && \
+	$(SUPERVISORD)
 
 debug:
 	@echo "Starting web service in debug mode"

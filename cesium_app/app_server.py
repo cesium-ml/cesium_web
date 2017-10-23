@@ -7,7 +7,6 @@ import pathlib
 from baselayer.app.config import Config
 from . import models
 from baselayer.app import model_util
-from baselayer.app.config import load_config
 
 # This provides `login`, `complete`, and `disconnect` endpoints
 from social_tornado.routes import SOCIAL_AUTH_ROUTES
