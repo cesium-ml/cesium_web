@@ -6,25 +6,29 @@ baselayer/README.md:
 baselayer-update:
 	./baselayer/tools/submodule_update.sh
 
-log:
+log: baselayer/README.md
 	make -C baselayer log
 
-run:
+run: baselayer/README.md
 	make -C baselayer run
 
-run_testing:
+run_testing: baselayer/README.md
 	make -C baselayer run_testing
 
-run_production:
+run_production: baselayer/README.md
 	make -C baselayer run_production
 
-test_headless:
-	make -C baselayer paths dependencies
-	PYTHONPATH='.' xvfb-run baselayer/tools/test_frontend.py
+test: baselayer/README.md
+	make -C baselayer test
 
-test:
-	make -C baselayer paths dependencies
-	PYTHONPATH='.' baselayer/tools/test_frontend.py
+test_headless: baselayer/README.md
+	make -C baselayer test_headless
+
+db_init: baselayer/README.md
+	make -C baselayer db_init
+
+db_clear: baselayer/README.md
+	make -C baselayer db_clear
 
 docker-images:
 	# Add --no-cache flag to rebuild from scratch
