@@ -234,7 +234,6 @@ def test_predict_specific_ts_name(driver, project, dataset, featureset, model):
     response = driver.request(
         'POST', '{}/predictions'.format(driver.server_url),
         json=data).json()
-    print(response)
     assert response['status'] == 'success'
 
     for i in range(10):
