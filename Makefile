@@ -74,7 +74,6 @@ run_testing: paths dependencies
 	$(ENV_SUMMARY) && \
 	$(SUPERVISORD)
 
-
 monitor:
 	@echo "Entering supervisor control panel."
 	@echo " - Type \`status\` too see microservice status"
@@ -83,22 +82,6 @@ monitor:
 # Attach to terminal of running webserver; useful to, e.g., use pdb
 attach:
 	$(SUPERVISORCTL) fg app
-
-testrun: paths dependencies fill_conf_values
-	export FLAGS="--config _test_config.yaml" && $(SUPERVISORD)
-
-run_testing: paths dependencies
-	export FLAGS="--config _test_config.yaml" && \
-	$(ENV_SUMMARY) && \
-	$(SUPERVISORD)
-
-debug: fill_conf_values
-	@echo "Starting web service in debug mode"
-	@echo "Press Ctrl-D to stop"
-	@echo
-	@export FLAGS="--debug" && $(SUPERVISORD) &
-	@sleep 1 && $(SUPERVISORCTL) -i status
-	@$(SUPERVISORCTL) shutdown
 
 clean:
 	rm $(bundle)
