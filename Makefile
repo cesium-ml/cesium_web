@@ -42,11 +42,14 @@ paths:
 	@mkdir -p log/sv_child
 	@mkdir -p ~/.local/cesium/logs
 
+fill_conf_values:
+	PYTHONPATH=. ./baselayer/tools/fill_conf_values.py
+
 log: paths
 	./baselayer/tools/watch_logs.py
 
-run: paths dependencies
-	@echo "Supervisor will now fire up various services."
+run: paths dependencies fill_conf_values
+	@echo "Supervisor will now fire up various micro-services."
 	@echo
 	@echo " - Run \`make log\` in another terminal to view logs"
 	@echo " - Run \`make monitor\` in another terminal to restart services"
@@ -71,7 +74,6 @@ run_testing: paths dependencies
 	$(ENV_SUMMARY) && \
 	$(SUPERVISORD)
 
-
 monitor:
 	@echo "Entering supervisor control panel."
 	@echo " - Type \`status\` too see microservice status"
@@ -81,31 +83,13 @@ monitor:
 attach:
 	$(SUPERVISORCTL) fg app
 
-run_production:
-	export FLAGS="--config config.yaml" && \
-	$(ENV_SUMMARY) && \
-	$(SUPERVISORD)
-
-run_testing: paths dependencies
-	export FLAGS="--config _test_config.yaml" && \
-	$(ENV_SUMMARY) && \
-	$(SUPERVISORD)
-
-debug:
-	@echo "Starting web service in debug mode"
-	@echo "Press Ctrl-D to stop"
-	@echo
-	@export FLAGS="--debug" && $(SUPERVISORD) &
-	@sleep 1 && $(SUPERVISORCTL) -i status
-	@$(SUPERVISORCTL) shutdown
-
 clean:
 	rm $(bundle)
 
-test_headless: paths dependencies
+test_headless: paths dependencies fill_conf_values
 	PYTHONPATH='.' xvfb-run ./tools/test_frontend.py
 
-test: paths dependencies
+test: paths dependencies fill_conf_values
 	PYTHONPATH='.' ./tools/test_frontend.py
 
 stop:
