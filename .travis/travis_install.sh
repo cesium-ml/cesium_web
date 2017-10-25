@@ -17,8 +17,6 @@ section "install.cesium_web.requirements"
 npm -g install npm@latest
 npm --version
 node --version
-make dependencies
-make check-js-updates
 
 if [[ ${TRIGGERED_FROM_REPO} == "cesium-ml/cesium" ]]; then
     mkdir cesium-clone
@@ -35,11 +33,9 @@ pip list --format=columns
 section_end "install.cesium_web.requirements"
 
 
-section "init.cesium_web"
-make paths
+section "init.db"
 make db_init
-make bundle
-section_end "init.cesium_web"
+section_end "init.db"
 
 
 section "install.chromedriver"

@@ -22,9 +22,10 @@ class DatasetHandler(BaseHandler):
             return self.error('No tar file uploaded')
 
         zipfile = data['tarFile']
-        tarball_content_type_str = 'data:application/gzip;base64,'
+        tarball_content_types = ('data:application/gzip;base64',
+                                 'data:application/x-gzip;base64')
 
-        if not zipfile['body'].startswith(tarball_content_type_str):
+        if not zipfile['body'].startswith(tarball_content_types):
             return self.error('Invalid tar file - please ensure file is gzip '
                               'format.')
 
@@ -38,9 +39,10 @@ class DatasetHandler(BaseHandler):
                         util.secure_filename(zipfile['name']))
         zipfile_path = pjoin(self.cfg['paths:upload_folder'], zipfile_name)
 
+        for prefix in tarball_content_types:
+            zipfile['body'] = zipfile['body'].replace(prefix, '')
         with open(zipfile_path, 'wb') as f:
-            f.write(base64.b64decode(
-                zipfile['body'].replace(tarball_content_type_str, '')))
+            f.write(base64.b64decode(zipfile['body']))
         try:
             tarfile.open(zipfile_path)
         except tarfile.ReadError:

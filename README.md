@@ -54,8 +54,7 @@ The easiest way to try the web app is to run it through Docker:
     ```
     and restart `postgresl` (`sudo service postgresql restart`).
 
-2. Install Python and JavaScript dependencies with `make_dependencies`
-3. Initialize the database with `make db_init`
+2. Initialize the database with `make db_init`
 
 If you've run this script before, you may see warnings here about the
 database already existing.  Ignore those.
@@ -64,7 +63,7 @@ database already existing.  Ignore those.
 
 ## Configuration
 
-Copy `config.yaml.example` to `config.yaml` and customize.
+Copy `config.yaml.defaults` to `config.yaml` and customize.
 
 - Under `server`, set 'multi_user' to True to enable logins.  Also provide the
   Google credentials, obtained as described in the config file.

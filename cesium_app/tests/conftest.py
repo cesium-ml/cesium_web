@@ -13,7 +13,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import TimeoutException
 from seleniumrequests.request import RequestMixin
 from pytest_factoryboy import register, LazyFixture
-from baselayer.app.config import Config
+from baselayer.app.config import load_config
 from baselayer.app.test_util import (driver, MyCustomWebDriver, reset_state,
                                      set_server_url)
 from cesium_app import models
@@ -22,10 +22,10 @@ from cesium_app.tests.fixtures import (TMP_DIR, ProjectFactory, DatasetFactory,
                                        PredictionFactory)
 
 
-print('Loading test configuration from _test_config.yaml')
+print('Loading test configuration from test_config.yaml')
 basedir = pathlib.Path(os.path.dirname(__file__))/'../..'
-cfg = Config([basedir/'config.yaml.example', basedir/'_test_config.yaml'])
-set_server_url(cfg['server:url'])
+cfg = load_config([basedir/'test_config.yaml'])
+set_server_url(f'http://localhost:{cfg["ports:app"]}')
 print('Setting test database to:', cfg['database'])
 models.init_db(**cfg['database'])
 
