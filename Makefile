@@ -1,35 +1,39 @@
+.DEFAULT_GOAL := run
+
 baselayer/README.md:
 	git submodule update --init --remote
 	$(MAKE) baselayer-update
 
-.PHONY: baselayer-update
+.PHONY: baselayer-update run log
 baselayer-update:
 	./baselayer/tools/submodule_update.sh
 
-log: baselayer/README.md
+log:
 	make -C baselayer log
 
-run: baselayer/README.md
+run:
 	make -C baselayer run
 
-run_testing: baselayer/README.md
+run_testing:
 	make -C baselayer run_testing
 
-run_production: baselayer/README.md
+run_production:
 	make -C baselayer run_production
 
-test: baselayer/README.md
+test:
 	make -C baselayer test
 
-test_headless: baselayer/README.md
+test_headless:
 	make -C baselayer test_headless
 
-db_init: baselayer/README.md
+db_init:
 	make -C baselayer db_init
 
-db_clear: baselayer/README.md
+db_clear:
 	make -C baselayer db_clear
 
 docker-images:
 	# Add --no-cache flag to rebuild from scratch
 	docker build -t cesium/web . && docker push cesium/web
+
+-include "baselayer/README.md"  # always clone baselayer if it doesn't exist
