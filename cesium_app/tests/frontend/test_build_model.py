@@ -93,7 +93,7 @@ def test_cannot_build_model_unlabeled_data(driver, project, featureset):
     driver.find_element_by_class_name('btn-primary').click()
 
     driver.wait_for_xpath(
-        "//div[contains(.,'Cannot build model for unlabeled feature set.')]", 2)
+        "//div[contains(.,'Cannot build model for unlabeled feature set.')]")
 
 
 def test_model_info_display(driver, project, featureset, model):
