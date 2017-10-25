@@ -32,6 +32,12 @@ db_init:
 db_clear:
 	make -C baselayer db_clear
 
+attach:
+	make -C baselayer attach
+
+clean:
+	make -C baselayer clean
+
 docker-images:
 	# Add --no-cache flag to rebuild from scratch
 	docker build -t cesium/web . && docker push cesium/web

@@ -27,9 +27,9 @@ WORKDIR /cesium
 
 RUN bash -c "\
     source /cesium_env/bin/activate && \
-    make paths && \
-    (make dependencies || make dependencies) && \
-    make bundle && \
+    make -C baselayer paths && \
+    (make -C baselayer dependencies || make -C baselayer dependencies) && \
+    make -C baselayer bundle && \
     rm -rf node_modules && \
     chown -R cesium.cesium /cesium_env && \
     chown -R cesium.cesium /cesium && \
