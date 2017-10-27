@@ -98,7 +98,7 @@ def test_check_uncheck_tags(driver, project, dataset):
         driver.find_element_by_css_selector('[name=amplitude]').click()
 
     driver.find_element_by_css_selector('[label=General]').click()
-    driver.wait_for_xpath('//*[@name="amplitude"]', 2)
+    driver.wait_for_xpath('//*[@name="amplitude"]')
 
 
 def test_feature_descriptions_displayed(driver, project, dataset):
@@ -164,7 +164,7 @@ def test_plot_features(driver, project, dataset, featureset):
     driver.wait_for_xpath("//td[contains(text(),'{}')]".format(featureset.name)).click()
     driver.wait_for_xpath("//b[contains(text(),'Please wait while we load your plotting data...')]")
 
-    driver.wait_for_xpath("//*[@class='bk-plotdiv']", 3)
+    driver.wait_for_xpath("//*[@class='bk-plotdiv']")
 
 
 def test_delete_featureset(driver, project, dataset, featureset):
