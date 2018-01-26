@@ -56,7 +56,8 @@ def make_app(cfg, baselayer_handlers, baselayer_settings):
     handlers = baselayer_handlers + [
         (r'/project(/.*)?', ProjectHandler),
         (r'/dataset(/.*)?', DatasetHandler),
-        (r'/features(/.*)?', FeatureHandler),
+        (r'/features(/[0-9]+)?', FeatureHandler),
+        (r'/features/([0-9]+)/(download)', FeatureHandler),
         (r'/models(/[0-9]+)?', ModelHandler),
         (r'/models/([0-9]+)/(download)', ModelHandler),
         (r'/predictions(/[0-9]+)?', PredictionHandler),
