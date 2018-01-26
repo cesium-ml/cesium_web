@@ -34,3 +34,6 @@ body {
     float: left;
     padding: 1em;
 }
+a:hover {
+ cursor:pointer;
+}
