@@ -13,6 +13,7 @@ from os.path import join as pjoin
 import uuid
 import datetime
 
+import sklearn
 from sklearn.model_selection import GridSearchCV
 import joblib
 
@@ -81,8 +82,10 @@ class ModelHandler(BaseHandler):
             self.set_header("Content-Type", "application/octet-stream")
             self.set_header(
                 "Content-Disposition", "attachment; "
-                f"filename=cesium_model__joblib_{model.project.name}"
-                f"_{model.name}_{model.finished}.pkl")
+                f"filename=cesium_model_{model.project.name}"
+                f"_{model.name}_{str(model.finished).replace(' ', 'T')}"
+                f"_joblib_v{joblib.__version__}"
+                f"_sklearn_v{sklearn.__version__}.pkl")
             self.write(model_data)
         else:
             if model_id is not None:
