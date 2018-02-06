@@ -239,7 +239,10 @@ export let ModelTable = props => (
               <td>{reformatDatetime(model.created_at)}</td>
               {status}
               <td>
-                <Download url={`/models/${model.id}/download`} />
+                {
+                  done &&
+                  <Download url={`/models/${model.id}/download`} />
+                }
                 &nbsp;&nbsp;
                 <DeleteModelButton ID={model.id} />
               </td>

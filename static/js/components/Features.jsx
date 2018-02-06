@@ -259,7 +259,10 @@ export let FeatureTable = props => (
                 <td>{reformatDatetime(featureset.created_at)}</td>
                 {status}
                 <td>
-                  <Download url={`/features/${featureset.id}/download`} />
+                  {
+                    done &&
+                    <Download url={`/features/${featureset.id}/download`} />
+                  }
                   &nbsp;&nbsp;
                   <DeleteFeatureset ID={featureset.id} />
                 </td>

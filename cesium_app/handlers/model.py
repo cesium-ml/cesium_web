@@ -74,13 +74,15 @@ class ModelHandler(BaseHandler):
     @auth_or_token
     def get(self, model_id=None, action=None):
         if action == 'download':
-            model_path = Model.get_if_owned_by(model_id,
-                                               self.current_user).file_uri
+            model = Model.get_if_owned_by(model_id, self.current_user)
+            model_path = model.file_uri
             with open(model_path, 'rb') as f:
                 model_data = f.read()
             self.set_header("Content-Type", "application/octet-stream")
-            self.set_header("Content-Disposition", "attachment; "
-                            "filename=cesium_model__joblib.pkl")
+            self.set_header(
+                "Content-Disposition", "attachment; "
+                f"filename=cesium_model__joblib_{model.project.name}"
+                f"_{model.name}_{model.finished}.pkl")
             self.write(model_data)
         else:
             if model_id is not None:

@@ -20,16 +20,19 @@ class FeatureHandler(BaseHandler):
     @auth_or_token
     def get(self, featureset_id=None, action=None):
         if action == 'download':
-            fset_path = Featureset.get_if_owned_by(featureset_id,
-                                                   self.current_user).file_uri
+            featureset = Featureset.get_if_owned_by(featureset_id,
+                                                    self.current_user)
+            fset_path = featureset.file_uri
             print(fset_path)
             fset, data = featurize.load_featureset(fset_path)
             fset.index.name = 'ts_name'
             fset.columns = fset.columns.get_level_values(0)
             fset.columns.name = None
             self.set_header("Content-Type", 'text/csv; charset="utf-8"')
-            self.set_header("Content-Disposition", "attachment; "
-                            "filename=cesium_featureset.csv")
+            self.set_header(
+                "Content-Disposition", "attachment; "
+                f"filename=cesium_featureset_{featureset.project.name}"
+                f"_{featureset.name}_{featureset.finished}.csv")
             self.write(fset.to_csv(index=True))
         else:
             if featureset_id is not None:

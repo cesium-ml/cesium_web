@@ -121,8 +121,8 @@ class PredictionHandler(BaseHandler):
     @auth_or_token
     def get(self, prediction_id=None, action=None):
         if action == 'download':
-            pred_path = Prediction.get_if_owned_by(prediction_id,
-                                                   self.current_user).file_uri
+            prediction = Prediction.get_if_owned_by(prediction_id, self.current_user)
+            pred_path = prediction.file_uri
             fset, data = featurize.load_featureset(pred_path)
             result = pd.DataFrame(({'label': data['labels']}
                                    if len(data['labels']) > 0 else None),
@@ -133,8 +133,11 @@ class PredictionHandler(BaseHandler):
                 result['prediction'] = data['preds']
             result.index.name = 'ts_name'
             self.set_header("Content-Type", 'text/csv; charset="utf-8"')
-            self.set_header("Content-Disposition", "attachment; "
-                            "filename=cesium_prediction_results.csv")
+            self.set_header(
+                "Content-Disposition", "attachment; "
+                f"filename=cesium_prediction_results_{prediction.project.name}"
+                f"_{prediction.dataset.name}"
+                f"_{prediction.model.name}_{prediction.finished}.csv")
             self.write(result.to_csv(index=True))
         else:
             if prediction_id is None:
