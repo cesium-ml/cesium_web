@@ -99,6 +99,7 @@ class FeatureHandler(BaseHandler):
         fset = Featureset(name=featureset_name,
                           file_uri=fset_path,
                           project=dataset.project,
+                          dataset=dataset,
                           features_list=features_to_use,
                           custom_features_script=None)
         DBSession().add(fset)

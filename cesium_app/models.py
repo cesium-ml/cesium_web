@@ -26,6 +26,7 @@ class Dataset(Base):
     project_id = sa.Column(sa.ForeignKey('projects.id', ondelete='CASCADE'),
                            nullable=False, index=True)
     project = relationship('Project', back_populates='datasets')
+    featureset = relationship('Featureset', back_populates='dataset')
     files = relationship('DatasetFile', backref='dataset', cascade='all')
 
     def display_info(self):
@@ -66,14 +67,14 @@ class Featureset(Base):
     project_id = sa.Column(sa.ForeignKey('projects.id', ondelete='CASCADE'),
                            nullable=False, index=True)
     project = relationship('Project', back_populates='featuresets')
+    dataset_id = sa.Column(sa.ForeignKey('datasets.id'))
+    dataset = relationship('Dataset')
     name = sa.Column(sa.String(), nullable=False)
     features_list = sa.Column(sa.ARRAY(sa.VARCHAR()), nullable=False, index=True)
     custom_features_script = sa.Column(sa.String())
     file_uri = sa.Column(sa.String(), nullable=True, index=True)
     task_id = sa.Column(sa.String())
     finished = sa.Column(sa.DateTime)
-
-    project = relationship('Project')
 
 
 class Model(Base):
