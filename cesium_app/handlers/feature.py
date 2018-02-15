@@ -140,3 +140,45 @@ class FeatureHandler(BaseHandler):
     def put(self, featureset_id):
         f = Featureset.get_if_owned_by(featureset_id, self.current_user)
         self.error("Functionality for this endpoint is not yet implemented.")
+
+
+class PrecomputedFeaturesHandler(BaseHandler):
+    @auth_or_token
+    def post(self):
+        data = self.get_json()
+        if data['datasetID'] not in [None, 'None']:
+            dataset = Dataset.query.filter(Dataset.id == data['datasetID']).one()
+        else:
+            dataset = None
+        current_project = Project.get_if_owned_by(data['projectID'],
+                                                  self.current_user)
+        feature_data = StringIO(data['dataFile']['body'])
+        fset = pd.read_csv(feature_data, index_col=0, header=[0, 1])
+        if 'labels' in fset:
+            labels = fset.pop('labels').values.ravel()
+            if labels.dtype == 'O':
+                labels = [str(label) for label in labels]
+        else:
+            labels = [None]
+        fset_path = pjoin(
+            self.cfg['paths:features_folder'],
+            '{}_{}.npz'.format(uuid.uuid4(), data['dataFile']['name']))
+
+        featurize.save_featureset(fset, fset_path, labels=labels)
+
+        # Meta-features will have channel values of an empty string or a string
+        # beginning with 'Unnamed:'
+        features_list = [el[0] for el in fset.columns.tolist() if
+                         (el[1] != '' and not el[1].startswith('Unnamed:'))]
+
+        featureset = Featureset(name=data['featuresetName'],
+                                file_uri=fset_path,
+                                project=current_project,
+                                dataset=dataset,
+                                features_list=features_list,
+                                finished=datetime.datetime.now(),
+                                custom_features_script=None)
+        DBSession().add(featureset)
+        DBSession().commit()
+
+        self.success(featureset, 'cesium/FETCH_FEATURESETS')
