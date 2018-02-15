@@ -299,7 +299,7 @@ class MainContent extends React.Component {
               >
                 <WebSocket
                   url={`ws://${this.props.root}websocket`}
-                  auth_url={`${location.protocol}//${this.props.root}socket_auth_token`}
+                  auth_url={`${location.protocol}//${this.props.root}baselayer/socket_auth_token`}
                   messageHandler={messageHandler}
                   dispatch={store.dispatch}
                 />

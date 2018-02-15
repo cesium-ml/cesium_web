@@ -683,7 +683,7 @@ export function fetchUserProfile() {
       dispatch,
       FETCH_USER_PROFILE,
 
-      fetch('/profile', {
+      fetch('/baselayer/profile', {
         credentials: 'same-origin'
       })
         .then(response => response.json())
