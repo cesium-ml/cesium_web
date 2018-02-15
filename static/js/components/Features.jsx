@@ -56,9 +56,11 @@ FeaturesTab.defaultProps = {
   selectedProject: {}
 };
 
-const ftMapDispatchToProps = dispatch => (
+const ftMapDispatchToProps = (dispatch, ownProps) => (
   {
-    computeFeatures: form => dispatch(Action.computeFeatures(form))
+    computeFeatures: form => dispatch(Action.computeFeatures(form)),
+    uploadFeatures: form => dispatch(
+      Action.uploadFeatureset(form, ownProps.selectedProject))
   }
 );
 

@@ -438,6 +438,55 @@ export function computeFeatures(form) {
 }
 
 
+export function uploadFeatureset(form, currentProject) {
+
+  function fileReaderPromise(form, fileName, binary = false){
+    return new Promise(resolve => {
+      var filereader = new FileReader();
+      if (binary) {
+        filereader.readAsDataURL(form[fileName][0]);
+      } else {
+        filereader.readAsText(form[fileName][0]);
+      }
+      filereader.onloadend = () => resolve({ body: filereader.result,
+                                             name: form[fileName][0].name });
+    });
+  }
+
+  form['projectID'] = currentProject.id;
+
+  return dispatch =>
+    promiseAction(
+      dispatch,
+      UPLOAD_DATASET,
+
+      fileReaderPromise(form, 'dataFile')
+        .then(data => {
+          form['dataFile'] = data;
+          return fetch('/precomputed_features', {
+            credentials: 'same-origin',
+            method: 'POST',
+            body: JSON.stringify(form),
+            headers: new Headers({
+              'Content-Type': 'application/json'
+            })
+          })
+        })
+        .then(response => response.json())
+        .then((json) => {
+          if (json.status == 'success') {
+            dispatch(showNotification('Successfully uploaded new feature set'));
+            dispatch(hideExpander('uploadFeatsFormExpander'));
+            dispatch(resetForm('uploadFeatures'));
+          } else {
+            return Promise.reject({ _error: json.message });
+          }
+          return json;
+        })
+    );
+}
+
+
 export function deleteDataset(id) {
   return dispatch =>
     promiseAction(

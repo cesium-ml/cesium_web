@@ -2,6 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { reformatDatetime } from '../utils';
+import Plot from './Plot';
+import FoldableRow from './FoldableRow';
+import Delete from './Delete';
+import * as Action from '../actions';
 
 
 const FeaturesetsTable = props => (
@@ -59,5 +63,11 @@ const ftMapStateToProps = (state, ownProps) => (
     )
   }
 );
+
+const deleteMapDispatchToProps = dispatch => (
+  { delete: id => dispatch(Action.deleteFeatureset(id)) }
+);
+
+const DeleteFeatureset = connect(null, deleteMapDispatchToProps)(Delete);
 
 export default connect(ftMapStateToProps)(FeaturesetsTable);

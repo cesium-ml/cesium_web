@@ -13,6 +13,7 @@ from .progressbar import WebSocketProgressBar
 from os.path import join as pjoin
 import uuid
 import datetime
+from io import StringIO
 import pandas as pd
 
 

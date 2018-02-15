@@ -7,6 +7,7 @@ import { FormComponent, Form, TextInput, TextareaInput, SubmitButton,
          CheckBoxInput, SelectInput } from './Form';
 import Expand from './Expand';
 import { contains } from '../utils';
+import * as Action from '../actions';
 
 
 const Tab = ReactTabs.Tab;
@@ -29,7 +30,7 @@ const FeaturizeForm = (props) => {
       <Form onSubmit={handleSubmit} error={error}>
         <SubmitButton
           label="Compute Selected Features"
-          submiting={submitting}
+          disabled={submitting}
           resetForm={resetForm}
         />
         <TextInput label="Feature Set Name" {...featuresetName} />
