@@ -24,9 +24,8 @@ class FeatureHandler(BaseHandler):
                                                     self.current_user)
             fset_path = featureset.file_uri
             fset, data = featurize.load_featureset(fset_path)
-            fset.index.name = 'ts_name'
-            fset.columns = fset.columns.droplevel('channel')
-            fset.columns.name = None
+            if 'labels' in data:
+                fset['labels'] = data['labels']
             self.set_header("Content-Type", 'text/csv; charset="utf-8"')
             self.set_header(
                 "Content-Disposition", "attachment; "

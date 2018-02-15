@@ -1,4 +1,6 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+
 
 const Download = (props) => {
   const style = {
@@ -19,10 +21,7 @@ const Download = (props) => {
   );
 };
 Download.propTypes = {
-  ID: React.PropTypes.oneOfType([
-    React.PropTypes.number,
-    React.PropTypes.string]).isRequired,
-  url: React.PropTypes.string.isRequired
+  url: PropTypes.string.isRequired
 };
 
 export default Download;
