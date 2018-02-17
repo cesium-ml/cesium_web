@@ -49,6 +49,8 @@ export const CLICK_FEATURE_TAG_CHECKBOX = 'cesium/CLICK_FEATURE_TAG_CHECKBOX';
 export const FETCH_USER_PROFILE = 'cesium/FETCH_USER_PROFILE';
 export const RECEIVE_USER_PROFILE = 'cesium/FETCH_USER_PROFILE';
 
+export const FEATURIZE_PROGRESS = 'cesium/FEATURIZE_PROGRESS';
+
 import { showNotification, reduceNotifications } from 'baselayer/components/Notifications';
 import promiseAction from './action_tools';
 import { objectType } from './utils';
@@ -294,6 +296,13 @@ function receiveFeaturesets(featuresets) {
   };
 }
 
+// Receive updates on featurization
+export function featurizeUpdateProgress(time_update) {
+  return {
+    type: FEATURIZE_PROGRESS,
+    payload: time_update
+  };
+}
 
 export function createModel(form) {
   return dispatch =>
