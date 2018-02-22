@@ -1,3 +1,4 @@
+import os
 import collections
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import (LinearRegression, SGDClassifier,
@@ -11,6 +12,8 @@ MODELS_TYPE_DICT = {'RandomForestClassifier': RandomForestClassifier,
                     'RidgeClassifierCV': RidgeClassifierCV,
                     'BayesianARDRegressor': ARDRegression,
                     'BayesianRidgeRegressor': BayesianRidge}
+
+N_JOBS_DEFAULT = os.cpu_count()
 
 
 def make_list(x):
@@ -49,7 +52,8 @@ model_descriptions = [
          {"name": "bootstrap", "type": bool, "default": True},
          {"name": "oob_score", "type": bool, "default": False},
          {"name": "random_state", "type": int, "default": None},
-         {"name": "class_weight", "type": dict, "default": None}],
+         {"name": "class_weight", "type": dict, "default": None},
+         {"name": "n_jobs", "type": int, "default": N_JOBS_DEFAULT}],
      "type": "classifier",
      "url": "http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html"},
 
@@ -67,7 +71,8 @@ model_descriptions = [
          {"name": "bootstrap", "type": bool, "default": True},
          {"name": "oob_score", "type": bool, "default": False},
          {"name": "random_state", "type": int, "default": None},
-         {"name": "class_weight", "type": dict, "default": None}],
+         {"name": "class_weight", "type": dict, "default": None},
+         {"name": "n_jobs", "type": int, "default": N_JOBS_DEFAULT}],
      "type": "classifier",
      "url": "http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html"},
 
@@ -84,7 +89,8 @@ model_descriptions = [
          {"name": "max_leaf_nodes", "type": int, "default": None},
          {"name": "bootstrap", "type": bool, "default": True},
          {"name": "oob_score", "type": bool, "default": False},
-         {"name": "random_state", "type": int, "default": None}],
+         {"name": "random_state", "type": int, "default": None},
+         {"name": "n_jobs", "type": int, "default": N_JOBS_DEFAULT}],
      "type": "regressor",
      "url": "http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html"},
 
@@ -101,7 +107,8 @@ model_descriptions = [
          {"name": "max_leaf_nodes", "type": int, "default": None},
          {"name": "bootstrap", "type": bool, "default": True},
          {"name": "oob_score", "type": bool, "default": False},
-         {"name": "random_state", "type": int, "default": None}],
+         {"name": "random_state", "type": int, "default": None},
+         {"name": "n_jobs", "type": int, "default": N_JOBS_DEFAULT}],
      "type": "regressor",
      "url": "http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html"},
 
@@ -122,14 +129,16 @@ model_descriptions = [
          {"name": "eta0", "type": float, "default": 0.0},
          {"name": "power_t", "type": float, "default": 0.5},
          {"name": "class_weight", "type": [dict, str], "default": None},
-         {"name": "average", "type": [bool, int], "default": False}],
+         {"name": "average", "type": [bool, int], "default": False},
+         {"name": "n_jobs", "type": int, "default": N_JOBS_DEFAULT}],
      "type": "classifier",
      "url": "http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDClassifier.html"},
 
     {"name": "LinearRegressor",
      "params": [
          {"name": "fit_intercept", "type": bool, "default": True},
-         {"name": "normalize", "type": bool, "default": False}],
+         {"name": "normalize", "type": bool, "default": False},
+         {"name": "n_jobs", "type": int, "default": N_JOBS_DEFAULT}],
      "type": "regressor",
      "url": "http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html"},
 

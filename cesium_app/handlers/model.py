@@ -62,7 +62,7 @@ def _build_model_compute_statistics(fset_path, model_type, model_params,
         raise ValueError("Cannot build model for unlabeled feature set.")
     model = MODELS_TYPE_DICT[model_type](**model_params)
     if params_to_optimize:
-        model = GridSearchCV(model, params_to_optimize, n_jobs=-1)
+        model = GridSearchCV(model, params_to_optimize)
     model.fit(fset, data['labels'])
     score = model.score(fset, data['labels'])
     best_params = model.best_params_ if params_to_optimize else {}
