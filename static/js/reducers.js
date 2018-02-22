@@ -40,6 +40,20 @@ function featuresets(state=[], action) {
   switch (action.type) {
     case Action.RECEIVE_FEATURESETS:
       return action.payload;
+    case Action.FEATURIZE_PROGRESS:
+      const newState = [ ...state ];
+
+      const { percent, elapsed } = { ...action.payload };
+      const featureIdx = newState.findIndex((element) => (
+        element.id == action.payload.fsetID
+      ));
+
+      if (featureIdx != -1) {
+        const feature = newState[featureIdx];
+        feature.progress = { percent, elapsed };
+      }
+
+      return newState;
     default:
       return state;
   }

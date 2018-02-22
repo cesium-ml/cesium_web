@@ -23,6 +23,10 @@ let CesiumMessageHandler = dispatch => {
       case Action.FETCH_PREDICTIONS:
         dispatch(Action.fetchPredictions());
         break;
+      case Action.FEATURIZE_PROGRESS:
+        let time_update = message.payload;
+        dispatch(Action.featurizeUpdateProgress(time_update));
+        break;
       default:
         console.log('Unknown message received through flow:',
                     message);

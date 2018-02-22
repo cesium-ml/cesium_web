@@ -8,6 +8,8 @@ from baselayer.app.custom_exceptions import AccessError
 from baselayer.app.access import auth_or_token
 from ..models import DBSession, Dataset, Featureset, Project
 
+from .progressbar import WebSocketProgressBar
+
 from os.path import join as pjoin
 import uuid
 import datetime
@@ -32,7 +34,12 @@ class FeatureHandler(BaseHandler):
         That said, we can push notifications through to the frontend
         using flow.
         """
+        def progressbar_update(payload):
+            payload.update({'fsetID': fset.id})
+            self.action('cesium/FEATURIZE_PROGRESS', payload=payload)
+
         try:
+            WebSocketProgressBar([future], progressbar_update, interval=2)
             result = await future
 
             fset = DBSession().merge(fset)

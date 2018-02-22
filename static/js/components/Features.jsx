@@ -224,7 +224,19 @@ export let FeatureTable = props => (
               </td>
             </tr>);
 
-          const status = done ? <td>Completed {reformatDatetime(featureset.finished)}</td> : <td>In progress</td>;
+          let elapsed = "", percent = "";
+          if (featureset.progress) {
+            ({ elapsed, percent } = { ...featureset.progress });
+          }
+
+          let status;
+          if (done) {
+            status = <td>Completed { reformatDatetime(featureset.finished) }</td>;
+          } else if (elapsed == "") {
+            status = <td>In progress...</td>;
+          } else {
+            status = <td>In progress: { percent }%, { elapsed }s</td>;
+          }
 
           return (
             <FoldableRow key={idx}>
