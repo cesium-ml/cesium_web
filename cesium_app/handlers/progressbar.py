@@ -32,13 +32,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from contextlib import contextmanager
-
 from distributed.diagnostics.progressbar import ProgressBar
-from distributed.utils import LoopRunner
-
 from tornado.ioloop import IOLoop
 
+from contextlib import contextmanager
 import sys
 
 
