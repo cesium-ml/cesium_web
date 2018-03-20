@@ -39,7 +39,7 @@ section_end "init.db"
 
 
 section "install.chromedriver"
-wget https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux64.zip
+wget https://chromedriver.storage.googleapis.com/2.37/chromedriver_linux64.zip
 sudo unzip chromedriver_linux64.zip chromedriver -d /usr/local/bin
 rm chromedriver_linux64.zip
 which chromium-browser
