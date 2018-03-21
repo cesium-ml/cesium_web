@@ -38,10 +38,12 @@ make db_init
 section_end "init.db"
 
 
-section "install.chromedriver"
+section "install.chromedriver.and.selenium"
 wget https://chromedriver.storage.googleapis.com/2.37/chromedriver_linux64.zip
 sudo unzip chromedriver_linux64.zip chromedriver -d /usr/local/bin
 rm chromedriver_linux64.zip
 which chromium-browser
 chromium-browser --version
-section_end "install.chromedriver"
+pip install --upgrade selenium
+python -c "import selenium; print(f'Selenium {selenium.__version__}')"
+section_end "install.chromedriver.and.selenium"
