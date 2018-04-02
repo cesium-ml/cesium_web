@@ -22,6 +22,7 @@ paths:
 
     upload_folder: './data/uploads'
     custom_feature_script_folder: './data/uploads/custom_feature_scripts'
+    downloads_folder: '/tmp'
 
 database:
     database: cesium

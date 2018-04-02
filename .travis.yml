@@ -54,7 +54,7 @@ addons:
     - supervisor
     - nginx
     - xvfb
-    - chromium-browser
+    - firefox
     - unzip
     - libnss3
     - libgconf-2-4
