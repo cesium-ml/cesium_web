@@ -60,9 +60,12 @@ def _build_model_compute_statistics(fset_path, model_type, model_params,
     fset, data = featurize.load_featureset(fset_path)
     if len(data['labels']) != len(fset):
         raise ValueError("Cannot build model for unlabeled feature set.")
+    n_jobs = (model_params.pop('n_jobs') if 'n_jobs' in model_params
+              and params_to_optimize else -1)
     model = MODELS_TYPE_DICT[model_type](**model_params)
     if params_to_optimize:
-        model = GridSearchCV(model, params_to_optimize)
+        model = GridSearchCV(model, params_to_optimize,
+                             n_jobs=n_jobs)
     model.fit(fset, data['labels'])
     score = model.score(fset, data['labels'])
     best_params = model.best_params_ if params_to_optimize else {}
