@@ -10,6 +10,7 @@ import * as Action from '../actions';
 import { reformatDatetime } from '../utils';
 import CesiumTooltip from './Tooltip';
 import FoldableRow from './FoldableRow';
+import { showNotification } from 'baselayer/components/Notifications';
 
 
 const DatasetsTab = props => (
@@ -99,9 +100,10 @@ const dsMapStateToProps = (state, ownProps) => (
 
 const dsMapDispatchToProps = (dispatch, ownProps) => (
   {
-    onSubmit: form => (
-      dispatch(Action.uploadDataset(form))
-    )
+    onSubmit: form => {
+      dispatch(showNotification('Dataset upload has begun.'));
+      return dispatch(Action.uploadDataset(form));
+    }
   }
 );
 
