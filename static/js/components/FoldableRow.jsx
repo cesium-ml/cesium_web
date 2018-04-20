@@ -53,7 +53,8 @@ class FoldableRow extends Component {
         e, {
           style: this.state.folded ? {} : openStyleContent,
           key: idx
-        })
+        }
+      )
     ));
 
     return (
@@ -69,6 +70,9 @@ FoldableRow.propTypes = {
     PropTypes.arrayOf(PropTypes.oneOfType([
       PropTypes.node, PropTypes.element])),
     PropTypes.node, PropTypes.element])
+};
+FoldableRow.defaultProps = {
+  children: []
 };
 
 export default FoldableRow;

@@ -1,7 +1,9 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from "react-redux";
 import { reduxForm } from 'redux-form';
 
+import { showNotification } from 'baselayer/components/Notifications';
 import { FormComponent, Form, TextInput, FileInput, SubmitButton } from './Form';
 import * as Validate from '../validate';
 import Expand from './Expand';
@@ -10,7 +12,6 @@ import * as Action from '../actions';
 import { reformatDatetime } from '../utils';
 import CesiumTooltip from './Tooltip';
 import FoldableRow from './FoldableRow';
-import { showNotification } from 'baselayer/components/Notifications';
 
 
 const DatasetsTab = props => (
@@ -25,12 +26,15 @@ const DatasetsTab = props => (
   </div>
 );
 DatasetsTab.propTypes = {
-  selectedProject: React.PropTypes.object
+  selectedProject: PropTypes.object
+};
+DatasetsTab.defaultProps = {
+  selectedProject: {}
 };
 
 let DatasetForm = (props) => {
   const { fields: { datasetName, headerFile, tarFile },
-          error, handleSubmit, submitting } = props;
+    error, handleSubmit, submitting } = props;
 
   const description = {
     fontStyle: 'italic',
@@ -49,7 +53,7 @@ let DatasetForm = (props) => {
         />
 
         <div style={description}>
-          Format: comma-separated with columns "filename" (of a time series from the uploaded archive), "label" (class label or numerical value), and any metafeatures (numerical).
+          {'Format: comma-separated with columns "filename" (of a time series from the uploaded archive), "label" (class label or numerical value), and any metafeatures (numerical).'}
         </div>
 
         <FileInput
@@ -59,7 +63,7 @@ let DatasetForm = (props) => {
           data-for="tarfileTooltip"
         />
         <div style={description}>
-          Format: zipfile or tarfile containing time series files, each of which is comma-separated with columns "time", "value", "error" (optional).
+          {'Format: zipfile or tarfile containing time series files, each of which is comma-separated with columns "time", "value", "error" (optional).'}
         </div>
 
         <SubmitButton label="Upload Dataset" disabled={submitting} />
@@ -67,7 +71,7 @@ let DatasetForm = (props) => {
 
       <CesiumTooltip
         id="headerfileTooltip"
-        text={["filename,label", <br />, "ts1.dat,class_A", <br />, "..."]}
+        text={["filename,label", <br key={1} />, "ts1.dat,class_A", <br key={2} />, "..."]}
       />
       <CesiumTooltip
         id="tarfileTooltip"
@@ -83,10 +87,13 @@ let DatasetForm = (props) => {
   );
 };
 DatasetForm.propTypes = {
-  fields: React.PropTypes.object.isRequired,
-  error: React.PropTypes.string,
-  handleSubmit: React.PropTypes.func.isRequired,
-  submitting: React.PropTypes.bool.isRequired
+  fields: PropTypes.object.isRequired,
+  error: PropTypes.string,
+  handleSubmit: PropTypes.func.isRequired,
+  submitting: PropTypes.bool.isRequired
+};
+DatasetForm.defaultProps = {
+  error: ""
 };
 
 const dsMapStateToProps = (state, ownProps) => (
@@ -100,7 +107,7 @@ const dsMapStateToProps = (state, ownProps) => (
 
 const dsMapDispatchToProps = (dispatch, ownProps) => (
   {
-    onSubmit: form => {
+    onSubmit: (form) => {
       dispatch(showNotification('Dataset upload has begun.'));
       return dispatch(Action.uploadDataset(form));
     }
@@ -119,7 +126,7 @@ DatasetForm = reduxForm({
 }, dsMapStateToProps, dsMapDispatchToProps)(DatasetForm);
 
 
-let DatasetInfo = props => (
+const DatasetInfo = props => (
   <table className="table">
     <thead>
       <tr>
@@ -140,7 +147,7 @@ let DatasetInfo = props => (
   </table>
 );
 DatasetInfo.propTypes = {
-  dataset: React.PropTypes.object.isRequired
+  dataset: PropTypes.object.isRequired
 };
 
 export let DatasetTable = props => (
@@ -177,7 +184,7 @@ export let DatasetTable = props => (
   </table>
 );
 DatasetTable.propTypes = {
-  datasets: React.PropTypes.arrayOf(React.PropTypes.object)
+  datasets: PropTypes.arrayOf(PropTypes.object).isRequired
 };
 
 

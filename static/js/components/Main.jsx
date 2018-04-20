@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect, Provider } from 'react-redux';
 import ReactDOM from 'react-dom';
 import ReactTabs from 'react-tabs';
@@ -6,25 +7,22 @@ import ReactTabs from 'react-tabs';
 import 'bootstrap-css';
 import 'bootstrap';
 
+import { Notifications } from 'baselayer/components/Notifications';
+import WebSocket from 'baselayer/components/WebSocket';
 import configureStore from '../configureStore';
 import * as Action from '../actions';
-import WebSocket from 'baselayer/components/WebSocket';
 import CesiumMessageHandler from '../CesiumMessageHandler';
 import { ProjectSelector, AddProject, ProjectTab } from './Projects';
 import DatasetsTab from './Datasets';
 import FeaturesTab from './Features';
 import ModelsTab from './Models';
 import PredictTab from './Predictions';
-import { Notifications } from 'baselayer/components/Notifications';
 import colorScheme from './colorscheme';
 import Progress from './Progress';
 import CesiumTooltip from './Tooltip';
 import UserProfile from './UserProfile';
 
-const Tab = ReactTabs.Tab;
-const Tabs = ReactTabs.Tabs;
-const TabList = ReactTabs.TabList;
-const TabPanel = ReactTabs.TabPanel;
+const { Tab, Tabs, TabList, TabPanel } = { ...ReactTabs };
 const cs = colorScheme;
 
 const store = configureStore();
@@ -222,7 +220,7 @@ class MainContent extends React.Component {
               />
             </div>
           </div>
-          <UserProfile style={style.topbar.login}/>
+          <UserProfile style={style.topbar.login} />
         </div>
 
         <div style={style.sidebar}>
@@ -299,7 +297,7 @@ class MainContent extends React.Component {
               >
                 <WebSocket
                   url={`ws://${this.props.root}websocket`}
-                  auth_url={`${location.protocol}//${this.props.root}baselayer/socket_auth_token`}
+                  auth_url={`${window.location.protocol}//${this.props.root}baselayer/socket_auth_token`}
                   messageHandler={messageHandler}
                   dispatch={store.dispatch}
                 />
@@ -315,7 +313,7 @@ class MainContent extends React.Component {
             <TabPanel style={style.tabPanel}>
               <FeaturesTab
                 selectedProject={this.props.selectedProject}
-                featurePlotURL={`${location.protocol}//${this.props.root}plot_features`}
+                featurePlotURL={`${window.location.protocol}//${this.props.root}plot_features`}
               />
             </TabPanel>
             <TabPanel style={style.tabPanel}>
@@ -372,25 +370,30 @@ class MainContent extends React.Component {
   }
 }
 MainContent.propTypes = {
-  selectedProject: React.PropTypes.object.isRequired,
-  root: React.PropTypes.string.isRequired,
-  logoSpinAngle: React.PropTypes.number.isRequired,
-  spinLogo: React.PropTypes.func
+  selectedProject: PropTypes.object,
+  root: PropTypes.string.isRequired,
+  logoSpinAngle: PropTypes.number.isRequired,
+  spinLogo: PropTypes.func.isRequired,
+  username: PropTypes.string
+};
+MainContent.defaultProps = {
+  username: "",
+  selectedProject: {}
 };
 
 const mapStateToProps = function (state) {
   // This can be improved by using
   // http://redux-form.com/6.0.0-alpha.13/docs/api/FormValueSelector.md/
-  const projectSelector = state.form.projectSelector;
+  const { projectSelector } = { ...state.form };
   const selectedProjectId = projectSelector ? projectSelector.project.value : "";
   let selectedProject = state.projects.projectList.filter(
     p => (p.id == selectedProjectId)
   );
 
-  const firstProject = state.projects.projectList[0] || { id: '', label: '', description: '' };
+  const [firstProject] = state.projects.projectList || { id: '', label: '', description: '' };
 
   if (selectedProject.length > 0) {
-    selectedProject = selectedProject[0];
+    [selectedProject] = selectedProject;
   } else {
     selectedProject = firstProject;
   }
@@ -420,7 +423,7 @@ MainContent = connect(mapStateToProps, mapDispatchToProps)(MainContent);
 
 ReactDOM.render(
   <Provider store={store}>
-    <MainContent root={location.host + location.pathname} />
+    <MainContent root={window.location.host + window.location.pathname} />
   </Provider>,
   document.getElementById('content')
 );

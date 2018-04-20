@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
 
-import * as Action from './actions';
 import { reducer as notifications } from 'baselayer/components/Notifications';
+import * as Action from './actions';
 import { contains, joinObjectValues } from './utils';
 
 
@@ -40,20 +40,21 @@ function featuresets(state=[], action) {
   switch (action.type) {
     case Action.RECEIVE_FEATURESETS:
       return action.payload;
-    case Action.FEATURIZE_PROGRESS:
-      const newState = [ ...state ];
+    case Action.FEATURIZE_PROGRESS: {
+      const newState = [...state];
 
       const { percent, elapsed } = { ...action.payload };
-      const featureIdx = newState.findIndex((element) => (
-        element.id == action.payload.fsetID
+      const featureIdx = newState.findIndex(element => (
+        element.id === action.payload.fsetID
       ));
 
-      if (featureIdx != -1) {
+      if (featureIdx !== -1) {
         const feature = newState[featureIdx];
         feature.progress = { percent, elapsed };
       }
 
       return newState;
+    }
     default:
       return state;
   }
@@ -68,13 +69,13 @@ function features(state={}, action) {
       const allFeatsList = joinObjectValues(action.payload.features_by_category);
 
       return { ...action.payload,
-               allFeatsList,
-               tagList,
-               checkedTags: tagList.slice(0),
-               featsWithCheckedTags: allFeatsList.slice(0) };
+        allFeatsList,
+        tagList,
+        checkedTags: tagList.slice(0),
+        featsWithCheckedTags: allFeatsList.slice(0) };
     }
     case Action.CLICK_FEATURE_TAG_CHECKBOX: {
-      let checkedTags = state.checkedTags.slice(0);
+      const checkedTags = state.checkedTags.slice(0);
 
       if (checkedTags.indexOf(action.payload.tag) > -1) {
         checkedTags.splice(checkedTags.indexOf(action.payload.tag), 1);
@@ -85,8 +86,8 @@ function features(state={}, action) {
       const featsWithCheckedTags = state.allFeatsList.filter(feature => (
         state.tags[feature].some(tag => contains(checkedTags, tag))));
       return { ...state,
-               featsWithCheckedTags,
-               checkedTags };
+        featsWithCheckedTags,
+        checkedTags };
     }
     default:
       return state;
@@ -124,10 +125,12 @@ const myFormReducer = theirFormReducer => (
       }
       case Action.GROUP_TOGGLE_FEATURES: {
         const field_names = Object.keys(state.featurize).filter(
-          field_name => contains(action.payload.ctgy_list, field_name));
+          field_name => contains(action.payload.ctgy_list, field_name)
+        );
         const featurizeFormState = Object.assign({}, state.featurize);
         const allAreChecked = (field_names.filter(
-          el => !featurizeFormState[el].value).length === 0);
+          el => !featurizeFormState[el].value
+        ).length === 0);
         for (const idx in field_names) {
           featurizeFormState[field_names[idx]].value = !allAreChecked;
         }

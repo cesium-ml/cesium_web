@@ -1,10 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from "react-redux";
 import { reduxForm } from 'redux-form';
 import ReactTabs from 'react-tabs';
 
 import { FormComponent, Form, TextInput, TextareaInput, SubmitButton,
-         CheckBoxInput, SelectInput } from './Form';
+  CheckBoxInput, SelectInput } from './Form';
 import * as Validate from '../validate';
 import Expand from './Expand';
 import * as Action from '../actions';
@@ -13,16 +14,13 @@ import FoldableRow from './FoldableRow';
 import { reformatDatetime, contains } from '../utils';
 import Delete from './Delete';
 
-const Tab = ReactTabs.Tab;
-const Tabs = ReactTabs.Tabs;
-const TabList = ReactTabs.TabList;
-const TabPanel = ReactTabs.TabPanel;
+const { Tab, Tabs, TabList, TabPanel } = { ...ReactTabs };
 
 
 let FeaturizeForm = (props) => {
   const { fields, fields: { datasetID, featuresetName, customFeatsCode },
-          handleSubmit, submitting, resetForm, error, featuresList,
-          featureDescriptions } = props;
+    handleSubmit, submitting, resetForm, error, featuresList,
+    featureDescriptions } = props;
   const datasets = props.datasets.map(ds => (
     { id: ds.id,
       label: ds.name }
@@ -61,20 +59,22 @@ let FeaturizeForm = (props) => {
         <Tabs>
           <TabList>
             {
-              Object.keys(props.featuresByCategory).map(ctgy => (
-                <Tab>{ctgy}</Tab>
+              Object.keys(props.featuresByCategory).map((ctgy, idx) => (
+                <Tab key={idx}>{ctgy}</Tab>
               ))
             }
             <Tab>Custom Features</Tab>
           </TabList>
           {
-            Object.keys(props.featuresByCategory).map(ctgy => (
-              <TabPanel>
+            Object.keys(props.featuresByCategory).map((ctgy, idx) => (
+              <TabPanel key={idx}>
                 <a
                   href="#"
                   onClick={() => {
                     props.dispatch(Action.groupToggleCheckedFeatures(
-                      props.featuresByCategory[ctgy])); }}
+                      props.featuresByCategory[ctgy]
+));
+}}
                 >
                   Check/Uncheck All
                 </a>
@@ -83,8 +83,8 @@ let FeaturizeForm = (props) => {
                     {
                       props.featuresByCategory[ctgy].filter(feat => (
                         contains(featuresList, feat)
-                      )).map((feature, idx) => (
-                        <tr key={idx} style={idx % 2 == 0 ? { backgroundColor: "#f2f2f2" } : { }}>
+                      )).map((feature, idx2) => (
+                        <tr key={idx2} style={idx2 % 2 == 0 ? { backgroundColor: "#f2f2f2" } : { }}>
                           <td style={{ paddingLeft: "20px" }}>
                             <CheckBoxInput
                               key={feature}
@@ -106,7 +106,8 @@ let FeaturizeForm = (props) => {
           <TabPanel>
             <TextareaInput
               label="Enter Python code defining custom features"
-              rows="10" cols="50"
+              rows="10"
+              cols="50"
               {...customFeatsCode}
             />
           </TabPanel>
@@ -116,17 +117,24 @@ let FeaturizeForm = (props) => {
   );
 };
 FeaturizeForm.propTypes = {
-  fields: React.PropTypes.object.isRequired,
-  datasets: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-  error: React.PropTypes.string,
-  handleSubmit: React.PropTypes.func.isRequired,
-  submitting: React.PropTypes.bool.isRequired,
-  resetForm: React.PropTypes.func.isRequired,
-  selectedProject: React.PropTypes.object,
-  featuresByCategory: React.PropTypes.object,
-  tagList: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
-  featuresList: React.PropTypes.array,
-  featureDescriptions: React.PropTypes.object
+  fields: PropTypes.object.isRequired,
+  datasets: PropTypes.arrayOf(PropTypes.object).isRequired,
+  error: PropTypes.string,
+  handleSubmit: PropTypes.func.isRequired,
+  submitting: PropTypes.bool.isRequired,
+  resetForm: PropTypes.func.isRequired,
+  selectedProject: PropTypes.object,
+  featuresByCategory: PropTypes.object,
+  tagList: PropTypes.arrayOf(PropTypes.string).isRequired,
+  featuresList: PropTypes.array,
+  featureDescriptions: PropTypes.object
+};
+FeaturizeForm.defaultProps = {
+  error: "",
+  selectedProject: {},
+  featuresByCategory: {},
+  featuresList: [],
+  featureDescriptions: {}
 };
 
 
@@ -147,10 +155,11 @@ const mapStateToProps = (state, ownProps) => {
     featureDescriptions: state.features.descriptions,
     datasets: filteredDatasets,
     fields: featuresList.concat(
-      ['datasetID', 'featuresetName', 'customFeatsCode']),
+      ['datasetID', 'featuresetName', 'customFeatsCode']
+    ),
     initialValues: { ...initialValues,
-                    datasetID: zerothDataset ? zerothDataset.id.toString() : "",
-                    customFeatsCode: "" }
+      datasetID: zerothDataset ? zerothDataset.id.toString() : "",
+      customFeatsCode: "" }
   };
 };
 
@@ -188,9 +197,12 @@ let FeaturesTab = (props) => {
   );
 };
 FeaturesTab.propTypes = {
-  featurePlotURL: React.PropTypes.string.isRequired,
-  computeFeatures: React.PropTypes.func.isRequired,
-  selectedProject: React.PropTypes.object
+  featurePlotURL: PropTypes.string.isRequired,
+  computeFeatures: PropTypes.func.isRequired,
+  selectedProject: PropTypes.object
+};
+FeaturesTab.defaultProps = {
+  selectedProject: {}
 };
 
 const ftMapDispatchToProps = dispatch => (
@@ -224,7 +236,8 @@ export let FeatureTable = props => (
               </td>
             </tr>);
 
-          let elapsed = "", percent = "";
+          let elapsed = "";
+          let percent = "";
           if (featureset.progress) {
             ({ elapsed, percent } = { ...featureset.progress });
           }
@@ -248,15 +261,19 @@ export let FeatureTable = props => (
               </tr>
               {foldedContent}
             </FoldableRow>
-          ); })
+          );
+})
       }
 
     </table>
   </div>
 );
 FeatureTable.propTypes = {
-  featuresets: React.PropTypes.arrayOf(React.PropTypes.object),
-  featurePlotURL: React.PropTypes.string
+  featuresets: PropTypes.arrayOf(PropTypes.object).isRequired,
+  featurePlotURL: PropTypes.string
+};
+FeatureTable.defaultProps = {
+  featurePlotURL: null
 };
 
 

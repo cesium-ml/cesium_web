@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import ReactTooltip from 'react-tooltip';
 
 const CesiumTooltip = props => (
@@ -9,13 +10,13 @@ const CesiumTooltip = props => (
   </ReactTooltip>
 );
 CesiumTooltip.propTypes = {
-  id: React.PropTypes.string.isRequired,
-  text: React.PropTypes.oneOfType([
-    React.PropTypes.string,
-    React.PropTypes.array
+  id: PropTypes.string.isRequired,
+  text: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.array
   ]).isRequired,
-  place: React.PropTypes.string,
-  delay: React.PropTypes.number
+  place: PropTypes.string,
+  delay: PropTypes.number
 };
 CesiumTooltip.defaultProps = {
   place: 'top',

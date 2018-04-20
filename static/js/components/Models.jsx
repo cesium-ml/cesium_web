@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
 
@@ -23,13 +24,16 @@ const ModelsTab = props => (
   </div>
 );
 ModelsTab.propTypes = {
-  selectedProject: React.PropTypes.object
+  selectedProject: PropTypes.object
+};
+ModelsTab.defaultProps = {
+  selectedProject: null
 };
 
 let NewModelForm = (props) => {
   const { fields,
-          fields: { modelName, featureset, modelType },
-          error, handleSubmit } = props;
+    fields: { modelName, featureset, modelType },
+    error, handleSubmit } = props;
 
   const skModels = props.models;
   const selectModels = [];
@@ -45,13 +49,13 @@ let NewModelForm = (props) => {
   }
 
   const featuresets = props.featuresets
-                        .filter(fs => !Validate.isEmpty(fs.finished))
-                        .map(fs => (
-                          {
-                            id: fs.id,
-                            label: fs.name
-                          }
-                        ));
+    .filter(fs => !Validate.isEmpty(fs.finished))
+    .map(fs => (
+      {
+        id: fs.id,
+        label: fs.name
+      }
+    ));
 
   const chosenModel = props.models[modelType.value];
 
@@ -62,12 +66,14 @@ let NewModelForm = (props) => {
       <SelectInput
         label="Feature Set"
         key={props.selectedProject.id}
-        options={featuresets} {...featureset}
+        options={featuresets}
+        {...featureset}
       />
 
       <SelectInput
         label="Model Type"
-        options={selectModels} {...modelType}
+        options={selectModels}
+        {...modelType}
       />
 
       <Expand label="Choose Model Parameters" id="modelParameterExpander">
@@ -79,11 +85,16 @@ let NewModelForm = (props) => {
   );
 };
 NewModelForm.propTypes = {
-  fields: React.PropTypes.object.isRequired,
-  error: React.PropTypes.string,
-  handleSubmit: React.PropTypes.func.isRequired,
-  featuresets: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-  models: React.PropTypes.object.isRequired
+  fields: PropTypes.object.isRequired,
+  error: PropTypes.string,
+  handleSubmit: PropTypes.func.isRequired,
+  featuresets: PropTypes.arrayOf(PropTypes.object).isRequired,
+  models: PropTypes.object.isRequired,
+  selectedProject: PropTypes.object
+};
+NewModelForm.defaultProps = {
+  error: null,
+  selectedProject: null
 };
 
 const mapStateToProps = function (state, ownProps) {
@@ -142,12 +153,12 @@ export const Model = (props) => {
   const style = {
   };
 
-  const model = props.model;
+  const { model } = { ...props };
 
   return (
     <div style={style}>
       <h3>{model.name}</h3>
-    {model.params.map((param, idx) => {
+      {model.params.map((param, idx) => {
       const pProps = props[param.name];
       if (param.type === 'bool') {
         return <CheckBoxInput key={idx} label={param.name} {...(pProps)} />;
@@ -158,12 +169,9 @@ export const Model = (props) => {
     </div>
   );
 };
-Model.propTypes = {
-  model: React.PropTypes.object.isRequired
-};
 
 
-let ModelInfo = props => (
+const ModelInfo = props => (
   <table className="table">
     <thead>
       <tr>
@@ -181,8 +189,8 @@ let ModelInfo = props => (
           <table>
             <tbody>
               {
-                Object.keys(props.model.params).map(param => (
-                  <tr>
+                Object.keys(props.model.params).map((param, idx) => (
+                  <tr key={idx}>
                     <td>{param}</td>
                     <td style={{ paddingLeft: "5px" }}>{JSON.stringify(props.model.params[param])}</td>
                   </tr>
@@ -199,7 +207,7 @@ let ModelInfo = props => (
   </table>
 );
 ModelInfo.propTypes = {
-  model: React.PropTypes.object.isRequired
+  model: PropTypes.object.isRequired
 };
 
 export let ModelTable = props => (
@@ -242,11 +250,15 @@ export let ModelTable = props => (
 ModelTable.propTypes = {
   models: PropTypes.arrayOf(PropTypes.object)
 };
+ModelTable.defaultProps = {
+  models: null
+};
 
 const mtMapStateToProps = (state, ownProps) => (
   {
     models: state.models.filter(
-      model => (model.project_id === ownProps.selectedProject.id))
+      model => (model.project_id === ownProps.selectedProject.id)
+    )
   }
 );
 

@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { toggleExpander } from '../actions';
 import Dot from './Dot';
@@ -61,13 +62,18 @@ let Expand = (props) => {
 Expand.propTypes = {
   expandBoxStyle: PropTypes.object,
   style: PropTypes.object,
-  label: PropTypes.string,
-  toggle: PropTypes.func,
+  label: PropTypes.string.isRequired,
+  toggle: PropTypes.func.isRequired,
   opened: PropTypes.bool,
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.oneOfType([
       PropTypes.node, PropTypes.element])),
-    PropTypes.node, PropTypes.element])
+    PropTypes.node, PropTypes.element]).isRequired
+};
+Expand.defaultProps = {
+  expandBoxStyle: {},
+  style: {},
+  opened: false
 };
 
 const mapStateToProps = (state, ownProps) => (

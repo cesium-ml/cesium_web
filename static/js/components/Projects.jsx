@@ -13,7 +13,7 @@ const cs = colorScheme;
 
 const ProjectForm = (props) => {
   const { fields: { projectName, projectDescription },
-          error, resetForm, submitting, handleSubmit } = props;
+    error, resetForm, submitting, handleSubmit } = props;
 
   return (
     <Form onSubmit={handleSubmit} error={error}>
@@ -21,18 +21,22 @@ const ProjectForm = (props) => {
       <TextInput label="Project Description (optional)" {...projectDescription} />
       <SubmitButton
         label={props.label}
-        submitting={submitting} resetForm={resetForm}
+        submitting={submitting}
+        resetForm={resetForm}
       />
     </Form>
   );
 };
 ProjectForm.propTypes = {
-  fields: React.PropTypes.object.isRequired,
-  label: React.PropTypes.string.isRequired,
-  error: React.PropTypes.string,
-  handleSubmit: React.PropTypes.func.isRequired,
-  submitting: React.PropTypes.bool.isRequired,
-  resetForm: React.PropTypes.func.isRequired
+  fields: PropTypes.object.isRequired,
+  label: PropTypes.string.isRequired,
+  error: PropTypes.string,
+  handleSubmit: PropTypes.func.isRequired,
+  submitting: PropTypes.bool.isRequired,
+  resetForm: PropTypes.func.isRequired
+};
+ProjectForm.defaultProps = {
+  error: null
 };
 
 const validate = Validate.createValidator({
@@ -123,7 +127,8 @@ let AddProject = (props) => {
     <Expand
       id={props.id}
       label={props.label || "Add Project"}
-      expandBoxStyle={expandBoxStyle} style={props.style}
+      expandBoxStyle={expandBoxStyle}
+      style={props.style}
     >
       <NewProjectForm label="Create Project" onSubmit={props.addProject} />
     </Expand>
@@ -135,6 +140,10 @@ AddProject.propTypes = {
   label: PropTypes.string,
   addProject: PropTypes.func.isRequired,
   style: PropTypes.object
+};
+AddProject.defaultProps = {
+  label: "",
+  style: {}
 };
 
 let mapDispatchToProps = dispatch => (
@@ -176,10 +185,14 @@ let ProjectSelector = (props) => {
   );
 };
 ProjectSelector.propTypes = {
-  fields: PropTypes.object,
+  fields: PropTypes.object.isRequired,
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
   style: PropTypes.object,
   label: PropTypes.string
+};
+ProjectSelector.defaultProps = {
+  style: {},
+  label: ""
 };
 
 const psMapStateToProps = (state) => {
@@ -221,5 +234,5 @@ export const CurrentProject = (props) => {
 };
 
 CurrentProject.propTypes = {
-  selectedProject: PropTypes.object
+  selectedProject: PropTypes.object.isRequired
 };

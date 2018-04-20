@@ -1,15 +1,15 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import colorScheme from './colorscheme';
 
 const cs = colorScheme;
 
 const Dot = (props) => {
-  let value = props.value;
+  let { value, height } = { ...props };
   if (value === undefined) {
     value = '···';
   }
 
-  let height = props.height;
   if (height === undefined) {
     height = '1em';
   }
@@ -37,9 +37,15 @@ const Dot = (props) => {
   );
 };
 Dot.propTypes = {
-  value: React.PropTypes.string.isRequired,
-  style: React.PropTypes.object,
-  height: React.PropTypes.string
+  /* eslint-disable react/no-unused-prop-types */
+  value: PropTypes.string.isRequired,
+  style: PropTypes.object,
+  height: PropTypes.string
+  /* eslint-enable react/no-unused-prop-types */
+};
+Dot.defaultProps = {
+  style: {},
+  height: ""
 };
 
 export default Dot;
