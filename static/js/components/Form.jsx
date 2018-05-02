@@ -1,4 +1,6 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
+
 
 export const FormComponent = (props) => {
 };
@@ -27,6 +29,10 @@ export const Error = (props) => {
 Error.propTypes = {
   error: PropTypes.string,
   touched: PropTypes.bool
+};
+Error.defaultProps = {
+  error: "",
+  touched: false
 };
 
 export const Form = (props) => {
@@ -57,7 +63,10 @@ Form.propTypes = {
     PropTypes.element,
     PropTypes.arrayOf(PropTypes.element),
     PropTypes.arrayOf(PropTypes.node)
-  ])
+  ]).isRequired
+};
+Form.defaultProps = {
+  error: ""
 };
 
 export const TextInput = (props) => {
@@ -87,8 +96,8 @@ export const TextInput = (props) => {
 };
 
 TextInput.propTypes = {
-  label: PropTypes.string,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
 };
 
 export const TextareaInput = (props) => {
@@ -116,8 +125,8 @@ export const TextareaInput = (props) => {
   );
 };
 TextareaInput.propTypes = {
-  label: PropTypes.string,
-  value: PropTypes.string
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired
 };
 
 export const CheckBoxInput = (props) => {
@@ -138,8 +147,11 @@ export const CheckBoxInput = (props) => {
   );
 };
 CheckBoxInput.propTypes = {
-  label: PropTypes.string,
+  label: PropTypes.string.isRequired,
   divStyle: PropTypes.object
+};
+CheckBoxInput.defaultProps = {
+  divStyle: {}
 };
 
 export const SelectInput = (props) => {
@@ -186,6 +198,10 @@ SelectInput.propTypes = {
   }))
   /* eslint-enable react/no-unused-prop-types */
 };
+SelectInput.defaultProps = {
+  label: "",
+  options: []
+};
 
 
 export const SubmitButton = (props) => {
@@ -209,7 +225,10 @@ SubmitButton.propTypes = {
   label: PropTypes.string,
   disabled: PropTypes.bool
 };
-
+SubmitButton.defaultProps = {
+  label: "",
+  disabled: false
+};
 
 export const FileInput = (props) => {
   const fileInputStyle = {
@@ -233,9 +252,9 @@ export const FileInput = (props) => {
   );
 };
 FileInput.propTypes = {
-  label: PropTypes.string,
+  label: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.object
-  ])
+  ]).isRequired
 };

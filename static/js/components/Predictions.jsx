@@ -1,9 +1,10 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
 
 import { FormComponent, SelectInput, SubmitButton,
-         Form } from './Form';
+  Form } from './Form';
 
 import * as Validate from '../validate';
 
@@ -16,7 +17,7 @@ import Delete from './Delete';
 
 let PredictForm = (props) => {
   const { fields: { modelID, datasetID }, handleSubmit, submitting, resetForm,
-          error } = props;
+    error } = props;
 
   const datasets = props.datasets.map(ds => (
     { id: ds.id,
@@ -24,11 +25,11 @@ let PredictForm = (props) => {
   ));
 
   const models = props.models
-                   .filter(model => !Validate.isEmpty(model.finished))
-                   .map(model => (
-                     { id: model.id,
-                       label: model.name }
-                   ));
+    .filter(model => !Validate.isEmpty(model.finished))
+    .map(model => (
+      { id: model.id,
+        label: model.name }
+    ));
 
   return (
     <div>
@@ -55,14 +56,17 @@ let PredictForm = (props) => {
   );
 };
 PredictForm.propTypes = {
-  fields: React.PropTypes.object.isRequired,
-  error: React.PropTypes.string,
-  handleSubmit: React.PropTypes.func.isRequired,
-  resetForm: React.PropTypes.func.isRequired,
-  submitting: React.PropTypes.bool.isRequired,
-  datasets: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-  models: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-  selectedProject: React.PropTypes.object.isRequired
+  fields: PropTypes.object.isRequired,
+  error: PropTypes.string,
+  handleSubmit: PropTypes.func.isRequired,
+  resetForm: PropTypes.func.isRequired,
+  submitting: PropTypes.bool.isRequired,
+  datasets: PropTypes.arrayOf(PropTypes.object).isRequired,
+  models: PropTypes.arrayOf(PropTypes.object).isRequired,
+  selectedProject: PropTypes.object.isRequired
+};
+PredictForm.defaultProps = {
+  error: null
 };
 
 
@@ -80,7 +84,7 @@ const mapStateToProps = (state, ownProps) => {
     models: filteredModels,
     fields: ['modelID', 'datasetID'],
     initialValues: { modelID: zerothModel ? zerothModel.id : '',
-                    datasetID: zerothDataset ? zerothDataset.id : '' }
+      datasetID: zerothDataset ? zerothDataset.id : '' }
   };
 };
 
@@ -139,7 +143,8 @@ let PredictionsTable = props => (
             </tr>
             {foldedContent}
           </FoldableRow>
-        ); })
+        );
+})
     }
 
   </table>
@@ -147,25 +152,26 @@ let PredictionsTable = props => (
 PredictionsTable.propTypes = {
   predictions: PropTypes.arrayOf(PropTypes.object)
 };
+PredictionsTable.defaultProps = {
+  predictions: null
+};
 
 
 const PredictionResults = (props) => {
-  const modelType = props.prediction.model_type;
-  const results = props.prediction.results;
+  const { model_type, results, isProbabilistic } = { ...props.prediction };
 
   const firstResult = results ? results[Object.keys(results)[0]] : null;
   const classes = (firstResult && firstResult.prediction) ?
-                Object.keys(firstResult.prediction) : null;
+    Object.keys(firstResult.prediction) : null;
 
-  let modelHasClass = contains(['RidgeClassifierCV'], modelType);
-  const modelHasProba = props.prediction.isProbabilistic;
+  let modelHasClass = contains(['RidgeClassifierCV'], model_type);
   const modelHasTarget = contains(['RandomForestRegressor',
-                                 'LinearRegressor',
-                                 'BayesianARDRegressor',
-                                 'BayesianRidgeRegressor'],
-                                  modelType);
-  if (modelType === 'LinearSGDClassifier') {
-    modelHasClass = !modelHasProba;
+    'LinearRegressor',
+    'BayesianARDRegressor',
+    'BayesianRidgeRegressor'],
+  model_type);
+  if (model_type === 'LinearSGDClassifier') {
+    modelHasClass = !isProbabilistic;
   }
 
   const hasTrueTargetLabel = p => (p && p.label);
@@ -177,7 +183,7 @@ const PredictionResults = (props) => {
           <th>Time Series</th>
           {hasTrueTargetLabel(firstResult) && <th>True Class/Target</th>}
 
-          {modelHasProba &&
+          {isProbabilistic &&
            classes.map((classLabel, idx) => ([
              <th key="0">Predicted Class</th>,
              <th key="1">Probability</th>
@@ -190,7 +196,7 @@ const PredictionResults = (props) => {
       </thead>
 
       <tbody>
-      {results && Object.keys(results).map((fname, idx) => {
+        {results && Object.keys(results).map((fname, idx) => {
         const result = results[fname];
         const classesSorted = classes.sort((a, b) => (result.prediction[b] - result.prediction[a]));
 
@@ -203,7 +209,7 @@ const PredictionResults = (props) => {
               [hasTrueTargetLabel(result) &&
                 <td key="pt">{result.label}</td>,
 
-               modelHasProba &&
+               isProbabilistic &&
                classesSorted.map((classLabel, idx2) => ([
                  <td key="cl0">{classLabel}</td>,
                  <td key="cl1">{result.prediction[classLabel]}</td>
@@ -215,7 +221,8 @@ const PredictionResults = (props) => {
              ]}
 
           </tr>
-        ); })}
+        );
+})}
       </tbody>
     </table>
   );
@@ -236,12 +243,12 @@ const ptMapStateToProps = (state, ownProps) => {
 PredictionsTable = connect(ptMapStateToProps)(PredictionsTable);
 
 const dpMapDispatchToProps = dispatch => (
-    { delete: id => dispatch(Action.deletePrediction(id)) }
+  { delete: id => dispatch(Action.deletePrediction(id)) }
 );
 
 const DeletePrediction = connect(null, dpMapDispatchToProps)(Delete);
 
-const DownloadPredCSV = (props) => (
+const DownloadPredCSV = props => (
   <a
     style={{ display: "inline-block" }}
     href={`/predictions/${props.ID}/download`}
@@ -268,6 +275,9 @@ let PredictTab = props => (
 PredictTab.propTypes = {
   doPrediction: PropTypes.func.isRequired,
   selectedProject: PropTypes.object
+};
+PredictTab.defaultProps = {
+  selectedProject: null
 };
 
 

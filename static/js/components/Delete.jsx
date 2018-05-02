@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const Delete = (props) => {
   const style = {
@@ -19,11 +20,14 @@ const Delete = (props) => {
   );
 };
 Delete.propTypes = {
-  ID: React.PropTypes.oneOfType([
-    React.PropTypes.number,
-    React.PropTypes.string]).isRequired,
-  delete: React.PropTypes.func.isRequired,
-  typeName: React.PropTypes.string
+  ID: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.string]).isRequired,
+  delete: PropTypes.func.isRequired,
+  typeName: PropTypes.string
+};
+Delete.defaultProps = {
+  typeName: ""
 };
 
 export default Delete;

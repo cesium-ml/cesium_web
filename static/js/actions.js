@@ -3,6 +3,10 @@
 
 import { reset as resetForm } from 'redux-form';
 
+import { showNotification } from 'baselayer/components/Notifications';
+import promiseAction from './action_tools';
+
+
 export const HYDRATE = 'cesium/HYDRATE';
 
 export const FETCH_PROJECTS = 'cesium/FETCH_PROJECTS';
@@ -51,15 +55,12 @@ export const RECEIVE_USER_PROFILE = 'cesium/FETCH_USER_PROFILE';
 
 export const FEATURIZE_PROGRESS = 'cesium/FEATURIZE_PROGRESS';
 
-import { showNotification, reduceNotifications } from 'baselayer/components/Notifications';
-import promiseAction from './action_tools';
-import { objectType } from './utils';
 
 // Refactor this into a utility function
 String.prototype.format = function (...args) {
   let i = 0;
   return this.replace(/{}/g, () => (
-    typeof args[i] != 'undefined' ? args[i++] : ''
+    typeof args[i] !== 'undefined' ? args[i++] : ''
   ));
 };
 
@@ -85,18 +86,18 @@ export function fetchProjects() {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             dispatch(receiveProjects(json.data));
           } else {
             dispatch(
               showNotification(
                 'Error downloading projects ({})'.format(json.message)
-              ));
+              )
+            );
           }
           return json;
-        }
-        ).catch(ex => console.log('fetchProjects exception:', ex))
-      );
+        }).catch(ex => console.log('fetchProjects exception:', ex))
+    );
 }
 
 
@@ -107,18 +108,20 @@ export function addProject(form) {
       dispatch,
       ADD_PROJECT,
 
-      fetch('/project',
-            {
-              credentials: 'same-origin',
-              method: 'POST',
-              body: JSON.stringify(form),
-              headers: new Headers({
-                'Content-Type': 'application/json'
-              })
-            })
+      fetch(
+        '/project',
+        {
+          credentials: 'same-origin',
+          method: 'POST',
+          body: JSON.stringify(form),
+          headers: new Headers({
+            'Content-Type': 'application/json'
+          })
+        }
+      )
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             dispatch(resetForm('newProject'));
             dispatch(showNotification('Added new project'));
             dispatch(selectProject(json.data.id));
@@ -127,7 +130,7 @@ export function addProject(form) {
           }
           return json;
         })
-  );
+    );
 }
 
 
@@ -138,18 +141,20 @@ export function updateProject(form) {
       dispatch,
       UPDATE_PROJECT,
 
-      fetch('/project/{}'.format(form.projectId),
-            {
-              credentials: 'same-origin',
-              method: 'PUT',
-              body: JSON.stringify(form),
-              headers: new Headers({
-                'Content-Type': 'application/json'
-              })
-            })
+      fetch(
+        '/project/{}'.format(form.projectId),
+        {
+          credentials: 'same-origin',
+          method: 'PUT',
+          body: JSON.stringify(form),
+          headers: new Headers({
+            'Content-Type': 'application/json'
+          })
+        }
+      )
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             dispatch(resetForm('newProject'));
             dispatch(showNotification('Successfully updated project'));
           } else {
@@ -157,7 +162,7 @@ export function updateProject(form) {
           }
           return json;
         })
-  );
+    );
 }
 
 
@@ -173,35 +178,35 @@ export function deleteProject(id) {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             dispatch(showNotification('Project deleted'));
             dispatch(selectProject());
           } else {
             dispatch(
               showNotification(
                 'Error deleting project ({})'.format(json.message)
-              ));
+              )
+            );
           }
         })
-  );
+    );
 }
 
 
 export function uploadDataset(form) {
-
-  function fileReaderPromise(form, fileName, binary = false){
-    return new Promise(resolve => {
-      var filereader = new FileReader();
+  function fileReaderPromise(formFields, fileName, binary = false) {
+    return new Promise((resolve) => {
+      const filereader = new FileReader();
       if (binary) {
-        filereader.readAsDataURL(form[fileName][0]);
+        filereader.readAsDataURL(formFields[fileName][0]);
       } else {
-        filereader.readAsText(form[fileName][0]);
+        filereader.readAsText(formFields[fileName][0]);
       }
-      filereader.onloadend = () => resolve({ body: filereader.result,
-                                             name: form[fileName][0].name });
+      filereader.onloadend = () => resolve(
+        { body: filereader.result, name: formFields[fileName][0].name }
+      );
     });
   }
-
   return dispatch =>
     promiseAction(
       dispatch,
@@ -209,31 +214,31 @@ export function uploadDataset(form) {
 
       Promise.all([fileReaderPromise(form, 'headerFile'),
                    fileReaderPromise(form, 'tarFile', true)])
-        .then(([headerData, tarData]) => {
-          form['headerFile'] = headerData;
-          form['tarFile'] = tarData;
+             .then(([headerData, tarData]) => {
+               form.headerFile = headerData;
+               form.tarFile = tarData;
 
-          return fetch('/dataset', {
-            credentials: 'same-origin',
-            method: 'POST',
-            body: JSON.stringify(form),
-            headers: new Headers({
-              'Content-Type': 'application/json'
-            })
-          })
-        })
-        .then(response => response.json())
-        .then((json) => {
-          if (json.status == 'success') {
-            dispatch(showNotification('Successfully uploaded new dataset'));
-            dispatch(hideExpander('newDatasetExpander'));
-            dispatch(resetForm('newDataset'));
-          } else {
-            return Promise.reject({ _error: json.message });
-          }
-          return json;
-        })
-  );
+               return fetch('/dataset', {
+                 credentials: 'same-origin',
+                 method: 'POST',
+                 body: JSON.stringify(form),
+                 headers: new Headers({
+                   'Content-Type': 'application/json'
+                 })
+               });
+             })
+             .then(response => response.json())
+             .then((json) => {
+               if (json.status === 'success') {
+                 dispatch(showNotification('Successfully uploaded new dataset'));
+                 dispatch(hideExpander('newDatasetExpander'));
+                 dispatch(resetForm('newDataset'));
+               } else {
+                 return Promise.reject({ _error: json.message });
+               }
+               return json;
+             })
+    );
 }
 
 // Download datasets
@@ -247,10 +252,9 @@ export function fetchDatasets() {
         credentials: 'same-origin'
       })
         .then(response => response.json())
-        .then((json) => (
+        .then(json => (
           dispatch(receiveDatasets(json.data))
-        )
-        ).catch(ex => console.log('fetchDatasets', ex))
+        )).catch(ex => console.log('fetchDatasets', ex))
     );
 }
 
@@ -275,17 +279,17 @@ export function fetchFeaturesets() {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             return dispatch(receiveFeaturesets(json.data));
           } else {
             return dispatch(
               showNotification(
                 'Error downloading feature sets ({})'.format(json.message)
-              ));
+              )
+            );
           }
-        }
-        ).catch(ex => console.log('fetchFeaturesets', ex))
-  );
+        }).catch(ex => console.log('fetchFeaturesets', ex))
+    );
 }
 
 // Receive list of featuresets
@@ -320,7 +324,7 @@ export function createModel(form) {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             dispatch(resetForm('newModel'));
             dispatch(hideExpander('newModelExpander'));
             dispatch(showNotification('Model training begun.'));
@@ -329,7 +333,7 @@ export function createModel(form) {
           }
           return json;
         })
-  );
+    );
 }
 
 
@@ -384,17 +388,17 @@ export function fetchFeatures() {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             dispatch(receiveFeatures(json.data));
           } else {
             dispatch(
               showNotification(
                 'Error downloading features ({})'.format(json.message)
-              ));
+              )
+            );
           }
           return json;
-        }
-        ).catch(ex => console.log('fetchFeatures exception:', ex))
+        }).catch(ex => console.log('fetchFeatures exception:', ex))
     );
 }
 
@@ -420,10 +424,8 @@ export function computeFeatures(form) {
         headers: new Headers({
           'Content-Type': 'application/json'
         })
-      }
-      ).then(response => response.json()
-      ).then((json) => {
-        if (json.status == 'success') {
+      }).then(response => response.json()).then((json) => {
+        if (json.status === 'success') {
           dispatch(resetForm('featurize'));
           dispatch(showNotification('Feature computation begun.'));
           dispatch(hideExpander('featsetFormExpander'));
@@ -448,16 +450,17 @@ export function deleteDataset(id) {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             dispatch(showNotification('Dataset deleted'));
           } else {
             dispatch(
               showNotification(
                 'Error deleting dataset ({})'.format(json.message)
-              ));
+              )
+            );
           }
         })
-  );
+    );
 }
 
 
@@ -473,16 +476,17 @@ export function deleteFeatureset(id) {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             dispatch(showNotification('Feature set deleted'));
           } else {
             dispatch(
               showNotification(
                 'Error deleting feature set ({})'.format(json.message)
-              ));
+              )
+            );
           }
         })
-  );
+    );
 }
 
 
@@ -497,18 +501,18 @@ export function fetchSklearnModels() {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             dispatch(receiveSklearnModels(json.data));
           } else {
             dispatch(
               showNotification(
                 'Error downloading sklearn models ({})'.format(json.message)
-              ));
+              )
+            );
           }
           return json;
-        }
-        ).catch(ex => console.log('fetchSklearnModels exception:', ex))
-      );
+        }).catch(ex => console.log('fetchSklearnModels exception:', ex))
+    );
 }
 
 function receiveSklearnModels(sklearn_models) {
@@ -531,16 +535,16 @@ export function fetchModels() {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             return dispatch(receiveModels(json.data));
           } else {
             return dispatch(
               showNotification(
                 'Error downloading models ({})'.format(json.message)
-              ));
+              )
+            );
           }
-        }
-        ).catch(ex => console.log('fetchModels', ex))
+        }).catch(ex => console.log('fetchModels', ex))
     );
 }
 
@@ -565,16 +569,17 @@ export function deleteModel(id) {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             dispatch(showNotification('Model deleted'));
           } else {
             dispatch(
               showNotification(
                 'Error deleting model ({})'.format(json.message)
-              ));
+              )
+            );
           }
         })
-  );
+    );
 }
 
 
@@ -591,10 +596,8 @@ export function doPrediction(form) {
         headers: new Headers({
           'Content-Type': 'application/json'
         })
-      }
-      ).then(response => response.json()
-      ).then((json) => {
-        if (json.status == 'success') {
+      }).then(response => response.json()).then((json) => {
+        if (json.status === 'success') {
           dispatch(resetForm('predict'));
           dispatch(showNotification('Model predictions begun.'));
           dispatch(hideExpander('predictFormExpander'));
@@ -619,13 +622,14 @@ export function deletePrediction(id) {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             dispatch(showNotification('Prediction deleted'));
           } else {
             dispatch(
               showNotification(
                 'Error deleting prediction ({})'.format(json.message)
-              ));
+              )
+            );
           }
         })
     );
@@ -644,13 +648,12 @@ export function fetchPredictions() {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             return dispatch(receivePredictions(json.data));
           } else {
             return dispatch(showNotification(json.message));
           }
-        }
-        ).catch(ex => console.log('fetchPredictions', ex))
+        }).catch(ex => console.log('fetchPredictions', ex))
     );
 }
 
@@ -697,18 +700,18 @@ export function fetchUserProfile() {
       })
         .then(response => response.json())
         .then((json) => {
-          if (json.status == 'success') {
+          if (json.status === 'success') {
             dispatch(receiveUserProfile(json.data));
           } else {
             dispatch(
               showNotification(
                 'Error downloading user profile ({})'.format(json.message)
-              ));
+              )
+            );
           }
           return json;
-        }
-        ).catch(ex => console.log('fetchUserProfile exception:', ex))
-      );
+        }).catch(ex => console.log('fetchUserProfile exception:', ex))
+    );
 }
 
 function receiveUserProfile(userProfile) {
@@ -717,7 +720,6 @@ function receiveUserProfile(userProfile) {
     payload: userProfile
   };
 }
-
 
 
 export function hydrate() {
