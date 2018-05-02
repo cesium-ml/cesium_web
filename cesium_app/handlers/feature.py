@@ -24,6 +24,7 @@ class FeatureHandler(BaseHandler):
         else:
             featureset_info = [f for p in self.current_user.projects
                                for f in p.featuresets]
+            featureset_info.sort(key=lambda f: f.created_at, reverse=True)
 
         self.success(featureset_info)
 
