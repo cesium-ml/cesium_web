@@ -50,6 +50,7 @@ let FeaturesTab = (props) => {
 FeaturesTab.propTypes = {
   featurePlotURL: PropTypes.string.isRequired,
   computeFeatures: PropTypes.func.isRequired,
+  uploadFeatures: PropTypes.func.isRequired,
   selectedProject: PropTypes.object
 };
 FeaturesTab.defaultProps = {
@@ -60,7 +61,8 @@ const ftMapDispatchToProps = (dispatch, ownProps) => (
   {
     computeFeatures: form => dispatch(Action.computeFeatures(form)),
     uploadFeatures: form => dispatch(
-      Action.uploadFeatureset(form, ownProps.selectedProject))
+      Action.uploadFeatureset(form, ownProps.selectedProject)
+    )
   }
 );
 

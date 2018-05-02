@@ -439,20 +439,18 @@ export function computeFeatures(form) {
 
 
 export function uploadFeatureset(form, currentProject) {
-
-  function fileReaderPromise(form, fileName, binary = false){
+  function fileReaderPromise(formFields, fileName, binary = false) {
     return new Promise(resolve => {
-      var filereader = new FileReader();
+      const filereader = new FileReader();
       if (binary) {
-        filereader.readAsDataURL(form[fileName][0]);
+        filereader.readAsDataURL(formFields[fileName][0]);
       } else {
-        filereader.readAsText(form[fileName][0]);
+        filereader.readAsText(formFields[fileName][0]);
       }
       filereader.onloadend = () => resolve({ body: filereader.result,
-                                             name: form[fileName][0].name });
+                                             name: formFields[fileName][0].name });
     });
   }
-
   form['projectID'] = currentProject.id;
 
   return dispatch =>
@@ -470,7 +468,7 @@ export function uploadFeatureset(form, currentProject) {
             headers: new Headers({
               'Content-Type': 'application/json'
             })
-          })
+          });
         })
         .then(response => response.json())
         .then((json) => {

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { reformatDatetime } from '../utils';
@@ -44,15 +45,19 @@ const FeaturesetsTable = props => (
               </tr>
               {foldedContent}
             </FoldableRow>
-          ); })
+          );
+        })
       }
 
     </table>
   </div>
 );
 FeaturesetsTable.propTypes = {
-  featuresets: React.PropTypes.arrayOf(React.PropTypes.object),
-  featurePlotURL: React.PropTypes.string
+  featuresets: PropTypes.arrayOf(PropTypes.object).isRequired,
+  featurePlotURL: PropTypes.string
+};
+FeaturesetsTable.defaultProps = {
+  featurePlotURL: null
 };
 
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { reduxForm } from 'redux-form';
 import ReactTabs from 'react-tabs';
 
@@ -10,11 +11,7 @@ import { contains } from '../utils';
 import * as Action from '../actions';
 
 
-const Tab = ReactTabs.Tab;
-const Tabs = ReactTabs.Tabs;
-const TabList = ReactTabs.TabList;
-const TabPanel = ReactTabs.TabPanel;
-
+const { Tab, Tabs, TabList, TabPanel } = { ...ReactTabs };
 
 const FeaturizeForm = (props) => {
   const { fields, fields: { datasetID, featuresetName, customFeatsCode },
@@ -69,9 +66,13 @@ const FeaturizeForm = (props) => {
               <TabPanel>
                 <a
                   href="#"
-                  onClick={() => {
+                  onClick={
+                    () => {
                       props.dispatch(Action.groupToggleCheckedFeatures(
-                        props.featuresByCategory[ctgy])); }}
+                        props.featuresByCategory[ctgy]
+                      ));
+                    }
+                  }
                 >
                   Check/Uncheck All
                 </a>
@@ -103,7 +104,8 @@ const FeaturizeForm = (props) => {
           <TabPanel>
             <TextareaInput
               label="Enter Python code defining custom features"
-              rows="10" cols="50"
+              rows="10"
+              cols="50"
               {...customFeatsCode}
             />
           </TabPanel>
@@ -113,19 +115,21 @@ const FeaturizeForm = (props) => {
   );
 };
 FeaturizeForm.propTypes = {
-  fields: React.PropTypes.object.isRequired,
-  datasets: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-  error: React.PropTypes.string,
-  handleSubmit: React.PropTypes.func.isRequired,
-  submitting: React.PropTypes.bool.isRequired,
-  resetForm: React.PropTypes.func.isRequired,
-  selectedProject: React.PropTypes.object,
-  featuresByCategory: React.PropTypes.object,
-  tagList: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
-  featuresList: React.PropTypes.array,
-  featureDescriptions: React.PropTypes.object
+  fields: PropTypes.object.isRequired,
+  datasets: PropTypes.arrayOf(PropTypes.object).isRequired,
+  error: PropTypes.string,
+  handleSubmit: PropTypes.func.isRequired,
+  submitting: PropTypes.bool.isRequired,
+  resetForm: PropTypes.func.isRequired,
+  selectedProject: PropTypes.object.isRequired,
+  featuresByCategory: PropTypes.object.isRequired,
+  tagList: PropTypes.arrayOf(PropTypes.string).isRequired,
+  featuresList: PropTypes.array.isRequired,
+  featureDescriptions: PropTypes.object.isRequired
 };
-
+FeaturizeForm.defaultProps = {
+  error: ""
+};
 
 const mapStateToProps = (state, ownProps) => {
   const featuresList = state.features.featsWithCheckedTags;
@@ -144,7 +148,8 @@ const mapStateToProps = (state, ownProps) => {
     featureDescriptions: state.features.descriptions,
     datasets: filteredDatasets,
     fields: featuresList.concat(
-      ['datasetID', 'featuresetName', 'customFeatsCode']),
+      ['datasetID', 'featuresetName', 'customFeatsCode']
+    ),
     initialValues: { ...initialValues,
                      datasetID: zerothDataset ? zerothDataset.id.toString() : "",
                      customFeatsCode: "" }

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { reduxForm } from 'redux-form';
 
 import { FormComponent, Form, TextInput, TextareaInput, SubmitButton,
@@ -9,8 +10,7 @@ import CesiumTooltip from './Tooltip';
 
 const UploadFeaturesForm = props => {
   const { fields, fields: { datasetID, featuresetName, dataFile },
-          handleSubmit, submitting, resetForm, error, featuresList,
-          featureDescriptions } = props;
+          handleSubmit, submitting, resetForm, error } = props;
   const datasets = props.datasets.map(ds => (
     { id: ds.id,
       label: ds.name }
@@ -47,23 +47,22 @@ const UploadFeaturesForm = props => {
 };
 
 UploadFeaturesForm.propTypes = {
-  fields: React.PropTypes.object.isRequired,
-  datasets: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-  error: React.PropTypes.string,
-  handleSubmit: React.PropTypes.func.isRequired,
-  submitting: React.PropTypes.bool.isRequired,
-  resetForm: React.PropTypes.func.isRequired,
-  selectedProject: React.PropTypes.object
+  fields: PropTypes.object.isRequired,
+  datasets: PropTypes.arrayOf(PropTypes.object).isRequired,
+  error: PropTypes.string,
+  handleSubmit: PropTypes.func.isRequired,
+  submitting: PropTypes.bool.isRequired,
+  resetForm: PropTypes.func.isRequired,
+  selectedProject: PropTypes.object.isRequired
+};
+UploadFeaturesForm.defaultProps = {
+  error: ""
 };
 
-
 const mapStateToProps = (state, ownProps) => {
-
   const initialValues = { };
-
   const filteredDatasets = state.datasets.filter(dataset =>
     (dataset.project_id === ownProps.selectedProject.id));
-
   return {
     datasets: filteredDatasets,
     fields: ['datasetID', 'featuresetName', 'dataFile'],
@@ -82,4 +81,5 @@ export default reduxForm(
     form: 'uploadFeatures',
     fields: [''],
     validate
-  }, mapStateToProps)(UploadFeaturesForm);
+  }, mapStateToProps
+)(UploadFeaturesForm);
