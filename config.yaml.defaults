@@ -18,6 +18,7 @@ paths:
     features_folder: './data/extracted_features'
     predictions_folder: './data/predictions'
     ts_data_folder: './data/ts_data'
+    downloads_folder: '/tmp'
 
     upload_folder: './data/uploads'
     custom_feature_script_folder: './data/uploads/custom_feature_scripts'
