@@ -10,6 +10,7 @@ import numpy.testing as npt
 import pandas as pd
 import json
 import subprocess
+import glob
 from cesium_app.model_util import create_token_user
 
 
@@ -154,10 +155,11 @@ def test_download_prediction_csv_class(driver, project, dataset, featureset,
                                        model, prediction):
     driver.get('/')
     _click_download(project.id, driver)
-    assert os.path.exists('/tmp/cesium_prediction_results.csv')
+    matching_downloads_paths = glob.glob('/tmp/cesium_prediction_results*.csv')
+    assert len(matching_downloads_paths) == 1
     try:
         npt.assert_equal(
-            np.genfromtxt('/tmp/cesium_prediction_results.csv', dtype='str'),
+            np.genfromtxt(matching_downloads_paths[0], dtype='str'),
             ['ts_name,label,prediction',
              '0,Mira,Mira',
              '1,Classical_Cepheid,Classical_Cepheid',
@@ -165,30 +167,32 @@ def test_download_prediction_csv_class(driver, project, dataset, featureset,
              '3,Classical_Cepheid,Classical_Cepheid',
              '4,Mira,Mira'])
     finally:
-        os.remove('/tmp/cesium_prediction_results.csv')
+        os.remove(matching_downloads_paths[0])
 
 
 @pytest.mark.parametrize('model__type', ['LinearSGDClassifier'])
 def test_download_prediction_csv_class_unlabeled(driver, project, unlabeled_prediction):
     driver.get('/')
     _click_download(project.id, driver)
-    assert os.path.exists('/tmp/cesium_prediction_results.csv')
+    matching_downloads_paths = glob.glob('/tmp/cesium_prediction_results*.csv')
+    assert len(matching_downloads_paths) == 1
     try:
-        result = np.genfromtxt('/tmp/cesium_prediction_results.csv', dtype='str')
+        result = np.genfromtxt(matching_downloads_paths[0], dtype='str')
         assert result[0] == 'ts_name,prediction'
         assert all([el[0].isdigit() and el[1] == ',' and el[2:] in
                     ['Mira', 'Classical_Cepheid'] for el in result[1:]])
     finally:
-        os.remove('/tmp/cesium_prediction_results.csv')
+        os.remove(matching_downloads_paths[0])
 
 
 def test_download_prediction_csv_class_prob(driver, project, dataset,
                                             featureset, model, prediction):
     driver.get('/')
     _click_download(project.id, driver)
-    assert os.path.exists('/tmp/cesium_prediction_results.csv')
+    matching_downloads_paths = glob.glob('/tmp/cesium_prediction_results*.csv')
+    assert len(matching_downloads_paths) == 1
     try:
-        result = pd.read_csv('/tmp/cesium_prediction_results.csv')
+        result = pd.read_csv(matching_downloads_paths[0])
         npt.assert_array_equal(result.ts_name, np.arange(5))
         npt.assert_array_equal(result.label, ['Mira', 'Classical_Cepheid',
                                               'Mira', 'Classical_Cepheid',
@@ -198,16 +202,17 @@ def test_download_prediction_csv_class_prob(driver, project, dataset,
                                [1, 0, 1, 0, 1])
         assert (pred_probs.values >= 0.0).all()
     finally:
-        os.remove('/tmp/cesium_prediction_results.csv')
+        os.remove(matching_downloads_paths[0])
 
 
 @pytest.mark.parametrize('featureset__name, model__type', [('regr', 'LinearRegressor')])
 def test_download_prediction_csv_regr(driver, project, dataset, featureset, model, prediction):
     driver.get('/')
     _click_download(project.id, driver)
-    assert os.path.exists('/tmp/cesium_prediction_results.csv')
+    matching_downloads_paths = glob.glob('/tmp/cesium_prediction_results*.csv')
+    assert len(matching_downloads_paths) == 1
     try:
-        results = np.genfromtxt('/tmp/cesium_prediction_results.csv',
+        results = np.genfromtxt(matching_downloads_paths[0],
                                 dtype='str', delimiter=',')
         npt.assert_equal(results[0],
                          ['ts_name', 'label', 'prediction'])
@@ -219,7 +224,7 @@ def test_download_prediction_csv_regr(driver, project, dataset, featureset, mode
              [3, 2.2, 2.2],
              [4, 3.1, 3.1]])
     finally:
-        os.remove('/tmp/cesium_prediction_results.csv')
+        os.remove(matching_downloads_paths[0])
 
 
 def test_predict_specific_ts_name(driver, project, dataset, featureset, model):
