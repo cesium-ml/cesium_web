@@ -13,6 +13,7 @@ import Plot from './Plot';
 import FoldableRow from './FoldableRow';
 import { reformatDatetime, contains } from '../utils';
 import Delete from './Delete';
+import Download from './Download';
 
 const { Tab, Tabs, TabList, TabPanel } = { ...ReactTabs };
 
@@ -257,7 +258,14 @@ export let FeatureTable = props => (
                 <td>{featureset.name}</td>
                 <td>{reformatDatetime(featureset.created_at)}</td>
                 {status}
-                <td><DeleteFeatureset ID={featureset.id} /></td>
+                <td>
+                  {
+                    done &&
+                    <Download url={`/features/${featureset.id}/download`} />
+                  }
+                  &nbsp;&nbsp;
+                  <DeleteFeatureset ID={featureset.id} />
+                </td>
               </tr>
               {foldedContent}
             </FoldableRow>
@@ -290,7 +298,6 @@ FeatureTable = connect(ftMapStateToProps)(FeatureTable);
 const mapDispatchToProps = dispatch => (
   { delete: id => dispatch(Action.deleteFeatureset(id)) }
 );
-
 const DeleteFeatureset = connect(null, mapDispatchToProps)(Delete);
 
 export default FeaturesTab;

@@ -13,6 +13,7 @@ from os.path import join as pjoin
 import uuid
 import datetime
 
+import sklearn
 from sklearn.model_selection import GridSearchCV
 import joblib
 
@@ -72,14 +73,28 @@ def _build_model_compute_statistics(fset_path, model_type, model_params,
 
 class ModelHandler(BaseHandler):
     @auth_or_token
-    def get(self, model_id=None):
-        if model_id is not None:
-            model_info = Model.get_if_owned_by(model_id, self.current_user)
+    def get(self, model_id=None, action=None):
+        if action == 'download':
+            model = Model.get_if_owned_by(model_id, self.current_user)
+            model_path = model.file_uri
+            with open(model_path, 'rb') as f:
+                model_data = f.read()
+            self.set_header("Content-Type", "application/octet-stream")
+            self.set_header(
+                "Content-Disposition", "attachment; "
+                f"filename=cesium_model_{model.project.name}"
+                f"_{model.name}_{str(model.finished).replace(' ', 'T')}"
+                f"_joblib_v{joblib.__version__}"
+                f"_sklearn_v{sklearn.__version__}.pkl")
+            self.write(model_data)
         else:
-            model_info = [model for p in self.current_user.projects
-                          for model in p.models]
+            if model_id is not None:
+                model_info = Model.get_if_owned_by(model_id, self.current_user)
+            else:
+                model_info = [model for p in self.current_user.projects
+                              for model in p.models]
 
-        return self.success(model_info)
+            return self.success(model_info)
 
     @auth_or_token
     async def _await_model_statistics(self, model_stats_future, model):

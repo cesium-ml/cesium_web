@@ -13,20 +13,35 @@ from .progressbar import WebSocketProgressBar
 from os.path import join as pjoin
 import uuid
 import datetime
+import pandas as pd
 
 
 class FeatureHandler(BaseHandler):
     @auth_or_token
-    def get(self, featureset_id=None):
-        if featureset_id is not None:
-            featureset_info = Featureset.get_if_owned_by(featureset_id,
-                                                         self.current_user)
+    def get(self, featureset_id=None, action=None):
+        if action == 'download':
+            featureset = Featureset.get_if_owned_by(featureset_id,
+                                                    self.current_user)
+            fset_path = featureset.file_uri
+            fset, data = featurize.load_featureset(fset_path)
+            if 'labels' in data:
+                fset['labels'] = data['labels']
+            self.set_header("Content-Type", 'text/csv; charset="utf-8"')
+            self.set_header(
+                "Content-Disposition", "attachment; "
+                f"filename=cesium_featureset_{featureset.project.name}"
+                f"_{featureset.name}_{featureset.finished}.csv")
+            self.write(fset.to_csv(index=True))
         else:
-            featureset_info = [f for p in self.current_user.projects
-                               for f in p.featuresets]
-            featureset_info.sort(key=lambda f: f.created_at, reverse=True)
+            if featureset_id is not None:
+                featureset_info = Featureset.get_if_owned_by(featureset_id,
+                                                             self.current_user)
+            else:
+                featureset_info = [f for p in self.current_user.projects
+                                   for f in p.featuresets]
+                featureset_info.sort(key=lambda f: f.created_at, reverse=True)
 
-        self.success(featureset_info)
+            self.success(featureset_info)
 
     @auth_or_token
     async def _await_featurization(self, future, fset):
