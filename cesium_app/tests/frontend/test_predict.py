@@ -12,6 +12,10 @@ import json
 import subprocess
 import glob
 from cesium_app.model_util import create_token_user
+from baselayer.app.config import load_config
+
+
+cfg = load_config()
 
 
 def _add_prediction(proj_id, driver):
@@ -155,7 +159,8 @@ def test_download_prediction_csv_class(driver, project, dataset, featureset,
                                        model, prediction):
     driver.get('/')
     _click_download(project.id, driver)
-    matching_downloads_paths = glob.glob('/tmp/cesium_prediction_results*.csv')
+    matching_downloads_paths = glob.glob(f'{cfg["paths:downloads_folder"]}/'
+                                         'cesium_prediction_results*.csv')
     assert len(matching_downloads_paths) == 1
     try:
         npt.assert_equal(
@@ -174,7 +179,8 @@ def test_download_prediction_csv_class(driver, project, dataset, featureset,
 def test_download_prediction_csv_class_unlabeled(driver, project, unlabeled_prediction):
     driver.get('/')
     _click_download(project.id, driver)
-    matching_downloads_paths = glob.glob('/tmp/cesium_prediction_results*.csv')
+    matching_downloads_paths = glob.glob(f'{cfg["paths:downloads_folder"]}/'
+                                         'cesium_prediction_results*.csv')
     assert len(matching_downloads_paths) == 1
     try:
         result = np.genfromtxt(matching_downloads_paths[0], dtype='str')
@@ -189,7 +195,8 @@ def test_download_prediction_csv_class_prob(driver, project, dataset,
                                             featureset, model, prediction):
     driver.get('/')
     _click_download(project.id, driver)
-    matching_downloads_paths = glob.glob('/tmp/cesium_prediction_results*.csv')
+    matching_downloads_paths = glob.glob(f'{cfg["paths:downloads_folder"]}/'
+                                         'cesium_prediction_results*.csv')
     assert len(matching_downloads_paths) == 1
     try:
         result = pd.read_csv(matching_downloads_paths[0])
@@ -206,10 +213,12 @@ def test_download_prediction_csv_class_prob(driver, project, dataset,
 
 
 @pytest.mark.parametrize('featureset__name, model__type', [('regr', 'LinearRegressor')])
-def test_download_prediction_csv_regr(driver, project, dataset, featureset, model, prediction):
+def test_download_prediction_csv_regr(driver, project, dataset, featureset,
+                                      model, prediction):
     driver.get('/')
     _click_download(project.id, driver)
-    matching_downloads_paths = glob.glob('/tmp/cesium_prediction_results*.csv')
+    matching_downloads_paths = glob.glob(f'{cfg["paths:downloads_folder"]}/'
+                                         'cesium_prediction_results*.csv')
     assert len(matching_downloads_paths) == 1
     try:
         results = np.genfromtxt(matching_downloads_paths[0],
