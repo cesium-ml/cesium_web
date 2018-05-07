@@ -1,6 +1,7 @@
 import pytest
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 import uuid
 import os
 from os.path import join as pjoin
@@ -10,6 +11,11 @@ import time
 def test_pipeline_sequentially(driver):
     driver.get("/")
 
+    # Delete existing project if present
+    try:
+        driver.wait_for_xpath('//*[contains(text(), "Delete Project")]').click()
+    except (NoSuchElementException, TimeoutException):
+        pass
     # Add new project
     driver.wait_for_xpath('//*[contains(text(), "Or click here to add a new one")]').click()
 
