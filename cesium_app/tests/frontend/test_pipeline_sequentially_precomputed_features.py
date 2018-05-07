@@ -103,7 +103,7 @@ def test_pipeline_sequentially_precomputed_features(driver):
 
     driver.wait_for_xpath("//div[contains(text(),'Model training begun')]")
 
-    driver.wait_for_xpath("//td[contains(.,'Completed')]", 60)
+    driver.wait_for_xpath("//td[contains(text(),'Completed')]", 60)
 
     # Predict using dataset and model from this test
     driver.find_element_by_id('react-tabs-8').click()
