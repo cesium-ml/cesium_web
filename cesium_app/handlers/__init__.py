@@ -10,3 +10,4 @@ from .model import ModelHandler
 from .plot_features import PlotFeaturesHandler
 from .prediction import PredictionHandler, PredictRawDataHandler
 from .sklearn_models import SklearnModelsHandler
+from .feature import PrecomputedFeaturesHandler

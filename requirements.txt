@@ -1,4 +1,4 @@
-cesium>=0.9.4
+cesium>=0.9.5
 joblib>=0.11
 bokeh==0.12.5
 pytest-randomly

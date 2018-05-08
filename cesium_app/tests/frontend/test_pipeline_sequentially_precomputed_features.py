@@ -1,28 +1,24 @@
 import pytest
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
 import uuid
 import os
 from os.path import join as pjoin
 import time
 
 
-def test_pipeline_sequentially(driver):
+def test_pipeline_sequentially_precomputed_features(driver):
     driver.get("/")
 
-    # Delete existing project if present
-    try:
-        driver.wait_for_xpath('//*[contains(text(), "Delete Project")]').click()
-    except (NoSuchElementException, TimeoutException):
-        pass
     # Add new project
-    driver.wait_for_xpath('//*[contains(text(), "Or click here to add a new one")]').click()
+    driver.wait_for_xpath(
+        '//*[contains(text(), "Or click here to add a new one")]').click()
 
     project_name = driver.find_element_by_css_selector('[name=projectName]')
     test_proj_name = str(uuid.uuid4())
     project_name.send_keys(test_proj_name)
-    project_desc = driver.find_element_by_css_selector('[name=projectDescription]')
+    project_desc = driver.find_element_by_css_selector(
+        '[name=projectDescription]')
     project_desc.send_keys("Test Description")
 
     driver.find_element_by_class_name('btn-primary').click()
@@ -65,27 +61,33 @@ def test_pipeline_sequentially(driver):
     # Generate new feature set
     test_featureset_name = str(uuid.uuid4())
     driver.find_element_by_id('react-tabs-4').click()
-    driver.find_element_by_partial_link_text('Compute New Features').click()
-    # Uncheck LS feats
-    driver.find_element_by_xpath("//li[contains(.,'Lomb-Scargle')]").click()
-    driver.find_element_by_partial_link_text('Check/Uncheck All').click()
+    driver.find_element_by_partial_link_text('Upload Pre-Computed Features')\
+          .click()
 
-    featureset_name = driver.find_element_by_css_selector('[name=featuresetName]')
+    featureset_name = driver.find_element_by_css_selector(
+        '[name=featuresetName]')
     featureset_name.send_keys(test_featureset_name)
 
     # Ensure dataset from previous step is selected
-    dataset_select = Select(driver.find_element_by_css_selector('[name=datasetID]'))
+    dataset_select = Select(driver.find_element_by_css_selector(
+        '[name=datasetID]'))
     dataset_select.select_by_visible_text(test_dataset_name)
 
+    file_field = driver.find_element_by_css_selector('[name=dataFile]')
+    file_field.send_keys(pjoin(os.path.dirname(os.path.dirname(__file__)),
+                               'data', 'downloaded_cesium_featureset.csv'))
+
     driver.find_element_by_class_name('btn-primary').click()
-    status_td = driver.wait_for_xpath("//div[contains(text(),'Feature computation begun')]")
+    status_td = driver.wait_for_xpath(
+        "//div[contains(text(),'Successfully uploaded new feature set')]")
     status_td = driver.wait_for_xpath("//td[contains(text(),'Completed')]", 30)
 
     # Build new model
     driver.find_element_by_id('react-tabs-6').click()
     driver.find_element_by_partial_link_text('Create New Model').click()
 
-    model_select = Select(driver.find_element_by_css_selector('[name=modelType]'))
+    model_select = Select(driver.find_element_by_css_selector(
+        '[name=modelType]'))
     model_select.select_by_visible_text('RandomForestClassifier (fast)')
 
     model_name = driver.find_element_by_css_selector('[name=modelName]')
@@ -93,14 +95,15 @@ def test_pipeline_sequentially(driver):
     model_name.send_keys(test_model_name)
 
     # Ensure featureset from previous step is selected
-    fset_select = Select(driver.find_element_by_css_selector('[name=featureset]'))
+    fset_select = Select(driver.find_element_by_css_selector(
+        '[name=featureset]'))
     fset_select.select_by_visible_text(test_featureset_name)
 
     driver.find_element_by_class_name('btn-primary').click()
 
     driver.wait_for_xpath("//div[contains(text(),'Model training begun')]")
 
-    driver.wait_for_xpath("//td[contains(.,'Completed')]", 30)
+    driver.wait_for_xpath("//td[contains(text(),'Completed')]", 60)
 
     # Predict using dataset and model from this test
     driver.find_element_by_id('react-tabs-8').click()
@@ -111,11 +114,12 @@ def test_pipeline_sequentially(driver):
     model_select.select_by_visible_text(test_model_name)
 
     # Ensure dataset from previous step is selected
-    dataset_select = Select(driver.find_element_by_css_selector('[name=datasetID]'))
+    dataset_select = Select(driver.find_element_by_css_selector(
+        '[name=datasetID]'))
     dataset_select.select_by_visible_text(test_dataset_name)
 
     driver.find_element_by_class_name('btn-primary').click()
 
     driver.wait_for_xpath("//div[contains(text(),'Model predictions begun')]")
 
-    driver.wait_for_xpath("//td[contains(text(),'Completed')]", 10)
+    driver.wait_for_xpath("//td[contains(text(),'Completed')]", 20)

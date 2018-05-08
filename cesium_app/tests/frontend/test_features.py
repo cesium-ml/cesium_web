@@ -177,8 +177,31 @@ def test_delete_featureset(driver, project, dataset, featureset):
     driver.find_element_by_partial_link_text('Delete').click()
     driver.wait_for_xpath("//div[contains(text(),'Feature set deleted')]")
     try:
-        el = driver.wait_for_xpath("//td[contains(text(),'{test_featureset_name}')]")
+        el = driver.wait_for_xpath(f"//td[contains(text(),'{test_featureset_name}')]")
     except TimeoutException:
         pass
     else:
         raise Exception("Featureset still present in table after delete.")
+
+
+def test_upload_precomputed_features(driver, project, dataset):
+    driver.get('/')
+    driver.refresh()
+    proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
+    proj_select.select_by_value(str(project.id))
+
+    driver.find_element_by_id('react-tabs-4').click()
+    driver.find_element_by_partial_link_text('Upload Pre-Computed Features')\
+          .click()
+    ds_select = Select(driver.find_element_by_css_selector('[name=datasetID]'))
+    ds_select.select_by_value(str(dataset.id))
+
+    fs_name = driver.find_element_by_css_selector('[name=featuresetName]')
+    fs_name.send_keys(test_featureset_name)
+
+    file_field = driver.find_element_by_css_selector('[name=dataFile]')
+    file_field.send_keys(pjoin(os.path.dirname(os.path.dirname(__file__)),
+                               'data', 'downloaded_cesium_featureset.csv'))
+    driver.find_element_by_class_name('btn-primary').click()
+
+    driver.wait_for_xpath(f"//td[contains(text(),'{test_featureset_name}')]")
