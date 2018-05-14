@@ -11,7 +11,7 @@ def test_tab_tooltips(driver, project):
     hover = ActionChains(driver).move_to_element(
         driver.find_element_by_id('react-tabs-0'))
     hover.perform()
-    time.sleep(0.8)
+    time.sleep(1)
     assert driver.find_element_by_xpath(
         "//span[contains(text(),'Manage your projects')]"
     ).is_displayed()
@@ -19,7 +19,7 @@ def test_tab_tooltips(driver, project):
     hover = ActionChains(driver).move_to_element(
         driver.find_element_by_id('react-tabs-2'))
     hover.perform()
-    time.sleep(0.8)
+    time.sleep(1)
     assert driver.find_element_by_xpath(
         "//span[contains(text(),'Upload your time-series data')]"
         ).is_displayed()
@@ -27,7 +27,7 @@ def test_tab_tooltips(driver, project):
     hover = ActionChains(driver).move_to_element(
         driver.find_element_by_id('react-tabs-4'))
     hover.perform()
-    time.sleep(0.8)
+    time.sleep(1)
     assert driver.find_element_by_xpath(
         "//span[contains(text(),'Generate features from your time-series data')]"
     ).is_displayed()
