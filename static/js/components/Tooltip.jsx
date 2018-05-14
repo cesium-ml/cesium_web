@@ -20,6 +20,6 @@ CesiumTooltip.propTypes = {
 };
 CesiumTooltip.defaultProps = {
   place: 'top',
-  delay: 700
+  delay: 500
 };
 export default CesiumTooltip;

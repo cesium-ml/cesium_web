@@ -71,10 +71,12 @@ let DatasetForm = (props) => {
 
       <CesiumTooltip
         id="headerfileTooltip"
+        place="right"
         text={["filename,label", <br key={1} />, "ts1.dat,class_A", <br key={2} />, "..."]}
       />
       <CesiumTooltip
         id="tarfileTooltip"
+        place="right"
         text={[
           "Each file in tarball should be formatted as follows",
           <br />, "(column titles are optional)", <br />, <br />,
