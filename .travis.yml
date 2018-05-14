@@ -54,11 +54,11 @@ addons:
     - supervisor
     - nginx
     - xvfb
-    - firefox
     - unzip
     - libnss3
     - libgconf-2-4
   postgresql: "9.6"
+  firefox: latest
 
 matrix:
   include:
