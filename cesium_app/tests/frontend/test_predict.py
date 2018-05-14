@@ -160,7 +160,7 @@ def test_download_prediction_csv_class(driver, project, dataset, featureset,
     driver.get('/')
     _click_download(project.id, driver)
     matching_downloads_paths = glob.glob(f'{cfg["paths:downloads_folder"]}/'
-                                         'cesium_prediction_results*.csv')
+                                         'cesium_prediction_results*')
     assert len(matching_downloads_paths) == 1
     try:
         npt.assert_equal(
@@ -180,7 +180,7 @@ def test_download_prediction_csv_class_unlabeled(driver, project, unlabeled_pred
     driver.get('/')
     _click_download(project.id, driver)
     matching_downloads_paths = glob.glob(f'{cfg["paths:downloads_folder"]}/'
-                                         'cesium_prediction_results*.csv')
+                                         'cesium_prediction_results*')
     assert len(matching_downloads_paths) == 1
     try:
         result = np.genfromtxt(matching_downloads_paths[0], dtype='str')
@@ -196,7 +196,7 @@ def test_download_prediction_csv_class_prob(driver, project, dataset,
     driver.get('/')
     _click_download(project.id, driver)
     matching_downloads_paths = glob.glob(f'{cfg["paths:downloads_folder"]}/'
-                                         'cesium_prediction_results*.csv')
+                                         'cesium_prediction_results*')
     assert len(matching_downloads_paths) == 1
     try:
         result = pd.read_csv(matching_downloads_paths[0])
@@ -218,7 +218,7 @@ def test_download_prediction_csv_regr(driver, project, dataset, featureset,
     driver.get('/')
     _click_download(project.id, driver)
     matching_downloads_paths = glob.glob(f'{cfg["paths:downloads_folder"]}/'
-                                         'cesium_prediction_results*.csv')
+                                         'cesium_prediction_results*')
     assert len(matching_downloads_paths) == 1
     try:
         results = np.genfromtxt(matching_downloads_paths[0],
