@@ -8,7 +8,8 @@
  * The second element can be, e.g., another row in the table.
  * */
 
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import colorScheme from './colorscheme';
 
 const cs = colorScheme;

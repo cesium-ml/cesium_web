@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { showNotification } from 'baselayer/components/Notifications';
 /* eslint-disable */
@@ -71,8 +72,8 @@ class Plot extends Component {
   }
 }
 Plot.propTypes = {
-  url: React.PropTypes.string.isRequired,
-  dispatch: React.PropTypes.func.isRequired
+  url: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired
 };
 
 Plot = connect()(Plot);

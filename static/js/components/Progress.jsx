@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const Progress = (props) => {
   let response = '';
@@ -25,7 +26,7 @@ const Progress = (props) => {
 };
 
 Progress.propTypes = {
-  type: React.PropTypes.string.isRequired
+  type: PropTypes.string.isRequired
 };
 
 export default Progress;
