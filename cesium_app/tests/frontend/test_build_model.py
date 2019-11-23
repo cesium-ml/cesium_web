@@ -96,16 +96,19 @@ def test_cannot_build_model_unlabeled_data(driver, project, featureset):
         "//div[contains(.,'Cannot build model for unlabeled feature set.')]")
 
 
-def test_model_info_display(driver, project, featureset, model):
+@pytest.mark.parametrize('featureset__name, model_type',
+                         [('class', 'RandomForestClassifier (fast)')])
+def test_model_info_display(driver, project, featureset, model_type):
     driver.refresh()
-    proj_select = Select(driver.find_element_by_css_selector('[name=project]'))
-    proj_select.select_by_value(str(project.id))
-    driver.find_element_by_id('react-tabs-6').click()
+    _build_model(project.id, model_type, driver)
 
-    driver.wait_for_xpath("//td[contains(text(),'{}')]".format(model.name)).click()
+    driver.wait_for_xpath("//td[contains(text(), 'Completed')]").click()
+    time.sleep(0.5)
     assert driver.wait_for_xpath("//th[contains(text(),'Model Type')]")\
                  .is_displayed()
-    assert driver.wait_for_xpath("//th[contains(text(),'Hyper"
-                                        "parameters')]").is_displayed()
-    assert driver.wait_for_xpath("//th[contains(text(),'Training "
-                                        "Data Score')]").is_displayed()
+    assert driver.wait_for_xpath("//th[contains(text(),"
+                                 "'Hyperparameters')]").is_displayed()
+    assert driver.wait_for_xpath("//th[contains(text(),"
+                                 "'train_score')]").is_displayed()
+    assert driver.wait_for_xpath("//canvas[@class='chartjs-render-monitor']")\
+                 .is_displayed()

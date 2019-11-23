@@ -90,7 +90,7 @@ class Model(Base):
     file_uri = sa.Column(sa.String(), nullable=True, index=True)
     task_id = sa.Column(sa.String())
     finished = sa.Column(sa.DateTime)
-    train_score = sa.Column(sa.Float)
+    metrics = sa.Column(sa.JSON, nullable=True)
 
     featureset = relationship('Featureset')
     project = relationship('Project')

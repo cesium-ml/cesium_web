@@ -67,11 +67,24 @@ def _build_model_compute_statistics(fset_path, model_type, model_params,
         model = GridSearchCV(model, params_to_optimize,
                              n_jobs=n_jobs)
     model.fit(fset, data['labels'])
-    score = model.score(fset, data['labels'])
+
+    metrics = {}
+    metrics['train_score'] = model.score(fset, data['labels'])
+
     best_params = model.best_params_ if params_to_optimize else {}
     joblib.dump(model, model_path)
 
-    return score, best_params
+    if model_type == 'RandomForestClassifier':
+        if params_to_optimize:
+            model = model.best_estimator_
+        if hasattr(model, 'oob_score_'):
+            metrics['oob_score'] = model.oob_score_
+        if hasattr(model, 'feature_importances_'):
+            metrics['feature_importances'] = dict(zip(
+                fset.columns.get_level_values(0).tolist(),
+                model.feature_importances_.tolist()))
+
+    return metrics, best_params
 
 
 class ModelHandler(BaseHandler):
@@ -102,12 +115,12 @@ class ModelHandler(BaseHandler):
     @auth_or_token
     async def _await_model_statistics(self, model_stats_future, model):
         try:
-            score, best_params = await model_stats_future
+            model_metrics, best_params = await model_stats_future
 
             model = DBSession().merge(model)
             model.task_id = None
             model.finished = datetime.datetime.now()
-            model.train_score = score
+            model.metrics = model_metrics
             model.params.update(best_params)
             DBSession().commit()
 
