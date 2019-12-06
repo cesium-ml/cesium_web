@@ -118,4 +118,4 @@ def test_pipeline_sequentially(driver):
 
     driver.wait_for_xpath("//div[contains(text(),'Model predictions begun')]")
 
-    driver.wait_for_xpath("//td[contains(text(),'Completed')]", 10)
+    driver.wait_for_xpath("//td[contains(text(),'Completed')]", 15)
