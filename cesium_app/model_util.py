@@ -58,12 +58,13 @@ def insert_test_data():
         models.DBSession().commit()
 
 
-def create_token_user(bot_name, project_ids):
-    u = models.User(username=bot_name)
-    p = models.Project.query.filter(models.Project.id.in_(project_ids)).all()
-    u.projects.extend(p)
-    t = models.Token(user=u)
-    models.DBSession().add_all([u, t])
+def create_token(permissions, created_by_id, name):
+    t = models.Token(permissions=permissions, name=name)
+    u = models.User.query.get(created_by_id)
+    u.tokens.append(t)
+    t.created_by = u
+    models.DBSession().add(u)
+    models.DBSession().add(t)
     models.DBSession().commit()
     return t.id
 

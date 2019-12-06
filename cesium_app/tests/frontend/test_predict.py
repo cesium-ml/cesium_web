@@ -11,7 +11,7 @@ import pandas as pd
 import json
 import subprocess
 import glob
-from cesium_app.model_util import create_token_user
+from cesium_app.model_util import create_token
 from baselayer.app.config import load_config
 
 
@@ -237,23 +237,24 @@ def test_download_prediction_csv_regr(driver, project, dataset, featureset,
 
 
 def test_predict_specific_ts_name(driver, project, dataset, featureset, model):
-    auth_token = create_token_user(uuid.uuid4(), [project.id])
+    user = project.users[0]
+    token = create_token([], user.id, str(uuid.uuid4()))
 
     ts_data = [[1, 2, 3, 4], [32.2, 53.3, 32.3, 32.52], [0.2, 0.3, 0.6, 0.3]]
     impute_kwargs = {'strategy': 'constant', 'value': None}
     data = {'datasetID': dataset.id,
             'ts_names': ['217801'],
-            'modelID': model.id,
-            'token': auth_token}
+            'modelID': model.id}
     response = driver.request(
         'POST', '{}/predictions'.format(driver.server_url),
-        json=data).json()
+        json=data, headers={'Authorization': f'token {token}'}).json()
     assert response['status'] == 'success'
 
     for i in range(10):
-        pred_info = driver.request('GET', '{}/predictions/{}'.format(
-            driver.server_url, response['data']['id']),
-                                   json={'token': auth_token}).json()
+        pred_info = driver.request(
+            'GET', '{}/predictions/{}'.format(
+                driver.server_url, response['data']['id']),
+            headers={'Authorization': f'token {token}'}).json()
         if pred_info['status'] == 'success' and pred_info['data']['finished']:
             break
         time.sleep(1)
