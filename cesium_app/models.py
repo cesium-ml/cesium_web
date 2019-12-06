@@ -9,11 +9,18 @@ from baselayer.app.models import (init_db, join_model, Base, DBSession, User,
 from cesium import featurize
 
 
-def is_owned_by(self, user):
-    if hasattr(self, 'users'):
-        return (user in self.users)
+def is_owned_by(self, user_or_token):
+    if hasattr(self, 'tokens'):
+        return (user_or_token in self.tokens)
     elif hasattr(self, 'project'):
-        return (user in self.project.users)
+        return self.project in user_or_token.projects
+    elif hasattr(self, 'projects'):
+        return bool(set(self.projects) & set(user_or_token.projects))
+    elif hasattr(self, 'users'):
+        if hasattr(user_or_token, 'created_by'):
+            if user_or_token.created_by in self.users:
+                return True
+        return (user_or_token in self.users)
     else:
         raise NotImplementedError(f"{type(self).__name__} object has no owner")
 Base.is_owned_by = is_owned_by
@@ -61,6 +68,11 @@ class Project(Base):
 User.projects = relationship('Project', secondary='user_projects',
                              back_populates='users', cascade='all')
 UserProjects = join_model('user_projects', User, Project)
+
+@property
+def token_projects(self):
+    return self.created_by.projects
+Token.projects = token_projects
 
 
 class Featureset(Base):
