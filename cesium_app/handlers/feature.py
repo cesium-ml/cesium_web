@@ -94,7 +94,7 @@ class FeatureHandler(BaseHandler):
         if not dataset.is_owned_by(self.current_user):
             raise AccessError('No such data set')
 
-        fset_path = pjoin(self.cfg['paths:features_folder'],
+        fset_path = pjoin(self.cfg['paths']['features_folder'],
                           '{}_featureset.npz'.format(uuid.uuid4()))
 
         fset = Featureset(name=featureset_name,
@@ -161,7 +161,7 @@ class PrecomputedFeaturesHandler(BaseHandler):
         else:
             labels = [None]
         fset_path = pjoin(
-            self.cfg['paths:features_folder'],
+            self.cfg['paths']['features_folder'],
             '{}_{}.npz'.format(uuid.uuid4(), data['dataFile']['name']))
 
         featurize.save_featureset(fset, fset_path, labels=labels)

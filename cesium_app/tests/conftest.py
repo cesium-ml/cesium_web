@@ -17,7 +17,7 @@ from cesium_app.tests.fixtures import (TMP_DIR, ProjectFactory, DatasetFactory,
 print('Loading test configuration from test_config.yaml')
 basedir = pathlib.Path(os.path.dirname(__file__))/'../..'
 cfg = load_config([basedir/'test_config.yaml'])
-set_server_url(f'http://localhost:{cfg["ports:app"]}')
+set_server_url(f'http://localhost:{cfg["ports"]["app"]}')
 print('Setting test database to:', cfg['database'])
 models.init_db(**cfg['database'])
 

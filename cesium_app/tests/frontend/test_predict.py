@@ -159,7 +159,7 @@ def test_download_prediction_csv_class(driver, project, dataset, featureset,
                                        model, prediction):
     driver.get('/')
     _click_download(project.id, driver)
-    matching_downloads_paths = glob.glob(f'{cfg["paths:downloads_folder"]}/'
+    matching_downloads_paths = glob.glob(f'{cfg["paths"]["downloads_folder"]}/'
                                          'cesium_prediction_results*')
     assert len(matching_downloads_paths) == 1
     try:
@@ -179,7 +179,7 @@ def test_download_prediction_csv_class(driver, project, dataset, featureset,
 def test_download_prediction_csv_class_unlabeled(driver, project, unlabeled_prediction):
     driver.get('/')
     _click_download(project.id, driver)
-    matching_downloads_paths = glob.glob(f'{cfg["paths:downloads_folder"]}/'
+    matching_downloads_paths = glob.glob(f'{cfg["paths"]["downloads_folder"]}/'
                                          'cesium_prediction_results*')
     assert len(matching_downloads_paths) == 1
     try:
@@ -195,7 +195,7 @@ def test_download_prediction_csv_class_prob(driver, project, dataset,
                                             featureset, model, prediction):
     driver.get('/')
     _click_download(project.id, driver)
-    matching_downloads_paths = glob.glob(f'{cfg["paths:downloads_folder"]}/'
+    matching_downloads_paths = glob.glob(f'{cfg["paths"]["downloads_folder"]}/'
                                          'cesium_prediction_results*')
     assert len(matching_downloads_paths) == 1
     try:
@@ -217,7 +217,7 @@ def test_download_prediction_csv_regr(driver, project, dataset, featureset,
                                       model, prediction):
     driver.get('/')
     _click_download(project.id, driver)
-    matching_downloads_paths = glob.glob(f'{cfg["paths:downloads_folder"]}/'
+    matching_downloads_paths = glob.glob(f'{cfg["paths"]["downloads_folder"]}/'
                                          'cesium_prediction_results*')
     assert len(matching_downloads_paths) == 1
     try:

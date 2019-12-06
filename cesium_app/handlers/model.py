@@ -148,7 +148,7 @@ class ModelHandler(BaseHandler):
         model_params, params_to_optimize = check_model_param_types(model_type,
                                                                    model_params)
         model_type = model_type.split()[0]
-        model_path = pjoin(self.cfg['paths:models_folder'],
+        model_path = pjoin(self.cfg['paths']['models_folder'],
                            '{}_model.pkl'.format(uuid.uuid4()))
 
         model = Model(name=model_name, file_uri=model_path,

@@ -37,7 +37,7 @@ class DatasetHandler(BaseHandler):
 
         zipfile_name = (str(uuid.uuid4()) + "_" +
                         util.secure_filename(zipfile['name']))
-        zipfile_path = pjoin(self.cfg['paths:upload_folder'], zipfile_name)
+        zipfile_path = pjoin(self.cfg['paths']['upload_folder'], zipfile_name)
 
         for prefix in tarball_content_types:
             zipfile['body'] = zipfile['body'].replace(prefix, '')
@@ -55,7 +55,7 @@ class DatasetHandler(BaseHandler):
             headerfile = data['headerFile']
             headerfile_name = (str(uuid.uuid4()) + "_" +
                                util.secure_filename(headerfile['name']))
-            headerfile_path = pjoin(self.cfg['paths:upload_folder'], headerfile_name)
+            headerfile_path = pjoin(self.cfg['paths']['upload_folder'], headerfile_name)
 
             with open(headerfile_path, 'w') as f:
                 f.write(headerfile['body'])
@@ -66,7 +66,7 @@ class DatasetHandler(BaseHandler):
         p = Project.query.filter(Project.id == project_id).one()
         ts_paths = data_management.parse_and_store_ts_data(
             zipfile_path,
-            self.cfg['paths:ts_data_folder'],
+            self.cfg['paths']['ts_data_folder'],
             headerfile_path)
         meta_features = list(time_series.load(ts_paths[0]).meta_features.keys())
         unique_ts_paths = [os.path.join(os.path.dirname(ts_path),
