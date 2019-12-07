@@ -10,7 +10,10 @@ firefox --version
 # Install v1.7 or newer of nginx to support 'if' statement for logging
 sudo apt-add-repository -y ppa:nginx/development
 sudo apt update
-sudo apt install -y nginx
+sudo apt install -y nginx firefox
+
+nginx -v
+firefox --version
 
 pip install --upgrade pip
 hash -d pip  # find upgraded pip
