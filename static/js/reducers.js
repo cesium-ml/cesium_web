@@ -127,7 +127,7 @@ const myFormReducer = (theirFormReducer) => (
         const field_names = Object.keys(state.featurize).filter(
           (field_name) => contains(action.payload.ctgy_list, field_name)
         );
-        const featurizeFormState = Object.assign({}, state.featurize);
+        const featurizeFormState = { ...state.featurize };
         const allAreChecked = (field_names.filter(
           (el) => !featurizeFormState[el].value
         ).length === 0);

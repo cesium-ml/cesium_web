@@ -69,3 +69,4 @@ rules:
   jsx-a11y/label-has-associated-control: 1
   jsx-a11y/control-has-associated-label: 0
   arrow-parens: [2, "always"]
+  react/jsx-props-no-spreading: 1

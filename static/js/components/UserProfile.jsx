@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 let UserProfile = (props) => (
@@ -7,8 +8,8 @@ let UserProfile = (props) => (
   </div>
 );
 UserProfile.propTypes = {
-  style: React.PropTypes.object.isRequired,
-  profile: React.PropTypes.object.isRequired
+  style: PropTypes.object.isRequired,
+  profile: PropTypes.object.isRequired
 };
 
 const mapStateToProps = (state) => (

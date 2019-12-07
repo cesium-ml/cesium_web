@@ -92,10 +92,12 @@ export const TextInput = (props) => {
 
   return (
     <div className="form-group" style={textInputStyle}>
-      {props.label &&
-        <label>
-          {props.label}
-        </label>
+      {
+        props.label && (
+          <label>
+            {props.label}
+          </label>
+        )
       }
       <input
         className="form-control"
@@ -125,10 +127,12 @@ export const TextareaInput = (props) => {
 
   return (
     <div className="form-group" style={textareaInputStyle}>
-      {props.label &&
-        <label>
-          {props.label}
-        </label>
+      {
+        props.label && (
+          <label>
+            {props.label}
+          </label>
+        )
       }
       <textarea
         className="form-control"
@@ -181,23 +185,25 @@ export const SelectInput = (props) => {
 
   return (
     <div className="form-group" style={selectInputStyle}>
-      {props.label &&
-        <label>
-          {props.label}
-        </label>
+      {
+        props.label && (
+          <label>
+            {props.label}
+          </label>
+        )
       }
       <select
         className="form-control"
         {...selectProps}
       >
-        {props.options.map((option, idx) => (
-          <option
-            value={option.id}
-            key={option.id}
-          >
-            {option.label}
-          </option>
-         ))
+        {
+          props.options.map((option, idx) => (
+            <option value={option.id} key={option.id}>
+              {
+                option.label
+              }
+            </option>
+          ))
         }
       </select>
       <Error {...props} />
@@ -260,10 +266,12 @@ export const FileInput = (props) => {
 
   return (
     <div className="form-group" style={fileInputStyle}>
-      {props.label &&
-        <label>
-          {props.label}
-        </label>
+      {
+        props.label && (
+          <label>
+            {props.label}
+          </label>
+        )
       }
       <input type="file" {...inputProps} />
       <Error {...props} />
