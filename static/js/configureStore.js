@@ -19,7 +19,7 @@ export default function configureStore(preloadedState) {
 
       // Enable the Chrome developer plugin
       // https://github.com/zalmoxisus/redux-devtools-extension
-      window.devToolsExtension ? window.devToolsExtension() : f => f,
+      window.devToolsExtension ? window.devToolsExtension() : (f) => f,
     )
   );
 }

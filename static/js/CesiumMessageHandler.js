@@ -2,7 +2,7 @@ import { SHOW_NOTIFICATION, showNotification } from 'baselayer/components/Notifi
 import MessageHandler from 'baselayer/MessageHandler';
 import * as Action from './actions';
 
-const CesiumMessageHandler = dispatch => new MessageHandler(dispatch, (message) => {
+const CesiumMessageHandler = (dispatch) => new MessageHandler(dispatch, (message) => {
   switch (message.action) {
     case Action.FETCH_PROJECTS:
       dispatch(Action.fetchProjects());

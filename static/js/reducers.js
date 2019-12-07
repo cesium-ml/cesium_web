@@ -44,7 +44,7 @@ function featuresets(state=[], action) {
       const newState = [...state];
 
       const { percent, elapsed } = { ...action.payload };
-      const featureIdx = newState.findIndex(element => (
+      const featureIdx = newState.findIndex((element) => (
         element.id === action.payload.fsetID
       ));
 
@@ -83,8 +83,8 @@ function features(state={}, action) {
         checkedTags.push(action.payload.tag);
       }
 
-      const featsWithCheckedTags = state.allFeatsList.filter(feature => (
-        state.tags[feature].some(tag => contains(checkedTags, tag))));
+      const featsWithCheckedTags = state.allFeatsList.filter((feature) => (
+        state.tags[feature].some((tag) => contains(checkedTags, tag))));
       return { ...state,
         featsWithCheckedTags,
         checkedTags };
@@ -115,7 +115,7 @@ function predictions(state = [], action) {
 }
 
 
-const myFormReducer = theirFormReducer => (
+const myFormReducer = (theirFormReducer) => (
   function (initialState, action) {
     const state = { ...initialState };
     switch (action.type) {
@@ -125,11 +125,11 @@ const myFormReducer = theirFormReducer => (
       }
       case Action.GROUP_TOGGLE_FEATURES: {
         const field_names = Object.keys(state.featurize).filter(
-          field_name => contains(action.payload.ctgy_list, field_name)
+          (field_name) => contains(action.payload.ctgy_list, field_name)
         );
         const featurizeFormState = Object.assign({}, state.featurize);
         const allAreChecked = (field_names.filter(
-          el => !featurizeFormState[el].value
+          (el) => !featurizeFormState[el].value
         ).length === 0);
         for (const idx in field_names) {
           featurizeFormState[field_names[idx]].value = !allAreChecked;

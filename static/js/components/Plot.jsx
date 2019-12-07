@@ -37,7 +37,7 @@ class Plot extends Component {
     fetch(this.props.url, {
       credentials: 'same-origin'
     })
-      .then(response => response.json())
+      .then((response) => response.json())
       .then((json) => {
         if (json.status == 'success') {
           this.setState({ plotData: json.data });
@@ -53,7 +53,11 @@ class Plot extends Component {
   render() {
     const { plotData } = this.state;
     if (!plotData) {
-      return <b>Please wait while we load your plotting data...</b>;
+      return (
+        <b>
+          Please wait while we load your plotting data...
+        </b>
+      );
     }
     const docs_json = JSON.parse(plotData.docs_json);
     const render_items = JSON.parse(plotData.render_items);

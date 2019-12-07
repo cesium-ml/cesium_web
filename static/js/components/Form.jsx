@@ -20,7 +20,11 @@ export const Error = (props) => {
   };
 
   if (props.touched && props.error) {
-    return <div style={errorStyle}>{props.error}</div>;
+    return (
+      <div style={errorStyle}>
+        {props.error}
+      </div>
+    );
   } else {
     return null;
   }
@@ -50,7 +54,14 @@ export const Form = (props) => {
   const { error, ...formProps } = props; // eslint-disable-line
   return (
     <div style={style}>
-      {props.error && <div style={style.error}>Error: {props.error}</div>}
+      {
+        props.error && (
+          <div style={style.error}>
+            Error:
+            {props.error}
+          </div>
+        )
+      }
       <form className="form-horizontal" {...formProps}>
         {props.children}
       </form>
@@ -82,7 +93,9 @@ export const TextInput = (props) => {
   return (
     <div className="form-group" style={textInputStyle}>
       {props.label &&
-        <label>{props.label}</label>
+        <label>
+          {props.label}
+        </label>
       }
       <input
         className="form-control"
@@ -113,7 +126,9 @@ export const TextareaInput = (props) => {
   return (
     <div className="form-group" style={textareaInputStyle}>
       {props.label &&
-        <label>{props.label}</label>
+        <label>
+          {props.label}
+        </label>
       }
       <textarea
         className="form-control"
@@ -167,7 +182,9 @@ export const SelectInput = (props) => {
   return (
     <div className="form-group" style={selectInputStyle}>
       {props.label &&
-        <label>{props.label}</label>
+        <label>
+          {props.label}
+        </label>
       }
       <select
         className="form-control"
@@ -244,7 +261,9 @@ export const FileInput = (props) => {
   return (
     <div className="form-group" style={fileInputStyle}>
       {props.label &&
-        <label>{props.label}</label>
+        <label>
+          {props.label}
+        </label>
       }
       <input type="file" {...inputProps} />
       <Error {...props} />

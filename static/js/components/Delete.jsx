@@ -15,7 +15,9 @@ const Delete = (props) => {
         }
               }
     >
-      Delete {props.typeName}
+      Delete
+      {' '}
+      {props.typeName}
     </a>
   );
 };

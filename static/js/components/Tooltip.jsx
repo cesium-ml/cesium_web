@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ReactTooltip from 'react-tooltip';
 
-const CesiumTooltip = props => (
+const CesiumTooltip = (props) => (
   <ReactTooltip place={props.place} delayShow={props.delay} id={props.id}>
     <span>
       {props.text}

@@ -20,7 +20,9 @@ const Progress = (props) => {
   }
 
   return (
-    <b>{response}</b>
+    <b>
+      {response}
+    </b>
   );
 };
 

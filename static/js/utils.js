@@ -3,7 +3,7 @@ export function objectType(obj) {
 }
 
 export function contains(array, x) {
-  return (array.find(el => (el === x)) !== undefined);
+  return (array.find((el) => (el === x)) !== undefined);
 }
 
 export function $try(func) {

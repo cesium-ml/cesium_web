@@ -3,15 +3,15 @@ import PropTypes from 'prop-types';
 import { reduxForm } from 'redux-form';
 
 import { FormComponent, Form, TextInput, TextareaInput, SubmitButton,
-         CheckBoxInput, SelectInput, FileInput } from './Form';
+  CheckBoxInput, SelectInput, FileInput } from './Form';
 import * as Validate from '../validate';
 import CesiumTooltip from './Tooltip';
 
 
-const UploadFeaturesForm = props => {
+const UploadFeaturesForm = (props) => {
   const { fields, fields: { datasetID, featuresetName, dataFile },
-          handleSubmit, submitting, resetForm, error } = props;
-  const datasets = props.datasets.map(ds => (
+    handleSubmit, submitting, resetForm, error } = props;
+  const datasets = props.datasets.map((ds) => (
     { id: ds.id,
       label: ds.name }
   ));
@@ -61,13 +61,12 @@ UploadFeaturesForm.defaultProps = {
 
 const mapStateToProps = (state, ownProps) => {
   const initialValues = { };
-  const filteredDatasets = state.datasets.filter(dataset =>
-    (dataset.project_id === ownProps.selectedProject.id));
+  const filteredDatasets = state.datasets.filter((dataset) => (dataset.project_id === ownProps.selectedProject.id));
   return {
     datasets: filteredDatasets,
     fields: ['datasetID', 'featuresetName', 'dataFile'],
     initialValues: { ...initialValues,
-                     datasetID: "No associated dataset" }
+      datasetID: "No associated dataset" }
   };
 };
 

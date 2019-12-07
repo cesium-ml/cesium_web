@@ -33,7 +33,9 @@ const Dot = (props) => {
   };
 
   return (
-    <div style={style}>{value}</div>
+    <div style={style}>
+      {value}
+    </div>
   );
 };
 Dot.propTypes = {

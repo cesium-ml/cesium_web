@@ -5,7 +5,7 @@ import { reduxForm } from 'redux-form';
 import ReactTabs from 'react-tabs';
 
 import { FormComponent, Form, TextInput, TextareaInput, SubmitButton,
-         CheckBoxInput, SelectInput } from './Form';
+  CheckBoxInput, SelectInput } from './Form';
 import * as Validate from '../validate';
 import Expand from './Expand';
 import * as Action from '../actions';
@@ -59,8 +59,8 @@ FeaturesTab.defaultProps = {
 
 const ftMapDispatchToProps = (dispatch, ownProps) => (
   {
-    computeFeatures: form => dispatch(Action.computeFeatures(form)),
-    uploadFeatures: form => dispatch(
+    computeFeatures: (form) => dispatch(Action.computeFeatures(form)),
+    uploadFeatures: (form) => dispatch(
       Action.uploadFeatureset(form, ownProps.selectedProject)
     )
   }

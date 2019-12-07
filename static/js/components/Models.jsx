@@ -15,7 +15,7 @@ import { $try, reformatDatetime } from '../utils';
 import FoldableRow from './FoldableRow';
 
 
-const ModelsTab = props => (
+const ModelsTab = (props) => (
   <div>
     <Expand label="Create New Model" id="newModelExpander">
       <NewModelForm selectedProject={props.selectedProject} />
@@ -50,8 +50,8 @@ let NewModelForm = (props) => {
   }
 
   const featuresets = props.featuresets
-    .filter(fs => !Validate.isEmpty(fs.finished))
-    .map(fs => (
+    .filter((fs) => !Validate.isEmpty(fs.finished))
+    .map((fs) => (
       {
         id: fs.id,
         label: fs.name
@@ -103,7 +103,7 @@ const mapStateToProps = function (state, ownProps) {
   const currentModelType = formState ? formState.modelType : null;
   const currentModelId = $try(() => formState.modelType.value) || 0;
   const currentModel = state.sklearnModels[currentModelId];
-  const modelFields = currentModel.params.map(param => param.name);
+  const modelFields = currentModel.params.map((param) => param.name);
 
   let fields = ['modelName', 'project', 'featureset', 'modelType'];
   fields = fields.concat(modelFields);
@@ -113,8 +113,7 @@ const mapStateToProps = function (state, ownProps) {
     paramDefaults[param.name] = (param.default === null) ? "None" : param.default;
   });
 
-  const filteredFeaturesets = state.featuresets.filter(featureset =>
-    (featureset.project_id === ownProps.selectedProject.id));
+  const filteredFeaturesets = state.featuresets.filter((featureset) => (featureset.project_id === ownProps.selectedProject.id));
   const firstFeatureset = filteredFeaturesets[0];
   const firstFeaturesetID = firstFeatureset ? firstFeatureset.id : "";
 
@@ -132,9 +131,9 @@ const mapStateToProps = function (state, ownProps) {
   };
 };
 
-const mapDispatchToProps = dispatch => (
+const mapDispatchToProps = (dispatch) => (
   {
-    onSubmit: form => dispatch(Action.createModel(form))
+    onSubmit: (form) => dispatch(Action.createModel(form))
   }
 );
 
@@ -158,7 +157,9 @@ export const Model = (props) => {
 
   return (
     <div style={style}>
-      <h3>{model.name}</h3>
+      <h3>
+        {model.name}
+      </h3>
       {model.params.map((param, idx) => {
       const pProps = props[param.name];
       if (param.type === 'bool') {
@@ -172,13 +173,19 @@ export const Model = (props) => {
 };
 
 
-const ModelInfo = props => (
+const ModelInfo = (props) => (
   <table className="table">
     <thead>
       <tr>
-        <th>Model Type</th>
-        <th>Hyperparameters</th>
-        <th>Training Data Score</th>
+        <th>
+Model Type
+        </th>
+        <th>
+Hyperparameters
+        </th>
+        <th>
+Training Data Score
+        </th>
       </tr>
     </thead>
     <tbody>
@@ -192,8 +199,12 @@ const ModelInfo = props => (
               {
                 Object.keys(props.model.params).map((param, idx) => (
                   <tr key={idx}>
-                    <td>{param}</td>
-                    <td style={{ paddingLeft: "5px" }}>{JSON.stringify(props.model.params[param])}</td>
+                    <td>
+                      {param}
+                    </td>
+                    <td style={{ paddingLeft: "5px" }}>
+                      {JSON.stringify(props.model.params[param])}
+                    </td>
                   </tr>
                 ))
               }
@@ -211,18 +222,40 @@ ModelInfo.propTypes = {
   model: PropTypes.object.isRequired
 };
 
-export let ModelTable = props => (
+export let ModelTable = (props) => (
   <table className="table">
     <thead>
       <tr>
-        <th>Name</th><th>Created</th><th>Status</th><th>Actions</th>
+        <th>
+          Name
+        </th>
+        <th>
+          Created
+        </th>
+        <th>
+          Status
+        </th>
+        <th>
+          Actions
+        </th>
       </tr>
     </thead>
 
     {
       props.models.map((model, idx) => {
         const done = model.finished;
-        const status = done ? <td>Completed {reformatDatetime(model.finished)}</td> : <td>In progress</td>;
+        const status = done ? (
+          <td>
+            Completed
+            {
+              reformatDatetime(model.finished)
+            }
+          </td>
+        ) : (
+          <td>
+            In progress
+          </td>
+        );
 
         const foldedContent = done && (
           <tr key={`modelinfo_${idx}`}>
@@ -235,8 +268,12 @@ export let ModelTable = props => (
         return (
           <FoldableRow key={`model_${idx}`}>
             <tr key={model.id}>
-              <td>{model.name}</td>
-              <td>{reformatDatetime(model.created_at)}</td>
+              <td>
+                {model.name}
+              </td>
+              <td>
+                {reformatDatetime(model.created_at)}
+              </td>
               {status}
               <td>
                 {
@@ -265,7 +302,7 @@ ModelTable.defaultProps = {
 const mtMapStateToProps = (state, ownProps) => (
   {
     models: state.models.filter(
-      model => (model.project_id === ownProps.selectedProject.id)
+      (model) => (model.project_id === ownProps.selectedProject.id)
     )
   }
 );
@@ -273,8 +310,8 @@ const mtMapStateToProps = (state, ownProps) => (
 ModelTable = connect(mtMapStateToProps)(ModelTable);
 
 
-const deleteMapDispatchToProps = dispatch => (
-  { delete: id => dispatch(Action.deleteModel(id)) }
+const deleteMapDispatchToProps = (dispatch) => (
+  { delete: (id) => dispatch(Action.deleteModel(id)) }
 );
 const DeleteModelButton = connect(null, deleteMapDispatchToProps)(Delete);
 

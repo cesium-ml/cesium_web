@@ -34,6 +34,7 @@ class MainContent extends React.Component {
   componentDidMount() {
     store.dispatch(Action.hydrate());
   }
+
   render() {
     const config = {
       sidebar: 300,
@@ -224,14 +225,18 @@ class MainContent extends React.Component {
         </div>
 
         <div style={style.sidebar}>
-          <div style={style.topic}>Project</div>
+          <div style={style.topic}>
+Project
+          </div>
 
           <div style={style.sidebarContent}>
             <ProjectSelector label="Choose your project here:" style={style.projectSelector} />
             <AddProject id="newProjectExpander" label="Or click here to add a new one" style={style.addProject} />
           </div>
 
-          <div style={style.topic}>Progress</div>
+          <div style={style.topic}>
+Progress
+          </div>
 
           <div style={style.sidebarContent}>
             <div style={style.progress}>
@@ -323,13 +328,25 @@ class MainContent extends React.Component {
               <PredictTab selectedProject={this.props.selectedProject} />
             </TabPanel>
             <TabPanel style={style.tabPanel}>
-              <h3>System Status</h3>
+              <h3>
+System Status
+              </h3>
             </TabPanel>
           </Tabs>
           <div style={style.footer}>
             Cesium is an open source Machine Learning Time-Series Platform
             &middot;
-            Follow the <a style={style.footer.a} href="http://cesium-ml.org">Cesium project</a> on <a style={style.footer.a} href="https://github.com/cesium-ml">GitHub</a>
+            Follow the
+            {' '}
+            <a style={style.footer.a} href="http://cesium-ml.org">
+Cesium project
+            </a>
+            {' '}
+on
+            {' '}
+            <a style={style.footer.a} href="https://github.com/cesium-ml">
+GitHub
+            </a>
           </div>
 
         </div>
@@ -387,7 +404,7 @@ const mapStateToProps = function (state) {
   const { projectSelector } = { ...state.form };
   const selectedProjectId = projectSelector ? projectSelector.project.value : "";
   let selectedProject = state.projects.projectList.filter(
-    p => (p.id == selectedProjectId)
+    (p) => (p.id == selectedProjectId)
   );
 
   const [firstProject] = state.projects.projectList || { id: '', label: '', description: '' };
@@ -407,7 +424,7 @@ const mapStateToProps = function (state) {
   };
 };
 
-const mapDispatchToProps = dispatch => (
+const mapDispatchToProps = (dispatch) => (
   {
     handleSubmitModelClick: (form) => {
       dispatch(Action.createModel(form));

@@ -5,7 +5,7 @@ import ReactTabs from 'react-tabs';
 
 import * as Validate from '../validate';
 import { FormComponent, Form, TextInput, TextareaInput, SubmitButton,
-         CheckBoxInput, SelectInput } from './Form';
+  CheckBoxInput, SelectInput } from './Form';
 import Expand from './Expand';
 import { contains } from '../utils';
 import * as Action from '../actions';
@@ -15,9 +15,9 @@ const { Tab, Tabs, TabList, TabPanel } = { ...ReactTabs };
 
 const FeaturizeForm = (props) => {
   const { fields, fields: { datasetID, featuresetName, customFeatsCode },
-          handleSubmit, submitting, resetForm, error, featuresList,
-          featureDescriptions } = props;
-  const datasets = props.datasets.map(ds => (
+    handleSubmit, submitting, resetForm, error, featuresList,
+    featureDescriptions } = props;
+  const datasets = props.datasets.map((ds) => (
     { id: ds.id,
       label: ds.name }
   ));
@@ -37,11 +37,18 @@ const FeaturizeForm = (props) => {
           options={datasets}
           {...datasetID}
         />
-        <b>Select Features to Compute</b><br />
+        <b>
+Select Features to Compute
+        </b>
+        <br />
         <Expand label="Filter By Tag" id="featureTagsExpander">
-          <span><i>Features associated with at least one checked tag will be shown below</i></span>
+          <span>
+            <i>
+Features associated with at least one checked tag will be shown below
+            </i>
+          </span>
           {
-            props.tagList.map(tag => (
+            props.tagList.map((tag) => (
               <CheckBoxInput
                 defaultChecked
                 key={tag}
@@ -55,14 +62,18 @@ const FeaturizeForm = (props) => {
         <Tabs>
           <TabList>
             {
-              Object.keys(props.featuresByCategory).map(ctgy => (
-                <Tab>{ctgy}</Tab>
+              Object.keys(props.featuresByCategory).map((ctgy) => (
+                <Tab>
+                  {ctgy}
+                </Tab>
               ))
             }
-            <Tab>Custom Features</Tab>
+            <Tab>
+Custom Features
+            </Tab>
           </TabList>
           {
-            Object.keys(props.featuresByCategory).map(ctgy => (
+            Object.keys(props.featuresByCategory).map((ctgy) => (
               <TabPanel>
                 <a
                   href="#"
@@ -79,7 +90,7 @@ const FeaturizeForm = (props) => {
                 <table style={{ overflow: "auto" }}>
                   <tbody>
                     {
-                      props.featuresByCategory[ctgy].filter(feat => (
+                      props.featuresByCategory[ctgy].filter((feat) => (
                         contains(featuresList, feat)
                       )).map((feature, idx) => (
                         <tr key={idx} style={idx % 2 == 0 ? { backgroundColor: "#f2f2f2" } : { }}>
@@ -125,7 +136,8 @@ FeaturizeForm.propTypes = {
   featuresByCategory: PropTypes.object.isRequired,
   tagList: PropTypes.arrayOf(PropTypes.string).isRequired,
   featuresList: PropTypes.array.isRequired,
-  featureDescriptions: PropTypes.object.isRequired
+  featureDescriptions: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired
 };
 FeaturizeForm.defaultProps = {
   error: ""
@@ -137,8 +149,7 @@ const mapStateToProps = (state, ownProps) => {
   const initialValues = { };
   featuresList.map((f, idx) => { initialValues[f] = true; return null; });
 
-  const filteredDatasets = state.datasets.filter(dataset =>
-    (dataset.project_id === ownProps.selectedProject.id));
+  const filteredDatasets = state.datasets.filter((dataset) => (dataset.project_id === ownProps.selectedProject.id));
   const zerothDataset = filteredDatasets[0];
 
   return {
@@ -151,8 +162,8 @@ const mapStateToProps = (state, ownProps) => {
       ['datasetID', 'featuresetName', 'customFeatsCode']
     ),
     initialValues: { ...initialValues,
-                     datasetID: zerothDataset ? zerothDataset.id.toString() : "",
-                     customFeatsCode: "" }
+      datasetID: zerothDataset ? zerothDataset.id.toString() : "",
+      customFeatsCode: "" }
   };
 };
 

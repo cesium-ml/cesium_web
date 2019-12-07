@@ -76,8 +76,12 @@ let ProjectTab = (props) => {
   if (!p.id) {
     return (
       <div style={newCesiumStyle}>
-        <p>Welcome to Cesium!</p>
-        <p>&larr; Please create a new project.</p>
+        <p>
+Welcome to Cesium!
+        </p>
+        <p>
+&larr; Please create a new project.
+        </p>
       </div>
     );
   } else {
@@ -102,9 +106,9 @@ ProjectTab.propTypes = {
   updateProject: PropTypes.func.isRequired
 };
 
-const ptMapDispatchToProps = dispatch => (
+const ptMapDispatchToProps = (dispatch) => (
   {
-    updateProject: form => dispatch(Action.updateProject(form))
+    updateProject: (form) => dispatch(Action.updateProject(form))
   }
 );
 
@@ -146,9 +150,9 @@ AddProject.defaultProps = {
   style: {}
 };
 
-let mapDispatchToProps = dispatch => (
+let mapDispatchToProps = (dispatch) => (
   {
-    addProject: form => dispatch(Action.addProject(form)),
+    addProject: (form) => dispatch(Action.addProject(form)),
   }
 );
 
@@ -156,8 +160,8 @@ AddProject = connect(null, mapDispatchToProps)(AddProject);
 
 export { AddProject };
 
-mapDispatchToProps = dispatch => (
-  { delete: id => dispatch(Action.deleteProject(id)) }
+mapDispatchToProps = (dispatch) => (
+  { delete: (id) => dispatch(Action.deleteProject(id)) }
 );
 
 const DeleteProject = connect(null, mapDispatchToProps)(Delete);
@@ -165,7 +169,7 @@ const DeleteProject = connect(null, mapDispatchToProps)(Delete);
 let ProjectSelector = (props) => {
   const { fields: { project } } = props;
 
-  const projects = props.projects.map(proj => (
+  const projects = props.projects.map((proj) => (
     {
       id: proj.id,
       label: proj.name
@@ -174,7 +178,7 @@ let ProjectSelector = (props) => {
 
   return (
     <div style={props.style}>
-      <Form onSubmit={form => null}>
+      <Form onSubmit={(form) => null}>
         <SelectInput
           label={props.label}
           options={projects}
@@ -226,9 +230,29 @@ export const CurrentProject = (props) => {
   const project = props.selectedProject;
   return (
     <div style={style}>
-      <b>{project.name}</b><br />
-      {project.description ? <span><em>{project.description}</em><br /></span> : ''}
-      <b>id:</b> {project.id}
+      <b>
+        {project.name}
+      </b>
+      <br />
+      {
+        project.description ? (
+          <span>
+            <em>
+              {project.description}
+            </em>
+            <br />
+          </span>
+        ) : ''
+      }
+      <b>
+        id:
+      </b>
+      {
+        ' '
+      }
+      {
+        project.id
+      }
     </div>
   );
 };

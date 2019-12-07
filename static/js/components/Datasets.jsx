@@ -14,7 +14,7 @@ import CesiumTooltip from './Tooltip';
 import FoldableRow from './FoldableRow';
 
 
-const DatasetsTab = props => (
+const DatasetsTab = (props) => (
   <div className="datasetsTab">
 
     <Expand label="Upload new dataset" id="newDatasetExpander">
@@ -53,7 +53,7 @@ let DatasetForm = (props) => {
         />
 
         <div style={description}>
-          {'Format: comma-separated with columns "filename" (of a time series from the uploaded archive), "label" (class label or numerical value), and any metafeatures (numerical).'}
+          Format: comma-separated with columns &quot;filename&quot; (of a time series from the uploaded archive), &quot;label&quot; (class label or numerical value), and any metafeatures (numerical).
         </div>
 
         <FileInput
@@ -63,7 +63,7 @@ let DatasetForm = (props) => {
           data-for="tarfileTooltip"
         />
         <div style={description}>
-          {'Format: zipfile or tarfile containing time series files, each of which is comma-separated with columns "time", "value", "error" (optional).'}
+          Format: zipfile or tarfile containing time series files, each of which is comma-separated with columns &quot;time&quot;, &quot;value&quot;, &quot;error&quot; (optional).
         </div>
 
         <SubmitButton label="Upload Dataset" disabled={submitting} />
@@ -128,12 +128,16 @@ DatasetForm = reduxForm({
 }, dsMapStateToProps, dsMapDispatchToProps)(DatasetForm);
 
 
-const DatasetInfo = props => (
+const DatasetInfo = (props) => (
   <table className="table">
     <thead>
       <tr>
-        <th>Time Series File Names</th>
-        <th>Meta Features</th>
+        <th>
+Time Series File Names
+        </th>
+        <th>
+Meta Features
+        </th>
       </tr>
     </thead>
     <tbody>
@@ -152,11 +156,19 @@ DatasetInfo.propTypes = {
   dataset: PropTypes.object.isRequired
 };
 
-export let DatasetTable = props => (
+export let DatasetTable = (props) => (
   <table className="table">
     <thead>
       <tr>
-        <th>Name</th><th>Uploaded</th><th>Actions</th>
+        <th>
+Name
+        </th>
+        <th>
+Uploaded
+        </th>
+        <th>
+Actions
+        </th>
       </tr>
     </thead>
 
@@ -173,9 +185,15 @@ export let DatasetTable = props => (
         return (
           <FoldableRow key={`ds_${idx}`}>
             <tr key={dataset.id}>
-              <td>{dataset.name}</td>
-              <td>{reformatDatetime(dataset.created_at)}</td>
-              <td><DeleteDataset ID={dataset.id} /></td>
+              <td>
+                {dataset.name}
+              </td>
+              <td>
+                {reformatDatetime(dataset.created_at)}
+              </td>
+              <td>
+                <DeleteDataset ID={dataset.id} />
+              </td>
             </tr>
             {foldedContent}
           </FoldableRow>
@@ -192,7 +210,7 @@ DatasetTable.propTypes = {
 
 const mapStateToProps = (state, ownProps) => (
   {
-    datasets: state.datasets.filter(dataset => (
+    datasets: state.datasets.filter((dataset) => (
       dataset.project_id === ownProps.selectedProject.id
     ))
   }
@@ -200,8 +218,8 @@ const mapStateToProps = (state, ownProps) => (
 
 DatasetTable = connect(mapStateToProps)(DatasetTable);
 
-const mapDispatchToProps = dispatch => (
-  { delete: id => dispatch(Action.deleteDataset(id)) }
+const mapDispatchToProps = (dispatch) => (
+  { delete: (id) => dispatch(Action.deleteDataset(id)) }
 );
 
 const DeleteDataset = connect(null, mapDispatchToProps)(Delete);

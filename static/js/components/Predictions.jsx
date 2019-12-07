@@ -19,14 +19,14 @@ let PredictForm = (props) => {
   const { fields: { modelID, datasetID }, handleSubmit, submitting, resetForm,
     error } = props;
 
-  const datasets = props.datasets.map(ds => (
+  const datasets = props.datasets.map((ds) => (
     { id: ds.id,
       label: ds.name }
   ));
 
   const models = props.models
-    .filter(model => !Validate.isEmpty(model.finished))
-    .map(model => (
+    .filter((model) => !Validate.isEmpty(model.finished))
+    .map((model) => (
       { id: model.id,
         label: model.name }
     ));
@@ -71,12 +71,10 @@ PredictForm.defaultProps = {
 
 
 const mapStateToProps = (state, ownProps) => {
-  const filteredDatasets = state.datasets.filter(dataset =>
-    (dataset.project_id === ownProps.selectedProject.id));
+  const filteredDatasets = state.datasets.filter((dataset) => (dataset.project_id === ownProps.selectedProject.id));
   const zerothDataset = filteredDatasets[0];
 
-  const filteredModels = state.models.filter(model =>
-    (model.project_id === ownProps.selectedProject.id));
+  const filteredModels = state.models.filter((model) => (model.project_id === ownProps.selectedProject.id));
   const zerothModel = filteredModels[0];
 
   return {
@@ -101,23 +99,43 @@ PredictForm = reduxForm({
 }, mapStateToProps)(PredictForm);
 
 
-let PredictionsTable = props => (
+let PredictionsTable = (props) => (
   <table className="table">
     <thead>
       <tr>
-        <th style={{ width: '15em' }}>Data Set Name</th>
-        <th style={{ width: '15em' }}>Model Name</th>
-        <th style={{ width: '25em' }}>Created</th>
-        <th style={{ width: '15em' }}>Status</th>
-        <th style={{ width: '15em' }}>Actions</th>
-        <th style={{ width: 'auto' }} />{ /* extra column, used to capture expanded space */ }
+        <th style={{ width: '15em' }}>
+          Data Set Name
+        </th>
+        <th style={{ width: '15em' }}>
+          Model Name
+        </th>
+        <th style={{ width: '25em' }}>
+          Created
+        </th>
+        <th style={{ width: '15em' }}>
+          Status
+        </th>
+        <th style={{ width: '15em' }}>
+          Actions
+        </th>
+        <th style={{ width: 'auto' }} />
+        { /* extra column, used to capture expanded space */ }
       </tr>
     </thead>
 
     {
       props.predictions.map((prediction, idx) => {
         const done = prediction.finished;
-        const status = done ? <td>Completed {reformatDatetime(prediction.finished)}</td> : <td>In progress</td>;
+        const status = done ? (
+          <td>
+            Completed
+            {reformatDatetime(prediction.finished)}
+          </td>
+        ) : (
+          <td>
+            In progress
+          </td>
+        );
 
         const foldedContent = done && (
           <tr key={`pred${idx}`}>
@@ -130,9 +148,15 @@ let PredictionsTable = props => (
         return (
           <FoldableRow key={idx}>
             <tr key={`row${idx}`}>
-              <td>{prediction.dataset_name}</td>
-              <td style={{ textDecoration: 'underline' }}>{prediction.model_name}</td>
-              <td>{reformatDatetime(prediction.created_at)}</td>
+              <td>
+                {prediction.dataset_name}
+              </td>
+              <td style={{ textDecoration: 'underline' }}>
+                {prediction.model_name}
+              </td>
+              <td>
+                {reformatDatetime(prediction.created_at)}
+              </td>
               {status}
               <td>
                 {
@@ -177,55 +201,98 @@ const PredictionResults = (props) => {
     modelHasClass = !isProbabilistic;
   }
 
-  const hasTrueTargetLabel = p => (p && p.label);
+  const hasTrueTargetLabel = (p) => (p && p.label);
 
   return (
     <table className="table">
       <thead>
         <tr>
-          <th>Time Series</th>
-          {hasTrueTargetLabel(firstResult) && <th>True Class/Target</th>}
-
-          {isProbabilistic &&
-           classes.map((classLabel, idx) => ([
-             <th key="0">Predicted Class</th>,
-             <th key="1">Probability</th>
-           ]))
+          <th>
+            Time Series
+          </th>
+          {
+            hasTrueTargetLabel(firstResult) && (
+              <th>
+                True Class/Target
+              </th>
+            )
           }
 
-          {modelHasClass && <th>Predicted Class</th>}
-          {modelHasTarget && <th>Predicted Target</th>}
+          {
+            isProbabilistic && (
+              classes.map((classLabel, idx) => ([
+                <th key="0">
+                  Predicted Class
+                </th>,
+                <th key="1">
+                  Probability
+                </th>
+              ]))
+            )
+          }
+
+          {
+            modelHasClass && (
+              <th>
+                Predicted Class
+              </th>
+            )
+          }
+          {
+            modelHasTarget && (
+              <th>
+                Predicted Target
+              </th>
+            )
+          }
         </tr>
       </thead>
 
       <tbody>
-        {results && Object.keys(results).map((fname, idx) => {
-        const result = results[fname];
-        const classesSorted = classes.sort((a, b) => (result.prediction[b] - result.prediction[a]));
+        {
+          results && Object.keys(results).map((fname, idx) => {
+            const result = results[fname];
+            const classesSorted = classes.sort((a, b) => (result.prediction[b] - result.prediction[a]));
 
-        return (
-          <tr key={idx}>
+            return (
+              <tr key={idx}>
 
-            <td>{fname}</td>
+                <td>
+                  {fname}
+                </td>
 
-            {
-              [hasTrueTargetLabel(result) &&
-                <td key="pt">{result.label}</td>,
+                {
+                  [
+                    hasTrueTargetLabel(result) &&
+                    <td key="pt">
+                      {result.label}
+                    </td>,
 
-               isProbabilistic &&
-               classesSorted.map((classLabel, idx2) => ([
-                 <td key="cl0">{classLabel}</td>,
-                 <td key="cl1">{result.prediction[classLabel]}</td>
-               ])),
+                    isProbabilistic &&
+                    classesSorted.map((classLabel, idx2) => ([
+                      <td key="cl0">
+                        {classLabel}
+                      </td>,
+                      <td key="cl1">
+                        {result.prediction[classLabel]}
+                      </td>
+                    ])),
 
-               modelHasClass && <td key="rp">{result.prediction}</td>,
+                    modelHasClass &&
+                    <td key="rp">
+                      {result.prediction}
+                    </td>,
 
-               modelHasTarget && <td key="rp">{result.prediction}</td>
-             ]}
-
-          </tr>
-        );
-})}
+                    modelHasTarget &&
+                    <td key="rp">
+                      {result.prediction}
+                    </td>
+                  ]
+                }
+              </tr>
+            );
+          })
+        }
       </tbody>
     </table>
   );
@@ -235,8 +302,7 @@ PredictionResults.propTypes = {
 };
 
 const ptMapStateToProps = (state, ownProps) => {
-  const filteredPredictions = state.predictions.filter(pred =>
-    (pred.project_id === ownProps.selectedProject.id));
+  const filteredPredictions = state.predictions.filter((pred) => (pred.project_id === ownProps.selectedProject.id));
   return {
     predictions: filteredPredictions
   };
@@ -245,13 +311,13 @@ const ptMapStateToProps = (state, ownProps) => {
 
 PredictionsTable = connect(ptMapStateToProps)(PredictionsTable);
 
-const dpMapDispatchToProps = dispatch => (
-  { delete: id => dispatch(Action.deletePrediction(id)) }
+const dpMapDispatchToProps = (dispatch) => (
+  { delete: (id) => dispatch(Action.deletePrediction(id)) }
 );
 
 const DeletePrediction = connect(null, dpMapDispatchToProps)(Delete);
 
-const DownloadPredCSV = props => (
+const DownloadPredCSV = (props) => (
   <a
     style={{ display: "inline-block" }}
     href={`/predictions/${props.ID}/download`}
@@ -263,7 +329,7 @@ DownloadPredCSV.propTypes = {
   ID: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
 };
 
-let PredictTab = props => (
+let PredictTab = (props) => (
   <div>
     <Expand label="Predict Targets" id="predictFormExpander">
       <PredictForm
@@ -284,9 +350,9 @@ PredictTab.defaultProps = {
 };
 
 
-const mapDispatchToProps = dispatch => (
+const mapDispatchToProps = (dispatch) => (
   {
-    doPrediction: form => dispatch(Action.doPrediction(form))
+    doPrediction: (form) => dispatch(Action.doPrediction(form))
   }
 );
 
