@@ -5,7 +5,7 @@ set -ex
 section "install.base.requirements"
 
 # Install v1.7 or newer of nginx to support 'if' statement for logging
-sudo apt-add-repository -y ppa:nginx/development
+sudo apt-add-repository -y ppa:nginx/stable
 sudo apt update
 sudo apt install -y nginx firefox
 
@@ -42,7 +42,7 @@ section_end "init.db"
 
 
 section "install.geckodriver.and.selenium"
-GECKO_VER=0.24.0
+GECKO_VER=0.26.0
 wget https://github.com/mozilla/geckodriver/releases/download/v${GECKO_VER}/geckodriver-v${GECKO_VER}-linux64.tar.gz
 sudo tar -xzf geckodriver-v${GECKO_VER}-linux64.tar.gz -C /usr/local/bin
 rm geckodriver-v${GECKO_VER}-linux64.tar.gz

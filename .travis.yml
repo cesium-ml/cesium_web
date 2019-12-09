@@ -52,14 +52,13 @@ addons:
     - wget
     - nodejs
     - supervisor
-    - nginx
     - unzip
     - libnss3
     - libgconf-2-4
   postgresql: "9.6"
   firefox: latest
 services:
-  - xvfg
+  - xvfb
 
 matrix:
   include:
@@ -74,6 +73,7 @@ before_install:
   - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
   - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157
   - source .travis/travis_funcs.sh
+  - export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 install:
   # Workaround for invalid GPG keys for MongoDB, CouchDB, and git-lfs
