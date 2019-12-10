@@ -1,6 +1,7 @@
 import pytest
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
 import time
 
 
@@ -8,7 +9,7 @@ def test_tab_tooltips(driver, project):
     driver.get('/')
     driver.refresh()
 
-    hover = ActionChains(driver).move_to_element(
+    hover = ActionChains(driver).click_and_hold(
         driver.find_element_by_id('react-tabs-0'))
     hover.perform()
     time.sleep(1.5)
@@ -16,7 +17,7 @@ def test_tab_tooltips(driver, project):
         "//span[contains(text(),'Manage your projects')]"
     ).is_displayed()
 
-    hover = ActionChains(driver).move_to_element(
+    hover = ActionChains(driver).click_and_hold(
         driver.find_element_by_id('react-tabs-2'))
     hover.perform()
     time.sleep(1.5)
@@ -24,7 +25,7 @@ def test_tab_tooltips(driver, project):
         "//span[contains(text(),'Upload your time-series data')]"
         ).is_displayed()
 
-    hover = ActionChains(driver).move_to_element(
+    hover = ActionChains(driver).click_and_hold(
         driver.find_element_by_id('react-tabs-4'))
     hover.perform()
     time.sleep(1.5)
