@@ -14,7 +14,7 @@ def test_tab_tooltips(driver, project):
     hover.perform()
     time.sleep(1.5)
     assert driver.find_element_by_xpath(
-        "//span[contains(text(),'Manage your projects')]"
+        "//span[contains(.,'Manage your projects')]"
     ).is_displayed()
 
     hover = ActionChains(driver).click_and_hold(
@@ -22,7 +22,7 @@ def test_tab_tooltips(driver, project):
     hover.perform()
     time.sleep(1.5)
     assert driver.find_element_by_xpath(
-        "//span[contains(text(),'Upload your time-series data')]"
+        "//span[contains(.,'Upload your time-series data')]"
         ).is_displayed()
 
     hover = ActionChains(driver).click_and_hold(
@@ -30,7 +30,7 @@ def test_tab_tooltips(driver, project):
     hover.perform()
     time.sleep(1.5)
     assert driver.find_element_by_xpath(
-        "//span[contains(text(),'Generate features from your time-series data')]"
+        "//span[contains(.,'Generate features from your time-series data')]"
     ).is_displayed()
 
 
