@@ -18,9 +18,11 @@ class ProjectHandler(BaseHandler):
     def post(self):
         data = self.get_json()
 
+        user = (self.current_user.created_by if
+                hasattr(self.current_user, 'created_by') else self.current_user)
         p = Project(name=data['projectName'],
                     description=data.get('projectDescription', ''),
-                    users=[self.current_user])
+                    users=[user])
         DBSession().add(p)
         DBSession().commit()
 
