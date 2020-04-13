@@ -10,5 +10,5 @@ db:
   image: postgres:9.6
   environment:
     - POSTGRES_USER=cesium
-    - POSTGRES_PASSWORD=
+    - POSTGRES_PASSWORD=password
     - POSTGRES_DB=cesium
